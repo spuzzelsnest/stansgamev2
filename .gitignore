@@ -33,6 +33,17 @@ crashlytics-build.properties
 *.unitypackage
 *.app
 
+# Player builds made outside Build/ (Windows standalone output). Builds ship as GitHub Releases, never as commits.
+*_BackUpThisFolder_ButDontShipItWithYourGame/
+*_BurstDebugInformation_DoNotShip/
+/*_Data/
+/MonoBleedingEdge/
+/D3D12/
+/*.exe
+/UnityPlayer.dll
+/UnityCrashHandler*.exe
+/StansGame_*.zip
+
 # ---------- IDE and solution files (Unity regenerates them) ----------
 .vs/
 .vscode/
