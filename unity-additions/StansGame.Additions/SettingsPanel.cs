@@ -84,12 +84,12 @@ namespace StansGame.Additions
             if (!Open) return;
             GUI.depth = -200;   // over the main menu
             float s = Screen.height / 1080f;
-            float w = 460f * s, h = 470f * s;
+            float w = 460f * s, h = 580f * s;
             window = new Rect((Screen.width - w) * 0.5f, (Screen.height - h) * 0.5f, w, h);
 
             Matrix4x4 keep = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(s, s, 1f));
-            Rect r = new Rect(window.x / s, window.y / s, 460f, 470f);
+            Rect r = new Rect(window.x / s, window.y / s, 460f, 580f);
             GUI.Box(r, "");
             GUILayout.BeginArea(new Rect(r.x + 20f, r.y + 16f, r.width - 40f, r.height - 32f));
 
@@ -109,7 +109,9 @@ namespace StansGame.Additions
             GameSettings.FieldOfView = Slider("Field of view", GameSettings.FieldOfView, GameSettings.MinFieldOfView, GameSettings.MaxFieldOfView, "0");
             GameSettings.AimFieldOfView = Slider("Field of view when aiming", GameSettings.AimFieldOfView, GameSettings.MinAimFieldOfView, GameSettings.MaxAimFieldOfView, "0");
             GameSettings.MouseSensitivity = Slider("Mouse sensitivity", GameSettings.MouseSensitivity, GameSettings.MinSensitivity, GameSettings.MaxSensitivity, "0.00");
+            GameSettings.AimSensitivity = Slider("Aim sensitivity (1.00 = matched to the zoom)", GameSettings.AimSensitivity, GameSettings.MinAimSensitivity, GameSettings.MaxAimSensitivity, "0.00");
             GameSettings.HitEffects = Slider("Hit effects (red flash, flinch)", GameSettings.HitEffects, 0f, 1f, "0%");
+            GameSettings.WeaponMotion = Slider("Weapon motion (kick, sway, walk bob)", GameSettings.WeaponMotion, 0f, 1f, "0%");
             GameSettings.MasterVolume = Slider("Volume", GameSettings.MasterVolume, 0f, 1f, "0%");
 
             bool hb = GUILayout.Toggle(GameSettings.Heartbeat, "  Heartbeat at low health");
