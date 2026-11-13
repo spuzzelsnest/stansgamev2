@@ -12,6 +12,8 @@ namespace StansGame.Additions
     /// Starting a level calls <c>NetSession.PlayAlone</c>, so the Intro film plays exactly as before.
     /// Works with mouse, keyboard (arrows or the move keys, Enter, Esc) and gamepad (d-pad, A, B).
     /// After Esc &gt; Leave the game reloads the level and the main menu opens again.
+    /// The bootcamp (<see cref="Bootcamp"/>) is offered once on the first Play and is always in the
+    /// level select; when it ends with "on to Pegasus Bridge" the menu starts level 1 straight away.
     /// This is the drop-in version for the compiled demo; with the Unity source it becomes the
     /// UI Toolkit screens of the game structure plan (phase 2).
     /// </summary>
@@ -55,6 +57,7 @@ namespace StansGame.Additions
         Page roleBack = Page.Main;
         float pageOpened;
         float startAt = -1f;
+        int startIndex;
         Vector2 lastMouse = new Vector2(-1f, -1f);
         readonly List<string> phaseTitles = new List<string>();
         readonly List<string> phaseGoals = new List<string>();
@@ -106,7 +109,12 @@ namespace StansGame.Additions
                 if (Time.unscaledTime >= startAt) StartLevel(ns);
                 return;
             }
-            if (SettingsPanel.Open) return;
+            if (SettingsPanel.Open || Bootcamp.OfferBusy) return;
+            if (page == Page.Main && Bootcamp.TakeContinue())
+            {
+                TryStart(LevelCatalogue.ContinueIndex());
+                return;
+            }
             HandleKeys();
         }
 
@@ -192,7 +200,10 @@ namespace StansGame.Additions
             Play(choose);
             switch (i)
             {
-                case 0: TryStart(LevelCatalogue.ContinueIndex()); break;
+                case 0:
+                    if (Bootcamp.ShouldOffer()) Bootcamp.Offer(TryStart);
+                    else TryStart(LevelCatalogue.ContinueIndex());
+                    break;
                 case 1: levelFocus = LevelCatalogue.ContinueIndex(); Open(Page.Levels); break;
                 case 2: Open(Page.Coop); break;
                 case 3: SettingsPanel.Show(true); break;
@@ -205,13 +216,21 @@ namespace StansGame.Additions
         {
             if (!LevelCatalogue.IsUnlocked(index)) return;
             Play(choose);
+            startIndex = index;
+            // The bootcamp is trained with the standard kit, so it starts straight away; a level asks for the role first.
+            if (LevelCatalogue.All[index].Training)
+            {
+                startAt = Time.unscaledTime + 0.6f;
+                return;
+            }
             roleBack = page == Page.Levels ? Page.Levels : Page.Main;
             roleFocus = (int)Roles.Chosen;
             Open(Page.Role);
         }
 
         /// <summary>Starts the level with the chosen role. Only level 1 exists in the build; the
-        /// catalogue index picks the scene once there are more.</summary>
+        /// catalogue index picks the scene once there are more. The bootcamp runs in the same scene,
+        /// with the night mission held (see Bootcamp.Request).</summary>
         void StartAs(int role)
         {
             Roles.Chosen = (Role)role;
@@ -224,6 +243,7 @@ namespace StansGame.Additions
             startAt = -1f;
             titleSeen = true;
             ns.enabled = true;
+            if (LevelCatalogue.All[startIndex].Training) Bootcamp.Request();
             if (playAlone != null) playAlone.Invoke(ns, null);
             else Debug.LogError("Stan's Game: NetSession.PlayAlone not found; the menu cannot start the level");
         }
@@ -234,6 +254,12 @@ namespace StansGame.Additions
             phaseTitles.Clear();
             phaseGoals.Clear();
             LevelInfo l = LevelCatalogue.All[levelFocus];
+            if (l.Training)
+            {
+                phaseTitles.AddRange(Bootcamp.StationTitles);
+                phaseGoals.AddRange(Bootcamp.StationGoals);
+                return;
+            }
             MissionDirector md = MissionDirector.Instance;
             if (!l.Available || l != MissionWatch.Current || md == null || md.phases == null) return;
             foreach (MissionDirector.Phase ph in md.phases)
@@ -367,7 +393,7 @@ namespace StansGame.Additions
 
         bool MouseMovedTo(Rect r, Event e)
         {
-            if (e.type != EventType.Repaint || !r.Contains(e.mousePosition)) return false;
+            if (e.type != EventType.Repaint || !r.Contains(e.mousePosition) || Bootcamp.OfferBusy) return false;
             bool moved = (e.mousePosition - lastMouse).sqrMagnitude > 1f;
             return moved;
         }
@@ -379,7 +405,7 @@ namespace StansGame.Additions
 
         bool Clicked(Rect r, Event e)
         {
-            if (e.type == EventType.MouseDown && e.button == 0 && r.Contains(e.mousePosition) && startAt < 0f && !SettingsPanel.Open)
+            if (e.type == EventType.MouseDown && e.button == 0 && r.Contains(e.mousePosition) && startAt < 0f && !SettingsPanel.Open && !Bootcamp.OfferBusy)
             {
                 e.Use();
                 return true;
@@ -469,7 +495,7 @@ namespace StansGame.Additions
                 }
                 float dim = open ? 1f : 0.45f;
                 GUI.color = new Color(Accent.r, Accent.g, Accent.b, dim * fade);
-                Label(new Rect(r.x + 10f * s, r.y, 100f * s, r.height), l.Number.ToString("00"), cardNumber, TextAnchor.MiddleCenter);
+                Label(new Rect(r.x + 10f * s, r.y, 100f * s, r.height), l.Training ? "BC" : l.Number.ToString("00"), cardNumber, TextAnchor.MiddleCenter);
                 GUI.color = new Color(1f, 1f, 1f, dim * fade);
                 Label(new Rect(r.x + 120f * s, r.y + 16f * s, 500f * s, 36f * s), l.Title.ToUpperInvariant(), cardTitle, TextAnchor.MiddleLeft);
                 GUI.color = new Color(1f, 1f, 1f, 0.7f * dim * fade);
@@ -478,6 +504,7 @@ namespace StansGame.Additions
                 Color sc;
                 if (!l.Available) { status = "LOCKED   ·   IN DEVELOPMENT"; sc = new Color(1f, 1f, 1f, 0.5f); }
                 else if (!open) { status = "LOCKED   ·   COMPLETE LEVEL " + (l.Number - 1) + " FIRST"; sc = new Color(1f, 1f, 1f, 0.5f); }
+                else if (l.Training && !rec.completed) { status = "OPTIONAL   ·   ABOUT 5 MINUTES"; sc = new Color(1f, 1f, 1f, 0.8f); }
                 else if (rec.completed) { status = "COMPLETED   ·   BEST " + Progress.FormatTime(rec.bestTimeSeconds); sc = new Color(0.55f, 0.85f, 0.5f); }
                 else { status = "NOT COMPLETED YET"; sc = new Color(1f, 1f, 1f, 0.8f); }
                 GUI.color = new Color(sc.r, sc.g, sc.b, sc.a * fade);
@@ -499,7 +526,7 @@ namespace StansGame.Additions
             if (phaseTitles.Count > 0)
             {
                 GUI.color = new Color(Accent.r, Accent.g, Accent.b, fade);
-                Label(new Rect(bx, y, bw, 26f * s), "OBJECTIVES", cardLine, TextAnchor.MiddleLeft);
+                Label(new Rect(bx, y, bw, 26f * s), f.Training ? "STATIONS" : "OBJECTIVES", cardLine, TextAnchor.MiddleLeft);
                 y += 34f * s;
                 float indent = 30f * s;
                 float line = help.CalcHeight(new GUIContent("Ag"), bw);

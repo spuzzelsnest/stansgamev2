@@ -52,7 +52,7 @@ namespace StansGame.Additions
         {
             MissionDirector md = MissionDirector.Instance;
             if (md != watched) { watched = md; shownPhase = -1; pending = false; }
-            if (md == null || Net.InMenu || md.phases == null) return;
+            if (md == null || Net.InMenu || md.phases == null || Bootcamp.Active) return;
             SoldierController p = AdditionsBootstrap.LocalPlayer();
             bool playing = p != null && p.enabled && !CinematicDirector.Playing && !GliderExit.Exiting;
             if (!playing) return;
@@ -177,6 +177,7 @@ namespace StansGame.Additions
         {
             GUI.depth = -5;   // set on every event: Unity sorts scripts on the Layout event
             if (Event.current.type != EventType.Repaint) return;
+            if (Bootcamp.Active) return;
             MissionDirector md = MissionDirector.Instance;
             SoldierController p = AdditionsBootstrap.LocalPlayer();
             if (md == null || p == null || !p.enabled || Net.InMenu || CinematicDirector.Playing || GliderExit.Exiting || SettingsPanel.Open) return;

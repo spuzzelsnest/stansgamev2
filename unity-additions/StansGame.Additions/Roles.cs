@@ -99,6 +99,7 @@ namespace StansGame.Additions
         void Update()
         {
             if (soldier == null || loadout == null || AdditionsBootstrap.LocalPlayer() != soldier) return;
+            if (Bootcamp.Active) return;   // the bootcamp hands out its own training kit, station by station
             bool dead = health != null && health.IsDead;
             if (dead) { wasDead = true; return; }
             if (wasDead) { wasDead = false; Applied = false; }   // respawned: the game hands out its own kit again
