@@ -4,13 +4,14 @@ namespace StansGame.Additions
 {
     /// <summary>
     /// Starts itself when the game loads (no scene or prefab changes needed) and adds
-    /// PlayerView, HitFeedback and HealthHud to the local player whenever one appears,
-    /// including after a respawn.
+    /// PlayerView, HitFeedback, HealthHud and Mantle to the local player whenever one appears,
+    /// including after a respawn, and AiUnstick to every AI soldier.
     /// </summary>
     public sealed class AdditionsBootstrap : MonoBehaviour
     {
         static AdditionsBootstrap instance;
         float nextScan;
+        float nextAiScan;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Create()
@@ -21,7 +22,7 @@ namespace StansGame.Additions
             instance = go.AddComponent<AdditionsBootstrap>();
             go.AddComponent<SettingsPanel>();
             AudioListener.volume = GameSettings.MasterVolume;
-            Debug.Log("Stan's Game: additions loaded (first-person view, hit feedback, health bar, F10 settings)");
+            Debug.Log("Stan's Game: additions loaded (first-person view, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick)");
         }
 
         /// <summary>The player this PC controls, or null (menu, between respawns).</summary>
@@ -42,6 +43,20 @@ namespace StansGame.Additions
             if (p.GetComponent<PlayerView>() == null) p.gameObject.AddComponent<PlayerView>();
             if (p.GetComponent<HitFeedback>() == null) p.gameObject.AddComponent<HitFeedback>();
             if (p.GetComponent<HealthHud>() == null) p.gameObject.AddComponent<HealthHud>();
+            if (p.GetComponent<Mantle>() == null) p.gameObject.AddComponent<Mantle>();
+            FriendlyPassThrough.SetPlayer(p);
+
+            // AI soldiers are spawned during the mission (glider sections, waves), so look for new ones.
+            if (Time.unscaledTime >= nextAiScan)
+            {
+                nextAiScan = Time.unscaledTime + 1f;
+                foreach (SoldierAI ai in FindObjectsByType<SoldierAI>())
+                    if (ai.GetComponent<AiUnstick>() == null)
+                    {
+                        ai.gameObject.AddComponent<AiUnstick>();
+                        FriendlyPassThrough.AddSoldier(ai);
+                    }
+            }
         }
     }
 }
