@@ -17,7 +17,6 @@ namespace StansGame.Additions
     {
         const BindingFlags Any = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
         static readonly FieldInfo phaseStartField = typeof(MissionDirector).GetField("phaseStart", Any);
-        static readonly Color Accent = new Color(0.88f, 0.74f, 0.45f);
 
         static ObjectiveHud instance;
         MissionDirector watched;
@@ -27,8 +26,6 @@ namespace StansGame.Additions
 
         AudioSource sfx;
         AudioClip sting;
-        static Texture2D white;
-        static GUIStyle small, big, body, marker, progress;
 
         /// <summary>The phase whose banner was shown last (for tests).</summary>
         public static int BannerPhase { get { return instance != null ? instance.shownPhase : -1; } }
@@ -51,7 +48,8 @@ namespace StansGame.Additions
         void Update()
         {
             MissionDirector md = MissionDirector.Instance;
-            if (md != watched) { watched = md; shownPhase = -1; pending = false; }
+            if (md != watched) { watched = md; shownPhase = -1; pending = false; piatText = null; }
+            if (md != null && md.phases != null) FixPiatText(md);
             if (md == null || Net.InMenu || md.phases == null) return;
             SoldierController p = AdditionsBootstrap.LocalPlayer();
             bool playing = p != null && p.enabled && !CinematicDirector.Playing && !GliderExit.Exiting;
@@ -119,13 +117,19 @@ namespace StansGame.Additions
                     if (md.bridgeObjective == null) return false;
                     pos = md.bridgeObjective.position; verb = "DEFEND"; return true;
                 case 4:
+                    if (PiatKey(md) == 0)
+                    {
+                        Pickup piat = PiatPickup();
+                        if (piat != null) { pos = piat.transform.position; verb = "TAKE THE PIAT"; return true; }
+                    }
                     if (md.panzer == null || md.panzer.IsDead) return false;
                     pos = md.panzer.transform.position; verb = "DESTROY"; return true;
             }
             return false;
         }
 
-        string ProgressLine(MissionDirector md)
+        /// <summary>The progress line for the current phase (also shown on the pause menu's orders).</summary>
+        public static string ProgressText(MissionDirector md)
         {
             float since = phaseStartField != null && Net.Simulates ? Time.time - (float)phaseStartField.GetValue(md) : -1f;
             switch (md.CurrentPhase)
@@ -140,7 +144,9 @@ namespace StansGame.Additions
                 case 3:
                     return since < 0f ? "Hold the bridge" : "Hold the bridge:  " + HoldTime(md.tanksDelay - since);
                 case 4:
-                    return "Switch to the PIAT (" + KeyLabel.Of(Key.Digit3) + ") and hit the lead tank";
+                    int key = PiatKey(md);
+                    if (key > 0) return "Switch to the PIAT (" + KeyLabel.Of(Key.Digit1 + key - 1) + ") and hit the lead vehicle";
+                    return PiatPickup() != null ? "Pick up the PIAT (" + KeyLabel.Of(Key.E) + ")" : "Wait for the PIAT to be brought up";
                 case 5:
                     return since < 0f ? "Hold on" : "Commandos arrive in  " + HoldTime(md.holdOnSeconds - since);
             }
@@ -152,54 +158,74 @@ namespace StansGame.Additions
             return Progress.FormatTime(Mathf.Max(0f, seconds));
         }
 
-        // ------------------------------------------------------------------ drawing
+        // ------------------------------------------------------------------ PIAT (phase 4)
 
-        static void Styles()
+        const string PiatOriginal = "German armour coming from Bénouville. Stop the lead vehicle with the PIAT (3).";
+        string piatText;   // the game's own phase 4 objective, when it is the known one
+
+        /// <summary>The weapon key (1 to 4) of the PIAT in the local player's kit, or 0 before the handover.</summary>
+        public static int PiatKey(MissionDirector md)
         {
-            if (white == null)
-            {
-                white = new Texture2D(1, 1);
-                white.SetPixel(0, 0, Color.white);
-                white.Apply();
-            }
-            if (small != null) return;
-            small = new GUIStyle(GUI.skin.label);
-            small.alignment = TextAnchor.MiddleCenter;
-            small.fontStyle = FontStyle.Bold;
-            small.normal.textColor = Color.white;
-            big = new GUIStyle(small);
-            body = new GUIStyle(small); body.fontStyle = FontStyle.Normal; body.wordWrap = true;
-            marker = new GUIStyle(small);
-            progress = new GUIStyle(small); progress.alignment = TextAnchor.MiddleLeft; progress.fontStyle = FontStyle.Normal;
+            SoldierController p = AdditionsBootstrap.LocalPlayer();
+            if (p == null) return 0;
+            Loadout lo = p.GetComponent<Loadout>();
+            if (lo != null && lo.primary != null && lo.primary.hold == HoldStyle.Launcher) return 1;
+            if (lo != null && lo.sidearm != null && lo.sidearm.hold == HoldStyle.Launcher) return 2;
+            if (p.weapons != null)
+                foreach (Weapon w in p.weapons)
+                    if (w != null && w.hold == HoldStyle.Launcher) return 1;
+            return 0;
         }
+
+        /// <summary>The PIAT lying ready to be picked up, or null.</summary>
+        public static Pickup PiatPickup()
+        {
+            foreach (Pickup q in Pickup.All)
+                if (q != null && q.weapon != null && q.weapon.hold == HoldStyle.Launcher) return q;
+            return null;
+        }
+
+        /// <summary>
+        /// The game's phase 4 objective sends the player to "(3)", which is the Mills bomb until the PIAT is
+        /// handed over (and the PIAT then takes the main weapon's place). The text follows the handover.
+        /// </summary>
+        void FixPiatText(MissionDirector md)
+        {
+            if (md.phases.Length <= 4 || md.phases[4] == null) return;
+            if (piatText == null)
+            {
+                if (md.phases[4].objective != PiatOriginal) return;
+                piatText = md.phases[4].objective;
+            }
+            string want;
+            if (md.CurrentPhase != 4 || Net.InMenu) want = "German armour coming from Bénouville. Stop the lead vehicle with the PIAT.";
+            else
+            {
+                int key = PiatKey(md);
+                want = key > 0
+                    ? "German armour coming from Bénouville. Stop the lead vehicle with the PIAT (" + KeyLabel.Of(Key.Digit1 + key - 1) + ")."
+                    : "German armour coming from Bénouville. Take the PIAT and stop the lead vehicle.";
+            }
+            if (md.phases[4].objective != want) md.phases[4].objective = want;
+        }
+
+        // ------------------------------------------------------------------ drawing
 
         void OnGUI()
         {
             GUI.depth = -5;   // set on every event: Unity sorts scripts on the Layout event
             if (Event.current.type != EventType.Repaint) return;
             MissionDirector md = MissionDirector.Instance;
-            SoldierController p = AdditionsBootstrap.LocalPlayer();
-            if (md == null || p == null || !p.enabled || Net.InMenu || CinematicDirector.Playing || GliderExit.Exiting || SettingsPanel.Open) return;
+            if (md == null || Net.InMenu || CinematicDirector.Playing) return;
             if (md.phases == null || md.CurrentPhase < 0 || md.CurrentPhase >= md.phases.Length) return;
-            Styles();
-            float s = Mathf.Clamp(Screen.height / 1080f, 0.8f, 1.4f);
-            small.fontSize = Mathf.RoundToInt(16f * s);
-            big.fontSize = Mathf.RoundToInt(40f * s);
-            body.fontSize = Mathf.RoundToInt(19f * s);
-            marker.fontSize = Mathf.RoundToInt(14f * s);
-            progress.fontSize = 15;   // matches the game's own objective line, which is not scaled
-            Color keep = GUI.color;
+            Ui.ApplyGameFont();
+            float s = Ui.HudScale;
 
-            // Progress line under the game's objective text (20,44).
-            string prog = ProgressLine(md);
-            if (!string.IsNullOrEmpty(prog))
-            {
-                GUI.color = new Color(0f, 0f, 0f, 0.7f);
-                GUI.Label(new Rect(37f, 73f, 700f, 22f), prog, progress);
-                GUI.color = Accent;
-                GUI.DrawTexture(new Rect(20f, 78f, 4f, 13f), white);
-                GUI.Label(new Rect(36f, 72f, 700f, 22f), prog, progress);
-            }
+            // The orders block top left, over the game's own two lines there (always, as the game draws them).
+            DrawOrders(md, s);
+
+            SoldierController p = AdditionsBootstrap.LocalPlayer();
+            if (p == null || !p.enabled || GliderExit.Exiting || SettingsPanel.Open) return;
 
             // Marker
             Camera cam = p.cam != null ? p.cam : Camera.main;
@@ -213,25 +239,76 @@ namespace StansGame.Additions
 
             // Banner
             float age = Time.time - bannerAt;
-            if (age < 5.5f)
+            if (age < 5.5f) DrawBanner(md, age, s);
+        }
+
+        static GUIStyle measure;
+
+        void DrawOrders(MissionDirector md, float s)
+        {
+            MissionDirector.Phase ph = md.phases[md.CurrentPhase];
+            float m = Ui.HudMargin;
+            string clock = md.ClockText;
+            string title = (ph.title ?? "").ToUpperInvariant();
+            string goal = ph.objective ?? "";
+            string prog = ProgressText(md);
+
+            // The game's lines: "<b>clock</b> 6 June 1944 - title" (20, 16, size 20) and the objective
+            // (20, 44, size 16), in the default skin's font. Measure them so the plate always covers them.
+            if (measure == null) { measure = new GUIStyle(GUI.skin.label); measure.richText = true; measure.wordWrap = false; }
+            measure.font = GUI.skin.font;
+            measure.fontSize = 20;
+            float gw1 = measure.CalcSize(new GUIContent("<b>" + clock + "</b> 6 June 1944 — " + (ph.title ?? ""))).x;
+            measure.fontSize = 16;
+            float gw2 = Mathf.Min(900f, measure.CalcSize(new GUIContent(goal)).x);
+            Rect cover = new Rect(12f, 12f, Mathf.Max(gw1, gw2) + 16f, 62f);
+
+            float w = Mathf.Clamp(Mathf.Max(Ui.Width(goal, UiFont.Body, 18f * s), Ui.Width(prog, UiFont.Body, 16f * s) + 16f * s) + 42f * s, 360f * s, 640f * s);
+            float pad = 12f * s;
+            float lineH = 26f * s;
+            float goalH = Ui.Height(goal, UiFont.Body, 18f * s, w - 2f * pad - 6f * s);
+            float progH = string.IsNullOrEmpty(prog) ? 0f : 24f * s;
+            Rect plate = new Rect(m, m, w, pad + lineH + 4f * s + goalH + (progH > 0f ? 6f * s + progH : 0f) + pad);
+            plate = Rect.MinMaxRect(Mathf.Min(plate.xMin, cover.xMin), Mathf.Min(plate.yMin, cover.yMin),
+                                    Mathf.Max(plate.xMax, cover.xMax), Mathf.Max(plate.yMax, cover.yMax));
+            Ui.Fill(plate, Ui.Night);   // opaque, the game's lines are under it
+            Ui.Fill(new Rect(plate.x, plate.y, Mathf.Max(2f, 3f * s), plate.height), Ui.Brass);
+
+            float x = plate.x + pad + 6f * s, y = plate.y + pad;
+            float cw = Ui.Width(clock, UiFont.Body, 20f * s, true);
+            Ui.Text(new Rect(x, y, cw + 4f, lineH), clock, UiFont.Body, 20f * s, Ui.Brass, TextAnchor.MiddleLeft, false, false, true);
+            float dx = x + cw + 10f * s;
+            string date = "6 JUNE 1944   ·   ";
+            float dw = Ui.Width(date, UiFont.Body, 14f * s);
+            Ui.Text(new Rect(dx, y + 2f * s, dw + 4f, lineH), date, UiFont.Body, 14f * s, Ui.Dim, TextAnchor.MiddleLeft);
+            Ui.Text(new Rect(dx + dw, y, plate.xMax - dx - dw - pad, lineH), title, UiFont.Body, 18f * s, Ui.Paper, TextAnchor.MiddleLeft, false, false, true);
+            y += lineH + 4f * s;
+            Ui.Text(new Rect(x, y, plate.xMax - x - pad, goalH), goal, UiFont.Body, 18f * s, Ui.A(Ui.Paper, 0.92f), TextAnchor.UpperLeft, false, true);
+            y += goalH;
+            if (progH > 0f)
             {
-                MissionDirector.Phase ph = md.phases[md.CurrentPhase];
-                float a = Mathf.Clamp01(age / 0.35f) * Mathf.Clamp01((5.5f - age) / 0.8f);
-                float w = Mathf.Min(900f * s, Screen.width - 40f);
-                float x = (Screen.width - w) * 0.5f, y = Screen.height * 0.29f;   // clear of the objective lines and the game's own message (H*0.22)
-                float bodyH = body.CalcHeight(new GUIContent(ph.objective ?? ""), w - 40f * s);
-                float h = 110f * s + bodyH;
-                GUI.color = new Color(0f, 0f, 0f, 0.6f * a);
-                GUI.DrawTexture(new Rect(x, y, w, h), white);
-                GUI.color = new Color(Accent.r, Accent.g, Accent.b, a);
-                GUI.DrawTexture(new Rect(x, y, w, 3f * s), white);
-                GUI.Label(new Rect(x, y + 10f * s, w, 24f * s), md.CurrentPhase == md.phases.Length - 1 ? "MISSION" : "NEW OBJECTIVE", small);
-                GUI.color = new Color(1f, 1f, 1f, a);
-                GUI.Label(new Rect(x, y + 34f * s, w, 50f * s), (ph.title ?? "").ToUpperInvariant(), big);
-                GUI.color = new Color(1f, 1f, 1f, 0.85f * a);
-                GUI.Label(new Rect(x + 20f * s, y + 90f * s, w - 40f * s, bodyH), ph.objective ?? "", body);
+                y += 6f * s;
+                Ui.Fill(new Rect(x, y + progH * 0.5f - 1f * s, 10f * s, 2f * s), Ui.Brass);
+                Ui.Text(new Rect(x + 16f * s, y, plate.xMax - x - pad - 16f * s, progH), prog, UiFont.Body, 16f * s, Ui.Brass, TextAnchor.MiddleLeft);
             }
-            GUI.color = keep;
+        }
+
+        void DrawBanner(MissionDirector md, float age, float s)
+        {
+            MissionDirector.Phase ph = md.phases[md.CurrentPhase];
+            float a = Mathf.Clamp01(age / 0.35f) * Mathf.Clamp01((5.5f - age) / 0.8f);
+            float w = Mathf.Min(900f * s, Screen.width - 40f);
+            float x = (Screen.width - w) * 0.5f, y = Screen.height * 0.29f;   // clear of the objective lines and the game's own message (H*0.22)
+            string goal = ph.objective ?? "";
+            float bodyH = Ui.Height(goal, UiFont.Body, 20f * s, w - 80f * s);
+            float h = 120f * s + bodyH;
+            Ui.Fill(new Rect(x, y, w, h), Ui.A(Ui.Night, 0.82f * a));
+            Ui.Fill(new Rect(x, y, w, 2f * s), Ui.A(Ui.Brass, a));
+            Ui.Fill(new Rect(x, y + h - 2f * s, w, 2f * s), Ui.A(Ui.Brass, a));
+            bool last = md.CurrentPhase == md.phases.Length - 1;
+            Ui.Text(new Rect(x, y + 12f * s, w, 24f * s), last ? "MISSION" : "NEW OBJECTIVE", UiFont.Body, 16f * s, Ui.A(Ui.Brass, a), TextAnchor.MiddleCenter, false, false, true);
+            Ui.Text(new Rect(x, y + 38f * s, w, 56f * s), (ph.title ?? "").ToUpperInvariant(), UiFont.Display, 46f * s, Ui.A(Ui.Paper, a), TextAnchor.MiddleCenter);
+            Ui.Text(new Rect(x + 40f * s, y + 100f * s, w - 80f * s, bodyH), goal, UiFont.Body, 20f * s, Ui.A(Ui.Paper, 0.88f * a), TextAnchor.UpperCenter, false, true);
         }
 
         void DrawMarker(Camera cam, Vector3 world, string verb, float dist, float s)
@@ -241,7 +318,7 @@ namespace StansGame.Additions
             Vector2 c = new Vector2(sp.x, Screen.height - sp.y);
             if (behind) c = new Vector2(Screen.width - c.x, Screen.height - c.y);
             float m = 70f * s;
-            Rect safe = new Rect(m, m + 60f, Screen.width - 2f * m, Screen.height - 2f * m - 160f);
+            Rect safe = new Rect(m, m + 90f * s, Screen.width - 2f * m, Screen.height - 2f * m - 200f * s);
             bool edge = behind || !safe.Contains(c);
             if (edge)
             {
@@ -259,12 +336,9 @@ namespace StansGame.Additions
             float pulse = 0.85f + 0.15f * Mathf.Sin(Time.time * 4f);
             Matrix4x4 keep = GUI.matrix;
             GUIUtility.RotateAroundPivot(45f, c);
-            GUI.color = new Color(0f, 0f, 0f, 0.6f);
-            GUI.DrawTexture(new Rect(c.x - size * 0.5f - 2f, c.y - size * 0.5f - 2f, size + 4f, size + 4f), white);
-            GUI.color = new Color(Accent.r, Accent.g, Accent.b, pulse);
-            GUI.DrawTexture(new Rect(c.x - size * 0.5f, c.y - size * 0.5f, size, size), white);
-            GUI.color = new Color(0f, 0f, 0f, 0.8f);
-            GUI.DrawTexture(new Rect(c.x - size * 0.2f, c.y - size * 0.2f, size * 0.4f, size * 0.4f), white);
+            Ui.Fill(new Rect(c.x - size * 0.5f - 2f, c.y - size * 0.5f - 2f, size + 4f, size + 4f), new Color(0f, 0f, 0f, 0.6f));
+            Ui.Fill(new Rect(c.x - size * 0.5f, c.y - size * 0.5f, size, size), Ui.A(Ui.Brass, pulse));
+            Ui.Fill(new Rect(c.x - size * 0.2f, c.y - size * 0.2f, size * 0.4f, size * 0.4f), new Color(0f, 0f, 0f, 0.8f));
             GUI.matrix = keep;
 
             if (edge)
@@ -274,16 +348,12 @@ namespace StansGame.Additions
                 Vector2 dir = (c - mid).normalized;
                 float ang = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
                 GUIUtility.RotateAroundPivot(ang, c);
-                GUI.color = new Color(Accent.r, Accent.g, Accent.b, 0.9f);
-                GUI.DrawTexture(new Rect(c.x + size * 0.9f, c.y - 2f * s, 10f * s, 4f * s), white);
+                Ui.Fill(new Rect(c.x + size * 0.9f, c.y - 2f * s, 10f * s, 4f * s), Ui.A(Ui.Brass, 0.9f));
                 GUI.matrix = keep;
             }
 
             string text = verb + "   " + Mathf.RoundToInt(dist) + " m";
-            GUI.color = new Color(0f, 0f, 0f, 0.75f);
-            GUI.Label(new Rect(c.x - 99f * s, c.y + size * 0.9f + 1f, 200f * s, 20f * s), text, marker);
-            GUI.color = Color.white;
-            GUI.Label(new Rect(c.x - 100f * s, c.y + size * 0.9f, 200f * s, 20f * s), text, marker);
+            Ui.Text(new Rect(c.x - 120f * s, c.y + size * 0.9f, 240f * s, 22f * s), text, UiFont.Body, 15f * s, Ui.Paper, TextAnchor.MiddleCenter, true, false, true);
         }
 
         static AudioClip Sting()

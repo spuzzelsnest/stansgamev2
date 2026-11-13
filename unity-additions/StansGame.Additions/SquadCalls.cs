@@ -51,8 +51,6 @@ namespace StansGame.Additions
         const float StuckAfter = 5f;
         public static int Switches;
 
-        static Texture2D white;
-        static GUIStyle line, small, marker;
 
         /// <summary>For tests: who is answering the current call, or null.</summary>
         public SoldierAI Responder { get { return active ? responder : null; } }
@@ -292,39 +290,6 @@ namespace StansGame.Additions
 
         // ------------------------------------------------------------------ HUD
 
-        static void EnsureStyles(float s)
-        {
-            if (white == null)
-            {
-                white = new Texture2D(1, 1);
-                white.SetPixel(0, 0, Color.white);
-                white.Apply();
-            }
-            if (line == null)
-            {
-                line = new GUIStyle(GUI.skin.label);
-                line.fontStyle = FontStyle.Bold;
-                line.normal.textColor = Color.white;
-                line.alignment = TextAnchor.MiddleLeft;
-                line.wordWrap = false;
-                small = new GUIStyle(line);
-                small.fontStyle = FontStyle.Normal;
-                marker = new GUIStyle(line);
-                marker.alignment = TextAnchor.MiddleCenter;
-            }
-            line.fontSize = Mathf.RoundToInt(13f * s);
-            small.fontSize = Mathf.RoundToInt(12f * s);
-            marker.fontSize = Mathf.RoundToInt(14f * s);
-        }
-
-        static void Shadowed(Rect r, string text, GUIStyle style, Color c)
-        {
-            GUI.color = new Color(0f, 0f, 0f, 0.7f * c.a);
-            GUI.Label(new Rect(r.x + 1f, r.y + 1f, r.width, r.height), text, style);
-            GUI.color = c;
-            GUI.Label(r, text, style);
-        }
-
         string CallState(Need n)
         {
             if (active && need == n) return "coming";
@@ -338,25 +303,24 @@ namespace StansGame.Additions
             if (Event.current.type != EventType.Repaint) return;
             if (soldier == null || AdditionsBootstrap.LocalPlayer() != soldier || kit == null || !kit.Applied) return;
             if (CinematicDirector.Playing || Net.InMenu || MainMenu.Showing) return;
+            Ui.ApplyGameFont();
+            float s = Ui.HudScale;
 
-            float s = Mathf.Clamp(Screen.height / 1080f, 0.85f, 1.25f);
-            EnsureStyles(s);
-            Color old = GUI.color;
-
-            // Two small right-aligned lines top right, under the game's "Playing alone / Esc: menu" line,
-            // so the bottom of the screen keeps only health and the weapon bar.
-            string act = kit.Role == Role.StretcherBearer ? "   ·   " + KeyLabel.Of(Key.G) + " treat (" + (loadout != null ? loadout.dressings : 0) + ")"
-                       : kit.Role == Role.BrenNumberTwo ? "   ·   " + KeyLabel.Of(Key.G) + " bandolier (" + kit.Bandoliers + ")" : "";
-            string calls = KeyLabel.Of(Key.T) + " medic " + CallState(Need.Medic) + "   ·   " + KeyLabel.Of(Key.B) + " ammo " + CallState(Need.Ammo);
-            float w = 360f * s, right = Screen.width - 20f;
-            float y = Mathf.Max(44f, Screen.height * 0.062f);
-            Rect r1 = new Rect(right - w, y, w, 18f * s), r2 = new Rect(right - w, y + 18f * s, w, 17f * s);
-            line.alignment = TextAnchor.MiddleRight;
-            small.alignment = TextAnchor.MiddleRight;
-            Shadowed(r1, Roles.NameOf(kit.Role) + act, line, new Color(0.88f, 0.74f, 0.45f, 0.95f));
-            Shadowed(r2, calls, small, new Color(1f, 1f, 1f, 0.75f));
-            line.alignment = TextAnchor.MiddleLeft;
-            small.alignment = TextAnchor.MiddleLeft;
+            // Two small right-aligned lines top right, under the session line ("Playing alone", PauseMenu),
+            // so the bottom of the screen keeps only health and the kit bar.
+            float right = Screen.width - Ui.HudMargin;
+            float y = PauseMenu.StatusBottom + 2f * s;
+            float h = 20f * s;
+            string act = kit.Role == Role.StretcherBearer ? "treat (" + (loadout != null ? loadout.dressings : 0) + ")"
+                       : kit.Role == Role.BrenNumberTwo ? "bandolier (" + kit.Bandoliers + ")" : null;
+            float rx = right;
+            if (act != null) rx -= Ui.Hints(rx, y, h, new string[] { KeyLabel.Of(Key.G), act }, 0.9f, TextAnchor.MiddleRight) + 14f * s;
+            Ui.Text(new Rect(rx - 400f * s, y, 400f * s, h), Roles.NameOf(kit.Role).ToUpperInvariant(), UiFont.Body, 15f * s, Ui.A(Ui.Brass, 0.95f), TextAnchor.MiddleRight, true, false, true);
+            y += h + 5f * s;
+            Ui.Hints(right, y, h, new string[]
+            {
+                KeyLabel.Of(Key.T), "medic " + CallState(Need.Medic), KeyLabel.Of(Key.B), "ammo " + CallState(Need.Ammo),
+            }, 0.8f, TextAnchor.MiddleRight);
 
             // Marker over the soldier who is coming.
             Camera cam = soldier.cam;
@@ -368,21 +332,17 @@ namespace StansGame.Additions
                 string text = (need == Need.Medic ? "DRESSINGS  " : "AMMO  ") + Mathf.RoundToInt(dist) + " m";
                 Rect r;
                 if (sp.z > 0f && sp.x > 0f && sp.x < Screen.width && sp.y > 0f && sp.y < Screen.height)
-                    r = new Rect(sp.x - 90f * s, Screen.height - sp.y - 24f * s, 180f * s, 22f * s);
+                    r = new Rect(sp.x - 110f * s, Screen.height - sp.y - 24f * s, 220f * s, 22f * s);
                 else
                 {
                     // Off screen: say where he is coming from, under the crosshair.
                     Vector3 local = transform.InverseTransformPoint(responder.transform.position);
-                    string from = local.z < -Mathf.Abs(local.x) ? "behind you" : local.x < 0f ? "on your left" : "on your right";
-                    text += "  " + from;
-                    r = new Rect(Screen.width * 0.5f - 160f * s, Screen.height * 0.62f, 320f * s, 22f * s);
+                    string from = local.z < -Mathf.Abs(local.x) ? "BEHIND YOU" : local.x < 0f ? "ON YOUR LEFT" : "ON YOUR RIGHT";
+                    text += "   " + from;
+                    r = new Rect(Screen.width * 0.5f - 200f * s, Screen.height * 0.62f, 400f * s, 22f * s);
                 }
-                GUI.color = new Color(0f, 0f, 0f, 0.6f);
-                GUI.Label(new Rect(r.x + 1f, r.y + 1f, r.width, r.height), text, marker);
-                GUI.color = need == Need.Medic ? new Color(0.95f, 0.45f, 0.4f) : new Color(0.95f, 0.8f, 0.4f);
-                GUI.Label(r, text, marker);
+                Ui.Text(r, text, UiFont.Body, 15f * s, need == Need.Medic ? new Color(0.95f, 0.50f, 0.42f) : Ui.Amber, TextAnchor.MiddleCenter, true, false, true);
             }
-            GUI.color = old;
         }
     }
 }

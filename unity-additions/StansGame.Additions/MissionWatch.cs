@@ -24,8 +24,6 @@ namespace StansGame.Additions
         string cardTime;
         bool cardBest;
 
-        static GUIStyle big, small;
-        static Texture2D white;
 
         void Update()
         {
@@ -57,40 +55,35 @@ namespace StansGame.Additions
             Debug.Log("Stan's Game: level '" + Current.Id + "' completed in " + cardTime + (cardBest ? " (best)" : ""));
         }
 
+        /// <summary>The "mission complete" card, typed as a signal on a sheet of paper.</summary>
         void OnGUI()
         {
             GUI.depth = -50;
             if (Time.realtimeSinceStartup > cardUntil || Net.InMenu || Event.current.type != EventType.Repaint) return;
-            float s = Screen.height / 1080f;
-            if (white == null)
-            {
-                white = new Texture2D(1, 1);
-                white.SetPixel(0, 0, Color.white);
-                white.Apply();
-            }
-            if (big == null)
-            {
-                big = new GUIStyle(GUI.skin.label);
-                big.alignment = TextAnchor.MiddleCenter;
-                big.fontStyle = FontStyle.Bold;
-                small = new GUIStyle(big);
-                small.fontStyle = FontStyle.Normal;
-            }
-            big.fontSize = Mathf.RoundToInt(46f * s);
-            small.fontSize = Mathf.RoundToInt(20f * s);
+            Ui.ApplyGameFont();
+            float s = Ui.MenuScale;
+            float a = Mathf.Clamp01((cardUntil - Time.realtimeSinceStartup) / 1.5f) * Mathf.Clamp01((10.2f - (cardUntil - Time.realtimeSinceStartup)) / 0.4f);
+            float w = 760f * s, h = 300f * s;
+            Rect card = new Rect((Screen.width - w) * 0.5f, Screen.height * 0.30f, w, h);
+            Ui.PaperCard(card, a, s);
+            float pad = 40f * s, x = card.x + pad, iw = w - 2f * pad, y = card.y + 26f * s;
+            Ui.Text(new Rect(x, y, iw, 26f * s), "SIGNAL   ·   D COY 2 OX AND BUCKS   ·   " + MissionDirectorClock(), UiFont.Type, 16f * s, Ui.A(Ui.Ink, 0.65f * a), TextAnchor.MiddleLeft, false, false, true);
+            y += 34f * s;
+            Ui.Text(new Rect(x, y, iw, 70f * s), "MISSION COMPLETE", UiFont.Display, 60f * s, Ui.A(Ui.Ink, a), TextAnchor.MiddleLeft);
+            y += 76f * s;
+            Ui.Fill(new Rect(x, y, iw, Mathf.Max(1f, 2f * s)), Ui.A(Ui.Ink, 0.5f * a));
+            y += 14f * s;
+            Ui.Text(new Rect(x, y, iw, 32f * s), Current.Title.ToUpperInvariant() + "   ·   TIME " + cardTime, UiFont.Type, 24f * s, Ui.A(Ui.Ink, a), TextAnchor.MiddleLeft, false, false, true);
+            if (cardBest) Ui.Text(new Rect(x, y, iw, 32f * s), "BEST TIME", UiFont.Type, 22f * s, Ui.A(new Color(0.55f, 0.12f, 0.06f), a), TextAnchor.MiddleRight, false, false, true);
+            y += 40f * s;
+            Ui.Text(new Rect(x, y, iw, 28f * s), "Ham and Jam. The bridges are held.", UiFont.Type, 19f * s, Ui.A(Ui.Ink, 0.85f * a), TextAnchor.MiddleLeft);
+            Ui.Text(new Rect(x, card.yMax - 44f * s, iw, 26f * s), KeyLabel.Of(UnityEngine.InputSystem.Key.Escape) + ", then Leave mission, returns to the main menu", UiFont.Type, 16f * s, Ui.A(Ui.Ink, 0.6f * a), TextAnchor.MiddleLeft);
+        }
 
-            float a = Mathf.Clamp01((cardUntil - Time.realtimeSinceStartup) / 1.5f);
-            Color keep = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.6f * a);
-            GUI.DrawTexture(new Rect(0f, Screen.height * 0.36f, Screen.width, 190f * s), white);
-            GUI.color = new Color(1f, 1f, 1f, a);
-            GUI.Label(new Rect(0f, Screen.height * 0.36f + 24f * s, Screen.width, 60f * s), "MISSION COMPLETE", big);
-            GUI.color = new Color(0.88f, 0.78f, 0.56f, a);
-            GUI.Label(new Rect(0f, Screen.height * 0.36f + 90f * s, Screen.width, 30f * s),
-                Current.Title + "   ·   " + cardTime + (cardBest ? "   ·   best time" : ""), small);
-            GUI.color = new Color(1f, 1f, 1f, 0.7f * a);
-            GUI.Label(new Rect(0f, Screen.height * 0.36f + 128f * s, Screen.width, 30f * s), "Esc, then Leave the game, returns to the main menu", small);
-            GUI.color = keep;
+        static string MissionDirectorClock()
+        {
+            MissionDirector md = MissionDirector.Instance;
+            return md != null ? md.ClockText : "";
         }
     }
 }
