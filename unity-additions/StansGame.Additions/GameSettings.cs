@@ -41,11 +41,30 @@ namespace StansGame.Additions
             set { PlayerPrefs.SetFloat(Prefix + "sensitivity", Mathf.Clamp(value, MinSensitivity, MaxSensitivity)); }
         }
 
+        public const float MinAimSensitivity = 0.5f, MaxAimSensitivity = 1.5f;
+
+        /// <summary>
+        /// Aiming turn speed relative to the zoom-matched speed (1 = the same mouse move covers the same
+        /// part of the screen as at the hip).
+        /// </summary>
+        public static float AimSensitivity
+        {
+            get { return Mathf.Clamp(PlayerPrefs.GetFloat(Prefix + "aimSensitivity", 1f), MinAimSensitivity, MaxAimSensitivity); }
+            set { PlayerPrefs.SetFloat(Prefix + "aimSensitivity", Mathf.Clamp(value, MinAimSensitivity, MaxAimSensitivity)); }
+        }
+
         /// <summary>Strength of the red flash and camera flinch when hit, 0 to 1.</summary>
         public static float HitEffects
         {
             get { return Mathf.Clamp01(PlayerPrefs.GetFloat(Prefix + "hitEffects", 1f)); }
             set { PlayerPrefs.SetFloat(Prefix + "hitEffects", Mathf.Clamp01(value)); }
+        }
+
+        /// <summary>Strength of the weapon kick, sway and walk bob, 0 to 1 (WeaponFeel).</summary>
+        public static float WeaponMotion
+        {
+            get { return Mathf.Clamp01(PlayerPrefs.GetFloat(Prefix + "weaponMotion", 1f)); }
+            set { PlayerPrefs.SetFloat(Prefix + "weaponMotion", Mathf.Clamp01(value)); }
         }
 
         /// <summary>Heartbeat sound at low health.</summary>

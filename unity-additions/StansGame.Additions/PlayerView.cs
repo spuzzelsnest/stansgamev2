@@ -73,7 +73,17 @@ namespace StansGame.Additions
         {
             if (!IsLocal()) return;
 
-            soldier.mouseSensitivity = GameSettings.MouseSensitivity;
+            // While aiming, turn speed follows the zoom, so the same mouse move covers the same part of
+            // the screen in both views (scaled by tan of half the field of view), times the player's
+            // aim sensitivity setting.
+            float sens = GameSettings.MouseSensitivity;
+            if (soldier.IsAiming)
+            {
+                float hip = Mathf.Tan(GameSettings.FieldOfView * 0.5f * Mathf.Deg2Rad);
+                float aim = Mathf.Tan(GameSettings.AimFieldOfView * 0.5f * Mathf.Deg2Rad);
+                sens *= Mathf.Lerp(1f, aim / hip, Mathf.SmoothStep(0f, 1f, ads)) * GameSettings.AimSensitivity;
+            }
+            soldier.mouseSensitivity = sens;
 
             Keyboard kb = Keyboard.current;
             if (kb != null && !SettingsPanel.Open && soldier.enabled && kb[Key.V].wasPressedThisFrame)
@@ -133,28 +143,74 @@ namespace StansGame.Additions
             cam.nearClipPlane = nearClip;
 
             Weapon w = soldier.enabled ? soldier.CurrentWeapon : null;
-            Vector3 sightEye;
-            bool canSight = soldier.IsAiming && w != null && w.muzzle != null && SightEye(w, cam.transform, out sightEye);
-            ads = Mathf.MoveTowards(ads, canSight ? 1f : 0f, Time.deltaTime / 0.12f);
+            if (w != lastWeapon) { ads = 0f; lastWeapon = w; }   // a new weapon starts at the hip
+            IronSights irons = w != null && w.muzzle != null ? IronSights.For(w) : null;
+
+            bool want = soldier.IsAiming && w != null && w.muzzle != null;
+            ads = Mathf.MoveTowards(ads, want ? 1f : 0f, Time.deltaTime / AdsSeconds(w));
             float k = Mathf.SmoothStep(0f, 1f, ads);
-            if (ads > 0f && w != null && w.muzzle != null && SightEye(w, cam.transform, out sightEye))
+
+            // Zoom in step with the weapon coming up.
+            if (irons != null || ads > 0f)
             {
-                eye = Vector3.Lerp(eye, sightEye, k);
-                // Look straight down the sight line, so rear and front sight line up exactly even while
-                // the game's weapon pitch is still catching up with the mouse.
-                if (w.GetComponent<IronSights>() != null)
-                {
-                    Transform wt = w.transform;
-                    Quaternion along = Quaternion.LookRotation(wt.forward, wt.up);
-                    if (Quaternion.Angle(along, cam.transform.rotation) < 10f)
-                        cam.transform.rotation = Quaternion.Slerp(cam.transform.rotation, along, k);
-                }
+                fov = Mathf.Lerp(GameSettings.FieldOfView, GameSettings.AimFieldOfView, k);
+                cam.fieldOfView = fov;
             }
+
+            // The camera stays at the eyes. With iron sights the weapon is brought up to the eye: the
+            // rear sight centre and the front post land on the centre of the screen, the hands follow
+            // through the game's hand IK. The PIAT (no iron sights) keeps the raised view.
             cam.transform.position = eye;
+            Vector3 sightEye;
+            if (irons != null)
+            {
+                if (ads > 0f) BringUp(w, irons, cam.transform, k);
+            }
+            else if (ads > 0f && w != null && w.muzzle != null && SightEye(w, cam.transform, out sightEye))
+            {
+                cam.transform.position = Vector3.Lerp(eye, sightEye, k);
+            }
             HideCrosshair(ads > 0.5f);
-            // The game holds the pistol close to the chest: while aiming it, draw the body as a shadow
-            // only, so the view is the pistol and its sights, not the sleeves.
-            HideBody(ads > 0.5f && w != null && w.hold == HoldStyle.Pistol, w);
+            HideBody(ads > 0.5f && w != null && irons == null, w);   // only the PIAT view needs the body out of the way
+        }
+
+        Weapon lastWeapon;
+
+        /// <summary>Seconds to bring each kind of weapon up to the eye (eased).</summary>
+        static float AdsSeconds(Weapon w)
+        {
+            if (w == null) return 0.2f;
+            switch (w.hold)
+            {
+                case HoldStyle.Pistol: return 0.18f;
+                case HoldStyle.SMG: return 0.22f;
+                case HoldStyle.Rifle: return 0.28f;
+                case HoldStyle.Heavy: return 0.40f;
+                case HoldStyle.Launcher: return 0.35f;
+            }
+            return 0.25f;
+        }
+
+        /// <summary>
+        /// Moves the weapon from the game's hold towards the aimed pose, where the sight line (rear sight
+        /// to front sight, which can sit at a small angle to the bore) runs along the view and the eye
+        /// point behind the rear sight is at the camera. On the way up it dips and
+        /// cants a little, as a weapon being shouldered does.
+        /// </summary>
+        static void BringUp(Weapon w, IronSights irons, Transform view, float k)
+        {
+            WeaponHolder holder = w.GetComponentInParent<WeaponHolder>();
+            if (holder == null) return;
+            Transform ht = holder.transform, wt = w.transform;
+            if (wt.parent != ht) return;   // only the plain holder > weapon set-up
+
+            float arc = Mathf.Sin(k * Mathf.PI);
+            Quaternion wRot = Quaternion.AngleAxis(-arc * 6f, view.forward) * view.rotation * irons.SightTurn;
+            Vector3 wPos = view.position - wRot * Vector3.Scale(irons.EyeLocal, wt.lossyScale) - view.up * (arc * 0.015f);
+
+            Quaternion hRot = wRot * Quaternion.Inverse(wt.localRotation);
+            Vector3 hPos = wPos - hRot * Vector3.Scale(wt.localPosition, ht.lossyScale);
+            WeaponPose.SetHolder(holder, Vector3.Lerp(ht.position, hPos, k), Quaternion.Slerp(ht.rotation, hRot, k));
         }
 
         /// <summary>
