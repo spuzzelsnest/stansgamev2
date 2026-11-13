@@ -74,6 +74,20 @@ namespace StansGame.Additions
             set { PlayerPrefs.SetInt(Prefix + "heartbeat", value ? 1 : 0); }
         }
 
+        /// <summary>Night lighting and post-processing from the additions (Atmosphere.cs).</summary>
+        public static bool EnhancedLighting
+        {
+            get { return PlayerPrefs.GetInt(Prefix + "enhancedLighting", 1) == 1; }
+            set { PlayerPrefs.SetInt(Prefix + "enhancedLighting", value ? 1 : 0); }
+        }
+
+        /// <summary>Smooth edges: 4x MSAA with alpha to coverage on leaves and grass (Atmosphere.cs).</summary>
+        public static bool SmoothEdges
+        {
+            get { return PlayerPrefs.GetInt(Prefix + "smoothEdges", 1) == 1; }
+            set { PlayerPrefs.SetInt(Prefix + "smoothEdges", value ? 1 : 0); }
+        }
+
         /// <summary>Master volume, 0 to 1 (AudioListener.volume).</summary>
         public static float MasterVolume
         {

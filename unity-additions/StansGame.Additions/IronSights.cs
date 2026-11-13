@@ -68,6 +68,7 @@ namespace StansGame.Additions
             if (s == null)
             {
                 WeaponPose.AlignModel(w);   // sights go on the straightened model
+                WeaponPose.LiftInHands(w);
                 s = w.gameObject.AddComponent<IronSights>();
                 s.Build(w);
             }
@@ -133,7 +134,7 @@ namespace StansGame.Additions
                 Box(root, mat, new Vector3(x - (gap + leafW) * 0.5f, (baseY + top) * 0.5f, rearZ), new Vector3(leafW, top - baseY, 0.004f));
                 Box(root, mat, new Vector3(x + (gap + leafW) * 0.5f, (baseY + top) * 0.5f, rearZ), new Vector3(leafW, top - baseY, 0.004f));
                 Box(root, mat, new Vector3(x, (baseY + line) * 0.5f, rearZ), new Vector3(gap, line - baseY, 0.004f));
-                EyeLocal = new Vector3(x, line + 0.0018f, rearZ - 0.45f);   // arm's length; the body is hidden while aiming the pistol
+                EyeLocal = new Vector3(x, line + 0.0018f, rearZ - 0.50f);   // arm's length; the body is hidden while aiming the pistol
             }
             else
             {

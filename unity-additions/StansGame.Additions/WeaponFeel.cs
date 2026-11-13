@@ -227,10 +227,11 @@ namespace StansGame.Additions
             if (w != null && w == lastWeapon && lastAmmo >= 0 && w.Ammo < lastAmmo && !w.IsReloading)
             {
                 int n = Mathf.Min(lastAmmo - w.Ammo, 3);
-                for (int i = 0; i < n; i++) Kick(w, aiming);
+                for (int i = 0; i < n; i++) { Kick(w, aiming); MuzzleSmoke.Shot(w); }
             }
             lastWeapon = w;
             lastAmmo = w != null ? w.Ammo : -1;
+            MuzzleSmoke.Tick(w);
 
             float fall = 1f - Mathf.Exp(-recover * dt);
             float rise = 1f - Mathf.Exp(-45f * dt);
