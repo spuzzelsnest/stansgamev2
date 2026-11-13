@@ -19,6 +19,9 @@ Read `vault/Home.md` before design work and update the relevant note when a desi
 - **Never commit Unity-generated folders:** `Library/`, `Temp/`, `Logs/`, `obj/`, `UserSettings/`, `Build/`, `Builds/`. Unity regenerates them. On 2026-11-11 a committed `Library/` (1.15 GB, files up to 319 MB) made GitHub reject the first push with `GH001: Large files detected`.
 - **Git LFS is required.** Run `git lfs install` once per machine before cloning or committing. `.gitattributes` routes binaries (`.fbx`, `.blend`, `.png`, `.wav`, `.dll` and more) through LFS. When adding a new binary file type, add it to `.gitattributes` first, then commit the files.
 - GitHub rejects any file over 100 MB that is not in LFS. Before pushing a large change, check `git status` for anything unexpected and `git lfs ls-files` for the binaries.
+- `.gitignore` covers the Unity cache folders both at the repository root and one folder down (`/StansGame/Library/`), but never for folders directly inside `Assets/`, `Packages/` or `ProjectSettings/`.
+- To bring an existing local project with a rejected history onto `main`, use `tools/join-repo.ps1` (see `README.md`); do not force-push.
+- Player builds go out as GitHub Releases (zip of the build folder without `*_BackUpThisFolder_ButDontShipItWithYourGame/`), never as commits.
 - Each line in `.gitattributes` and `.gitignore` holds one rule. A rule written on the same line as a `#` comment is ignored.
 - Keep every `.meta` file with its asset. Move or rename assets inside the Unity editor, not in Explorer, so the `.meta` files follow.
 - Project Settings, Editor: Asset Serialization = **Force Text**, Version Control = **Visible Meta Files**.
