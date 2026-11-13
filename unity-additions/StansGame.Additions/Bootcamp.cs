@@ -503,7 +503,7 @@ namespace StansGame.Additions
             popUp = null;
             popNextAt = Time.time + 1f;
             if (s == 8) ResetRun(lo);
-            Play(whistle, 0.6f);
+            Play(OtherAdditions.Sound("bootcamp/whistle", whistle), 0.6f);
             lastProgress = Time.time;
             Say("s" + s + ".intro", Lines[s]);
             Debug.Log("Stan's Game: bootcamp station " + (s + 1) + " " + StationTitles[s]);
@@ -570,7 +570,7 @@ namespace StansGame.Additions
             if (Sequential(station) && FirstOpen() != i) return;
             ticks[i] = true;
             lastProgress = Time.time;
-            Play(tick, 0.5f);
+            Play(OtherAdditions.Sound("bootcamp/tick", tick), 0.5f);
             Debug.Log("Stan's Game: bootcamp " + StationTitles[station] + " item " + (i + 1) + " done");
         }
 
@@ -792,7 +792,7 @@ namespace StansGame.Additions
                 praise = Progress.FormatTime(seconds) + (best ? "   ·   best time" : "");
                 Debug.Log("Stan's Game: bootcamp completed in " + Progress.FormatTime(seconds));
             }
-            Play(bugle, 0.7f);
+            Play(OtherAdditions.Sound("bootcamp/bugle", bugle), 0.7f);
         }
 
         string runLine = "";
@@ -914,7 +914,8 @@ namespace StansGame.Additions
 
         void Clack(Health h)
         {
-            if (clack != null && h != null) AudioSource.PlayClipAtPoint(clack, h.transform.position + Vector3.up, 0.9f);
+            AudioClip c = OtherAdditions.Sound("bootcamp/target", clack);
+            if (c != null && h != null) AudioSource.PlayClipAtPoint(c, h.transform.position + Vector3.up, 0.9f);
         }
 
         static void Fall(Health h, bool down)
@@ -949,7 +950,7 @@ namespace StansGame.Additions
             bool down = (k != null && (k.downArrowKey.wasPressedThisFrame || k.sKey.wasPressedThisFrame)) || (g != null && g.dpad.down.wasPressedThisFrame);
             bool ok = (k != null && (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame)) || (g != null && g.buttonSouth.wasPressedThisFrame);
             bool back = (k != null && k.escapeKey.wasPressedThisFrame) || (g != null && g.buttonEast.wasPressedThisFrame);
-            if (up || down) { offerFocus = 1 - offerFocus; Play(tick, 0.4f); }
+            if (up || down) { offerFocus = 1 - offerFocus; Play(OtherAdditions.Sound("bootcamp/tick", tick), 0.4f); }
             if (ok) ChooseOffer(offerFocus);
             else if (back) CloseOffer();
         }

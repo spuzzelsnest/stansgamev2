@@ -225,7 +225,7 @@ namespace StansGame.Additions
             Vector3 end = muzzle + dir * 180f;
             RoundsFired++;
             Sfx.Shot(BrenGunner.WeaponName ?? "Bren", muzzle);
-            if (tracer) TracerStreak.Fire(muzzle, dir, 180f, TracerMaterial());
+            if (tracer && !OtherAdditions.Tracer(muzzle, end, Faction.British)) TracerStreak.Fire(muzzle, dir, 180f, TracerMaterial());
             // The near-miss crack and suppression the game plays for enemy rounds passing close.
             if (fireLine == null)
             {
@@ -267,6 +267,7 @@ namespace StansGame.Additions
             Vector3 p = g.W(side * Random.Range(8.6f, 10.5f), 0.05f, Random.Range(50f, 60f));
             Thunderflashes++;
             Sfx.Explosion(p, false);
+            if (OtherAdditions.Explode(p, "Grenade")) return;   // the effects' own blast, when that addition is in
             try { if (shellFlash != null) shellFlash.Invoke(null, new object[] { p }); } catch (Exception) { }
             GameObject fx = MillsEffect();
             if (fx != null)

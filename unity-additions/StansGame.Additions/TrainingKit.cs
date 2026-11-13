@@ -9,6 +9,69 @@ using Object = UnityEngine.Object;
 namespace StansGame.Additions
 {
     /// <summary>
+    /// The bootcamp's links to additions built on other branches, found by reflection so the bootcamp builds
+    /// and runs without them: the sound bank (<c>SoundBank.Pick</c>) for recorded clips, and the effects
+    /// (<c>Explosions.Play</c>, <c>Tracers.Fly</c>). Each call falls back to the bootcamp's own sound or
+    /// effect when the other addition is missing, has nothing for the key, or throws.
+    /// </summary>
+    public static class OtherAdditions
+    {
+        static bool looked;
+        static MethodInfo pick, explode, fly;
+        static Type kindType;
+
+        static void Look()
+        {
+            if (looked) return;
+            looked = true;
+            Assembly a = typeof(OtherAdditions).Assembly;
+            const BindingFlags st = BindingFlags.Public | BindingFlags.Static;
+            Type bank = a.GetType("StansGame.Additions.SoundBank");
+            if (bank != null) pick = bank.GetMethod("Pick", st, null, new Type[] { typeof(string[]) }, null);
+            Type ex = a.GetType("StansGame.Additions.Explosions");
+            if (ex != null)
+            {
+                kindType = ex.GetNestedType("Kind", BindingFlags.Public);
+                if (kindType != null) explode = ex.GetMethod("Play", st, null, new Type[] { typeof(Vector3), kindType }, null);
+            }
+            Type tr = a.GetType("StansGame.Additions.Tracers");
+            if (tr != null) fly = tr.GetMethod("Fly", st, null, new Type[] { typeof(Vector3), typeof(Vector3), typeof(Faction) }, null);
+            Debug.Log("Stan's Game: bootcamp links: sound bank " + (pick != null) + ", explosions " + (explode != null) + ", tracers " + (fly != null));
+        }
+
+        /// <summary>A recorded clip for this key from the sound bank, or the generated one.</summary>
+        public static AudioClip Sound(string key, AudioClip generated)
+        {
+            Look();
+            if (pick == null) return generated;
+            try
+            {
+                AudioClip c = pick.Invoke(null, new object[] { new string[] { key } }) as AudioClip;
+                return c != null ? c : generated;
+            }
+            catch (Exception e) { Debug.LogWarning("Stan's Game: bootcamp sound bank failed (" + e.Message + ")"); pick = null; return generated; }
+        }
+
+        /// <summary>The effects' explosion of this kind (Grenade, Piat, Shell); false when not in the build.</summary>
+        public static bool Explode(Vector3 position, string kind)
+        {
+            Look();
+            if (explode == null) return false;
+            try { explode.Invoke(null, new object[] { position, Enum.Parse(kindType, kind) }); return true; }
+            catch (Exception e) { Debug.LogWarning("Stan's Game: bootcamp explosion effect failed (" + e.Message + ")"); explode = null; return false; }
+        }
+
+        /// <summary>The effects' tracer streak; false when not in the build.</summary>
+        public static bool Tracer(Vector3 from, Vector3 to, Faction side)
+        {
+            Look();
+            if (fly == null) return false;
+            try { fly.Invoke(null, new object[] { from, to, side }); return true; }
+            catch (Exception e) { Debug.LogWarning("Stan's Game: bootcamp tracer effect failed (" + e.Message + ")"); fly = null; return false; }
+        }
+    }
+
+    /// <summary>
     /// Dressing for the bootcamp, made only from what level 1 already loads (no new assets): textured
     /// materials from the terrain layers, copies of level props (shrubs, poplars, knife-rest wire, brushwood,
     /// the StuG, a Horsa fuselage), grass clumps from the terrain's grass texture, the game's own British
@@ -814,7 +877,7 @@ namespace StansGame.Additions
                 float x = UnityEngine.Random.value < 0.5f ? -18.8f : 70.8f;
                 float z = Mathf.Clamp(l.z + UnityEngine.Random.Range(-35f, 35f), -10f, 181f);
                 if (UnityEngine.Random.value < 0.3f) { x = UnityEngine.Random.Range(-18f, 70f); z = l.z < 85f ? -10.2f : 181.8f; }
-                Sfx.At(birds[UnityEngine.Random.Range(0, birds.Length)], ground.W(x, UnityEngine.Random.Range(1.5f, 3f), z), UnityEngine.Random.Range(0.25f, 0.45f), UnityEngine.Random.Range(0.92f, 1.1f), 90f);
+                Sfx.At(OtherAdditions.Sound("ambience/birds", birds[UnityEngine.Random.Range(0, birds.Length)]), ground.W(x, UnityEngine.Random.Range(1.5f, 3f), z), UnityEngine.Random.Range(0.25f, 0.45f), UnityEngine.Random.Range(0.92f, 1.1f), 90f);
             }
             if (far.Length > 0 && Time.time > nextFar)
             {
