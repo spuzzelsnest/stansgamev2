@@ -167,6 +167,37 @@ namespace StansGame.Additions
         /// <summary>Seconds without a step done before the instructor gives a hint, and again after each hint.</summary>
         public const float HintAfter = 30f;
 
+        /// <summary>
+        /// True while the bootcamp's panel or end card is on screen with the instructor's line in it, so the
+        /// instructor voice's own subtitle bar stays hidden (it reads this by reflection).
+        /// </summary>
+        public static bool DrawsInstructorSubtitle { get { return Time.frameCount - quoteDrawnFrame <= 1; } }
+
+        static int quoteDrawnFrame = -10;
+        static bool spokenLooked;
+        static PropertyInfo spokenCurrent;
+
+        /// <summary>The line the instructor voice is saying now (InstructorVoice.Current.Text), or null.</summary>
+        static string SpokenText()
+        {
+            if (!spokenLooked)
+            {
+                spokenLooked = true;
+                Type t = typeof(Bootcamp).Assembly.GetType("StansGame.Additions.InstructorVoice");
+                if (t != null) spokenCurrent = t.GetProperty("Current", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+            }
+            if (spokenCurrent == null) return null;
+            try
+            {
+                object cur = spokenCurrent.GetValue(null, null);
+                if (cur == null) return null;
+                FieldInfo f = cur.GetType().GetField("Text");
+                string text = f != null ? f.GetValue(cur) as string : null;
+                return string.IsNullOrEmpty(text) ? null : text;
+            }
+            catch (Exception) { spokenCurrent = null; return null; }
+        }
+
         static void Say(string id, string text)
         {
             Action<string, string> h = InstructorLine;
@@ -993,7 +1024,9 @@ namespace StansGame.Additions
             line.fontSize = Mathf.RoundToInt(17f * s);
             item.fontSize = Mathf.RoundToInt(17f * s);
             bool praising = Time.time < praiseUntil;
-            string say = praising ? praise : "\"" + Lines[station] + "\"";
+            string spoken = SpokenText();   // the voice's own words while it speaks, so the line shows once
+            string say = spoken != null ? "\"" + spoken + "\"" : praising ? praise : "\"" + Lines[station] + "\"";
+            quoteDrawnFrame = Time.frameCount;
             float lh = line.CalcHeight(new GUIContent(say), w - 2f * pad);
             float rowH = 26f * s;
             float h = pad + 20f * s + 34f * s + lh + 10f * s + (praising ? 0f : n * rowH) + 30f * s + pad * 0.5f;
@@ -1233,12 +1266,13 @@ namespace StansGame.Additions
             GUI.DrawTexture(new Rect(0f, y0, Screen.width, 3f * s), white);
             GUI.color = Color.white;
             GUI.Label(new Rect(0f, y0 + 24f * s, Screen.width, 60f * s), "BOOTCAMP COMPLETE", cardBig);
+            quoteDrawnFrame = Time.frameCount;
             GUI.color = Accent;
             GUI.Label(new Rect(0f, y0 + 88f * s, Screen.width, 30f * s), "Countess Wear   ·   " + praise, card);
             if (runLine.Length > 0) GUI.Label(new Rect(0f, y0 + 118f * s, Screen.width, 30f * s), runLine, card);
             GUI.color = new Color(1f, 1f, 1f, 0.85f);
             GUI.Label(new Rect(Screen.width * 0.2f, y0 + 154f * s, Screen.width * 0.6f, 60f * s),
-                "\"" + EndLine + "\"", card);
+                "\"" + (SpokenText() ?? EndLine) + "\"", card);
             GUI.color = Color.white;
             GUI.Label(new Rect(0f, y0 + 230f * s, Screen.width, 30f * s), "Enter   on to Pegasus Bridge          R   run the bridge again          Esc, then Leave the game   main menu", card);
         }
