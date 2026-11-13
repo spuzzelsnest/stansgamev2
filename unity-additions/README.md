@@ -30,6 +30,28 @@ Drop-in scripts for the Unity project (first-person view, hit feedback, health b
 | `MissionWatch.cs` | Marks the level completed when the mission reaches its last phase and the closing film has ended or was skipped, and shows a "Mission complete" card with the time and best time. |
 | `GameSettings.cs` | The saved settings. |
 | `KeyLabel.cs` | Key names in the active keyboard layout (`Keyboard.current[key].displayName`). |
+| `InstructorVoice.cs` | The bootcamp instructor's voice (Company Sergeant-Major Grant). Every line he says is played from a recorded clip, by line id (`s0.intro` to `s8.intro`, `s0.praise` to `s7.praise`, `s0.hint` to `s8.hint`, `offer`, `skip`, `end`). It listens to the bootcamp's `Bootcamp.InstructorLine(id, text)` event, found by reflection, so it compiles and runs without the bootcamp; `InstructorVoice.Say(id, text)` can be called directly. Lines are queued, so a praise and the next station's instruction are said in order. A hint is dropped while anything else is said or waiting, and `skip` cuts off the line being said. An id with no recording is shown as a subtitle only. Clips come from the sound bank (`SoundBank`, volume from its Voices group) when that is in the build. Otherwise the script reads the WAV files itself and the volume is `stans.voiceVolume`. `stans.voiceEffect` (default 1) picks the period-processed set or the dry one. Starts itself (`RuntimeInitializeOnLoadMethod`, `InstructorVoice.Boot`). |
+| `InstructorSubtitles.cs` | The instructor's subtitle: speaker and line, bottom centre, above the health panel, faded in and out with the clip. When the squad's `SquadVoice.ShowSubtitle` is in the build and the player is in control, the line goes to that bar instead, so there is one subtitle bar. In the menu, or with no player, it draws its own. When the bootcamp exposes `Bootcamp.DrawsInstructorSubtitle` and it is true (its panel shows the spoken line itself), no subtitle is drawn here, so the line is never shown twice. `stans.subtitles` (default 1) turns it off. |
+
+### Instructor voice files
+
+The instructor's clips are in `unity-additions/StreamingAssets/Sounds/voices/`. They go to `Assets/StreamingAssets/Sounds/voices/` in the project, or to `StansGame_Data/StreamingAssets/Sounds/voices/` in a build:
+
+- `instructor/`: the clips with period processing (a parade-ground reverb and a slight period EQ);
+- `instructor_clean/`: the same lines dry.
+
+Each folder holds `<id>.wav` files (16-bit PCM mono, 24 kHz, peak -1 dBFS) and `manifest.tsv` (id, file, length, speaker, subtitle text). The lines themselves are in `instructor/lines.tsv`: id, speaker, subtitle text, and a `say` column with the text spelled for the voice ("PIAT" is read as "Pee-at").
+
+The clips were generated offline with Kokoro-82M (`kokoro-js` 1.2.1, Apache-2.0, voice `bm_george`, speed 1.08). No paid service was used. To change a line, edit `lines.tsv` and regenerate:
+
+```bash
+npm install kokoro-js@1.2.1
+node tools/voice/make_voice.mjs unity-additions/StreamingAssets/Sounds/voices/instructor/lines.tsv <raw folder> bm_george 1.08
+python tools/voice/process_voice.py <raw folder> unity-additions/StreamingAssets/Sounds/voices/instructor unity-additions/StreamingAssets/Sounds/voices/instructor/lines.tsv --fx period
+python tools/voice/process_voice.py <raw folder> unity-additions/StreamingAssets/Sounds/voices/instructor_clean unity-additions/StreamingAssets/Sounds/voices/instructor/lines.tsv --fx clean
+```
+
+`npm install` goes in a folder of its own, outside the repository. The first run downloads the model (about 330 MB). `process_voice.py` needs only numpy.
 
 ### Install
 
@@ -55,6 +77,21 @@ Glider exit: without these scripts, 4 of the 5 British soldiers of glider 1 neve
 Without the Unity source, the real fix belongs in the scene as well: a NavMesh for the AI, and section spawn points on the open side of each glider.
 
 Roles, squad calls, smoke, reload and lighting (scripted runs, 13 November 2026, 1280x720, keys called directly as the test window has no focus): each role's kit was checked after the glider exit (Section Commander 9/9, Stretcher-Bearer 10/10, Bren No. 2 14/14 checks). T sent the nearest British soldier, who arrived in 3 to 11 s from 10 to 17 m and dressed the wounds (health 90 to 187 or more); B brought two magazines. In phase 4 the PIAT handover works with the Bren No. 2's kit: as for the Sten, the game swaps the PIAT for the primary and the Lee-Enfield lies at the player's feet to take back. A Lee-Enfield shot left a puff that grows and fades over about 2 s. During a reload the rifle's action and the right hand stay in view (screen shots at 15, 32 and 64 % of the reload). Ragdoll wrists: a German soldier killed in front of the player lay with his hands 64 and 90 degrees off their rest rotation; 3 s later both were at 0. With "Enhanced night lighting" the ambient changed from flat to three-colour and the camera rendered post-processing with 4x MSAA; 6 alpha-clipped leaf and grass materials were switched to alpha to coverage.
+
+Bootcamp instructor voice (scripted runs, 13 November 2026, 1280x720):
+- **Voice probe** (a test-only stand-in for the bootcamp's event), 14/14 checks:
+  - all 29 lines played to the end, the game's audio output was not silent during each, and each subtitle matched;
+  - a praise followed at once by the next intro played in that order, and a hint while busy was dropped;
+  - `skip` cut in, and an unknown id showed as a subtitle only;
+  - the volume setting applied, and the dry set loaded and played.
+- **Real bootcamp** (feature/bootcamp 7204310, started with `Bootcamp.Request` and `NetSession.PlayAlone`), 11/11 checks:
+  - the voice hooked `Bootcamp.InstructorLine`;
+  - the hint came after 24 s idle; station 0 cleared, then the other 8 skipped;
+  - 19 lines were said in order (s0.intro, s0.hint, s0.praise, s1.intro, then skip and the next intro, then end), and all 19 were heard;
+  - the bootcamp panel showed the spoken line with `DrawsInstructorSubtitle` true, so no second subtitle was drawn.
+- **Aiming and exit regression** on the same build, 27/27.
+  - On a busy machine (3 to 8 other game instances), runs with and without the voice both failed 1 to 6 checks: walking and strafing (0 m), shot bursts and walk bob, all of them simulated key or mouse input.
+  - The last run with the voice passed 27/27.
 Not tested yet: a real play session with mouse and keyboard, co-op with two PCs, and every animation pose in first person (crouch, prone, swimming, climbing out of the canal). In first person the weapon is held where the third-person animation holds it; aiming down the sights would need a sight point per weapon.
 
 ![First person with the health bar](screenshots/first_person.png)
