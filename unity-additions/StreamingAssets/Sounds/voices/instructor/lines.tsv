@@ -1,0 +1,30 @@
+id	speaker	text	say
+s0.intro	CSM Grant	Right, you lot, eyes front! Look left, look right, then double over to my flag.	Right, you lot, eyes front! Look left, look right, then double over to my flag.
+s1.intro	CSM Grant	Over the start line, sprint for the ditch, jump it, and over that wall. Move yourself!	Over the start line, sprint for the ditch, jump it, and over that wall. Move yourself!
+s2.intro	CSM Grant	Wire! Get down on your belly and crawl under it. Then kneel behind the sandbags.	Wire! Get down on your belly and crawl under it. Then kneel behind the sandbags.
+s3.intro	CSM Grant	No bridge for you, lad. Through the water, and out the far side.	No bridge for you, lad. Through the water, and out the far side.
+s4.intro	CSM Grant	The range, lad. Sten from the hip, rifle through the sights. Reload, and change weapons. Make every round count.	The range, lad. Sten from the hip, rifle through the sights. Reload, and change weapons. Make every round count.
+s5.intro	CSM Grant	Grenades. Draw a Mills bomb and lob it into the pit. Into the pit, mind, not at your feet.	Grenades. Draw a Mills bomb and lob it into the pit. Into the pit, mind, not at your feet.
+s6.intro	CSM Grant	The PIAT. Heavy, slow, and it stops a tank. Pick it up, aim high, and put a bomb into that hulk.	The Pee-at. Heavy, slow, and it stops a tank. Pick it up, aim high, and put a bomb into that hulk.
+s7.intro	CSM Grant	You've caught one, lad. Only a drill, but let's see you put on a field dressing.	You've caught one, lad. Only a drill, but let's see you put on a field dressing.
+s8.intro	CSM Grant	Against the clock, lad. Over the line, drop the defenders, take the bridge, and send Ham and Jam on the wireless.	Against the clock, lad. Over the line, drop the defenders, take the bridge, and send Ham and Jam on the wireless.
+s0.praise	CSM Grant	Not bad for a first parade. Eyes front, you'll do. Now the assault course.	Not bad for a first parade. Eyes front, you'll do. Now the assault course.
+s1.praise	CSM Grant	Over the wall and still breathing. Smartish now, lad, the wire is next.	Over the wall and still breathing. Smartish now, lad, the wire is next.
+s2.praise	CSM Grant	Crawled like a proper soldier. Mud suits you, lad. On to the canal.	Crawled like a proper soldier. Mud suits you, lad. On to the canal.
+s3.praise	CSM Grant	Wet through, but you made it. Jerry won't be impressed, mind. On to the range.	Wet through, but you made it. Jerry won't be impressed, mind. On to the range.
+s4.praise	CSM Grant	Good shooting. Sten, rifle and a tidy reload. Now for the grenades.	Good shooting. Sten, rifle and a tidy reload. Now for the grenades.
+s5.praise	CSM Grant	In the pit, and not at your feet. Well done, lad. Now the PIAT.	In the pit, and not at your feet. Well done, lad. Now the Pee-at.
+s6.praise	CSM Grant	That hulk won't be going anywhere. Nicely done. Now, a field dressing for you.	That hulk won't be going anywhere. Nicely done. Now, a field dressing for you.
+s7.praise	CSM Grant	Patched up and fit for duty. Jerry won't know what hit him. On to the bridge, and double!	Patched up and fit for duty. Jerry won't know what hit him. On to the bridge, and double!
+s0.hint	CSM Grant	Eyes front, lad! Look around, then double over to my flag. I haven't got all day.	Eyes front, lad! Look around, then double over to my flag. I haven't got all day.
+s1.hint	CSM Grant	Sprint, lad, sprint! Over the start line, jump the ditch, then up and over that wall.	Sprint, lad, sprint! Over the start line, jump the ditch, then up and over that wall.
+s2.hint	CSM Grant	Down on your belly, lad! Crawl under the wire, then kneel behind the sandbags.	Down on your belly, lad! Crawl under the wire, then kneel behind the sandbags.
+s3.hint	CSM Grant	In you go. Swim across and climb out on the far bank. The water won't bite.	In you go. Swim across and climb out on the far bank. The water won't bite.
+s4.hint	CSM Grant	Sten from the hip, rifle through the sights, then reload and change weapons. Get on with it!	Sten from the hip, rifle through the sights, then reload and change weapons. Get on with it!
+s5.hint	CSM Grant	Take out the Mills bomb and lob it into the pit. Not at your feet, lad!	Take out the Mills bomb and lob it into the pit. Not at your feet, lad!
+s6.hint	CSM Grant	Pick up the PIAT, aim high and hit that tank. It won't shoot itself.	Pick up the Pee-at, aim high and hit that tank. It won't shoot itself.
+s7.hint	CSM Grant	You're bleeding, lad. Put on your field dressing, and do it smartish.	You're bleeding, lad. Put on your field dressing, and do it smartish.
+s8.hint	CSM Grant	Clock's ticking! Drop the defenders, take the bridge, and send Ham and Jam on the wireless.	Clock's ticking! Drop the defenders, take the bridge, and send Ham and Jam on the wireless.
+offer	CSM Grant	Recruit! Bootcamp at Countess Wear before you meet Jerry, or are you going straight in?	Recruit! Bootcamp at Countess Weer before you meet Jerry, or are you going straight in?
+skip	CSM Grant	Skipping that one, lad? Jerry won't skip you. On to the next.	Skipping that one, lad? Jerry won't skip you. On to the next.
+end	CSM Grant	That's bootcamp done, lad. You'll do. Now go and show Jerry what you've learned. Dismissed!	That's bootcamp done, lad. You'll do. Now go and show Jerry what you've learned. Dismissed!
