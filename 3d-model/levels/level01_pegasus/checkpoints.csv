@@ -1,0 +1,4 @@
+name,site_id,local_x,local_y,l93_x,l93_y,ngf_height_m_bilinear,ngf_height_m_nearest_cell,z_local_m,source
+bridge_approach,992,-8.26,10.06,461571.74,6909708.06,5.21,5.21,1.81,"RGE ALTI 1 m (WMS-R box 2026-11-13), position from spots.csv"
+glider_field,193,64.69,-90.60,461644.69,6909607.40,4.23,4.30,0.83,"RGE ALTI 1 m (WMS-R box 2026-11-13), position from spots.csv"
+benouville_church,1038,-115.41,484.00,461464.59,6910182.00,12.20,12.20,8.80,"RGE ALTI 1 m (WMS-R box 2026-11-13), position from spots.csv"

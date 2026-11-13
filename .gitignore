@@ -112,3 +112,10 @@ CLAUDE.local.md
 Thumbs.db
 ehthumbs.db
 desktop.ini
+
+# Level blockout raw downloads (IGN tiles, never committed)
+**/_downloads/
+
+# Python bytecode
+__pycache__/
+*.pyc

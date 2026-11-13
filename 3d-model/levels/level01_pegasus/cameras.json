@@ -1,0 +1,124 @@
+{
+  "level": "01",
+  "units": "metres, local frame from origin.json (X east, Y grid north, Z up)",
+  "heading_convention": "degrees clockwise from local +Y (grid north); true bearing = grid heading - 2.376 at this longitude",
+  "eye_height_m": 1.6,
+  "note": "All five are map-sheet estimates only. No image was opened or stored.",
+  "cameras": [
+    {
+      "site_id": 193,
+      "view": "three gliders on the east bank",
+      "position_local_m": {
+        "x": 45.0,
+        "y": -30.0
+      },
+      "position_l93_m": {
+        "x": 461625.0,
+        "y": 6909668.0
+      },
+      "eye_height_above_ground_m": 1.6,
+      "target_local_m": {
+        "x": 77.4,
+        "y": -138.7
+      },
+      "heading_deg_grid": 163.4,
+      "heading_deg_true": 161.0,
+      "pitch_deg": 0,
+      "confidence": "low",
+      "how_estimated": "Camera not at the pin: put on the east-bank edge about 60 m north of glider 1, looking south down the line. Target is the centroid of the pins for sites 193, 194 and 197 (the three glider positions on the map sheet). The pin may mark the glider or the photographer; the sheet does not say. Position is a guess from the map sheet's zone 0 description.",
+      "status": "first estimate, to be corrected by Stan against the thumbnail in S6"
+    },
+    {
+      "site_id": 992,
+      "view": "bridge before D-Day",
+      "position_local_m": {
+        "x": -8.26,
+        "y": 10.06
+      },
+      "position_l93_m": {
+        "x": 461571.74,
+        "y": 6909708.06
+      },
+      "eye_height_above_ground_m": 1.6,
+      "target_local_m": {
+        "x": 30.0,
+        "y": 0.0
+      },
+      "heading_deg_grid": 104.7,
+      "heading_deg_true": 102.4,
+      "pitch_deg": 0,
+      "confidence": "low",
+      "how_estimated": "Camera at the site 992 pin (on the deck line, west end). Looking east along the road deck at the east end of the bridge; the bridge runs roughly east-west across a north-south canal. Site 991 (pin 1.1, 44.7) is a second view next to 992 and is the fallback. Heading east is an assumption from the map sheet text.",
+      "status": "first estimate, to be corrected by Stan against the thumbnail in S6"
+    },
+    {
+      "site_id": 989,
+      "view": "bridge from the west, glider tails beyond the canal",
+      "position_local_m": {
+        "x": -45.02,
+        "y": 28.73
+      },
+      "position_l93_m": {
+        "x": 461534.98,
+        "y": 6909726.73
+      },
+      "eye_height_above_ground_m": 1.6,
+      "target_local_m": {
+        "x": 40.0,
+        "y": -40.0
+      },
+      "heading_deg_grid": 129.0,
+      "heading_deg_true": 126.6,
+      "pitch_deg": 0,
+      "confidence": "low",
+      "how_estimated": "Camera at the site 989 pin, about 45 m west of the origin on the west bank by the cafe. Target is the east-bank point 40 m east and 40 m south of the origin, where the glider tails should show beyond the canal (sheet: bridge from the far side, glider tails beyond). Heading follows from that target.",
+      "status": "first estimate, to be corrected by Stan against the thumbnail in S6"
+    },
+    {
+      "site_id": 995,
+      "view": "troops crossing the bridge",
+      "position_local_m": {
+        "x": 18.0,
+        "y": 0.0
+      },
+      "position_l93_m": {
+        "x": 461598.0,
+        "y": 6909698.0
+      },
+      "eye_height_above_ground_m": 1.6,
+      "target_local_m": {
+        "x": -30.0,
+        "y": 0.0
+      },
+      "heading_deg_grid": 270.0,
+      "heading_deg_true": 267.6,
+      "pitch_deg": 0,
+      "confidence": "low",
+      "how_estimated": "Pin 995 is the origin (0, 0), mid-deck. Camera moved 18 m east, on the east end, looking west along the deck at troops coming over. The direction is a guess; the opposite view (from the west end) is equally likely. Distinct from the 992 camera on purpose so S6 tests both directions.",
+      "status": "first estimate, to be corrected by Stan against the thumbnail in S6"
+    },
+    {
+      "site_id": 1038,
+      "view": "Benouville church, PIAT hole in the tower",
+      "position_local_m": {
+        "x": -90.0,
+        "y": 450.0
+      },
+      "position_l93_m": {
+        "x": 461490.0,
+        "y": 6910148.0
+      },
+      "eye_height_above_ground_m": 1.6,
+      "target_local_m": {
+        "x": -115.41,
+        "y": 484.0
+      },
+      "heading_deg_grid": 323.2,
+      "heading_deg_true": 320.9,
+      "pitch_deg": 12,
+      "confidence": "low",
+      "how_estimated": "Pin 1038 taken as the church tower. Camera placed about 40 m south-east of it on an assumed street, looking at the tower with a 12 degree upward pitch because the photo is of a hole in the tower. Street position unknown; no source for the church footprint yet.",
+      "status": "first estimate, to be corrected by Stan against the thumbnail in S6"
+    }
+  ]
+}
