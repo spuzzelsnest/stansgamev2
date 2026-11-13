@@ -88,6 +88,20 @@ namespace StansGame.Additions
             set { PlayerPrefs.SetInt(Prefix + "smoothEdges", value ? 1 : 0); }
         }
 
+        /// <summary>Grass tufts and leaf textures that hold up in the distance (Foliage.cs).</summary>
+        public static bool DetailedFoliage
+        {
+            get { return PlayerPrefs.GetInt(Prefix + "detailedFoliage", 1) == 1; }
+            set { PlayerPrefs.SetInt(Prefix + "detailedFoliage", value ? 1 : 0); }
+        }
+
+        /// <summary>Flares light the battlefield; without the special effects the defenders also send flares up (FlareLights.cs).</summary>
+        public static bool Flares
+        {
+            get { return PlayerPrefs.GetInt(Prefix + "flares", 1) == 1; }
+            set { PlayerPrefs.SetInt(Prefix + "flares", value ? 1 : 0); }
+        }
+
         /// <summary>Master volume, 0 to 1 (AudioListener.volume).</summary>
         public static float MasterVolume
         {
