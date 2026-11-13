@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 namespace StansGame.Additions
 {
@@ -7,6 +9,9 @@ namespace StansGame.Additions
     /// First-person view for the local player, plus the field-of-view and mouse-sensitivity settings
     /// in both views. Runs after SoldierController.LateUpdate (which places the shoulder camera) and
     /// moves the camera to the eyes. V switches between first and third person.
+    /// Aiming in first person looks through the iron sights (<see cref="IronSights"/>): the eye moves
+    /// behind the rear sight so the front post sits on the aim point, and the hip crosshair is hidden.
+    /// The PIAT has no iron sights here and gets a raised view with a small centre dot.
     /// </summary>
     [DefaultExecutionOrder(500)]
     public sealed class PlayerView : MonoBehaviour
@@ -27,6 +32,13 @@ namespace StansGame.Additions
         bool headHidden;
         float defaultNear = -1f;
         float fov;
+        float ads;            // 0 hip, 1 looking down the sights
+        Crosshair crosshair;
+        bool crosshairHidden;
+        static Texture2D dot;
+
+        /// <summary>How far the view is into the sights (0 to 1), for tests.</summary>
+        public float SightsBlend { get { return ads; } }
 
         void Awake()
         {
@@ -82,6 +94,9 @@ namespace StansGame.Additions
 
             if (!IsLocal() || CinematicDirector.Playing || !soldier.enabled && !fp)
             {
+                ads = 0f;
+                HideCrosshair(false);
+                HideBody(false, null);
                 RestoreCamera(cam);
                 return;
             }
@@ -92,6 +107,9 @@ namespace StansGame.Additions
 
             if (!fp)
             {
+                ads = 0f;
+                HideCrosshair(false);
+                HideBody(false, null);
                 RestoreCamera(cam);
                 return;
             }
@@ -113,7 +131,120 @@ namespace StansGame.Additions
             }
 
             cam.nearClipPlane = nearClip;
+
+            Weapon w = soldier.enabled ? soldier.CurrentWeapon : null;
+            Vector3 sightEye;
+            bool canSight = soldier.IsAiming && w != null && w.muzzle != null && SightEye(w, cam.transform, out sightEye);
+            ads = Mathf.MoveTowards(ads, canSight ? 1f : 0f, Time.deltaTime / 0.12f);
+            float k = Mathf.SmoothStep(0f, 1f, ads);
+            if (ads > 0f && w != null && w.muzzle != null && SightEye(w, cam.transform, out sightEye))
+            {
+                eye = Vector3.Lerp(eye, sightEye, k);
+                // Look straight down the sight line, so rear and front sight line up exactly even while
+                // the game's weapon pitch is still catching up with the mouse.
+                if (w.GetComponent<IronSights>() != null)
+                {
+                    Transform wt = w.transform;
+                    Quaternion along = Quaternion.LookRotation(wt.forward, wt.up);
+                    if (Quaternion.Angle(along, cam.transform.rotation) < 10f)
+                        cam.transform.rotation = Quaternion.Slerp(cam.transform.rotation, along, k);
+                }
+            }
             cam.transform.position = eye;
+            HideCrosshair(ads > 0.5f);
+            // The game holds the pistol close to the chest: while aiming it, draw the body as a shadow
+            // only, so the view is the pistol and its sights, not the sleeves.
+            HideBody(ads > 0.5f && w != null && w.hold == HoldStyle.Pistol, w);
+        }
+
+        /// <summary>
+        /// Where the eye goes to look down this weapon's sights, in the weapon's own space (the game keeps
+        /// the weapon parallel to the view while aiming): on the bore line raised to the sight line, the
+        /// cheek on the stock for long arms, the pistol held out in front.
+        /// </summary>
+        static bool SightEye(Weapon w, Transform view, out Vector3 eye)
+        {
+            eye = Vector3.zero;
+            Transform wt = w.transform;
+            if (Vector3.Angle(wt.forward, view.forward) > 20f) return false;   // not shouldered (yet)
+            IronSights irons = IronSights.For(w);
+            if (irons != null)
+            {
+                eye = wt.TransformPoint(irons.EyeLocal);   // through the rear sight, front post on the aim point
+                return true;
+            }
+            Vector3 muzzle = wt.InverseTransformPoint(w.muzzle.position);
+            float minZ = float.MaxValue, maxY = float.MinValue;
+            foreach (MeshFilter mf in w.GetComponentsInChildren<MeshFilter>())
+            {
+                if (mf.sharedMesh == null) continue;
+                Bounds b = mf.sharedMesh.bounds;
+                for (int i = 0; i < 8; i++)
+                {
+                    Vector3 c = b.center + Vector3.Scale(b.extents, new Vector3((i & 1) == 0 ? -1f : 1f, (i & 2) == 0 ? -1f : 1f, (i & 4) == 0 ? -1f : 1f));
+                    Vector3 l = wt.InverseTransformPoint(mf.transform.TransformPoint(c));
+                    if (l.z < minZ) minZ = l.z;
+                    if (l.y > maxY) maxY = l.y;
+                }
+            }
+            if (minZ == float.MaxValue) { minZ = muzzle.z - 0.7f; maxY = muzzle.y + 0.04f; }
+            bool pistol = w.hold == HoldStyle.Pistol;
+            float sightY = Mathf.Min(muzzle.y + (pistol ? 0.06f : 0.045f), maxY + 0.035f);
+            float eyeZ = pistol ? minZ - 0.20f : w.hold == HoldStyle.Launcher ? minZ + 0.30f : minZ + 0.18f;
+            eye = wt.TransformPoint(new Vector3(muzzle.x, sightY, eyeZ));
+            return true;
+        }
+
+        void OnGUI()
+        {
+            // Small centre dot while aiming a weapon without iron sights (the PIAT); the hip crosshair is hidden then.
+            if (ads < 0.9f || Event.current.type != EventType.Repaint || !IsLocal()) return;
+            Weapon w = soldier.CurrentWeapon;
+            if (w != null && w.GetComponent<IronSights>() != null) return;   // the sights do the job
+            if (dot == null)
+            {
+                dot = new Texture2D(1, 1);
+                dot.SetPixel(0, 0, Color.white);
+                dot.Apply();
+            }
+            float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
+            Color keep = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.6f);
+            GUI.DrawTexture(new Rect(cx - 2.5f, cy - 2.5f, 5f, 5f), dot);
+            GUI.color = new Color(1f, 1f, 1f, 0.85f);
+            GUI.DrawTexture(new Rect(cx - 1.5f, cy - 1.5f, 3f, 3f), dot);
+            GUI.color = keep;
+        }
+
+        readonly List<Renderer> hiddenBody = new List<Renderer>();
+
+        void HideBody(bool hide, Weapon w)
+        {
+            if (hide && hiddenBody.Count == 0)
+            {
+                foreach (Renderer r in GetComponentsInChildren<Renderer>())
+                {
+                    if (w != null && r.transform.IsChildOf(w.transform)) continue;
+                    if (r.shadowCastingMode == ShadowCastingMode.ShadowsOnly || !r.enabled) continue;
+                    if (r.GetComponentInParent<Weapon>() != null) continue;   // other carried weapons stay as they are
+                    r.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                    hiddenBody.Add(r);
+                }
+            }
+            else if (!hide && hiddenBody.Count > 0)
+            {
+                foreach (Renderer r in hiddenBody)
+                    if (r != null) r.shadowCastingMode = ShadowCastingMode.On;
+                hiddenBody.Clear();
+            }
+        }
+
+        void HideCrosshair(bool hide)
+        {
+            if (crosshair == null) crosshair = FindAnyObjectByType<Crosshair>();
+            if (crosshair == null) return;
+            if (hide && crosshair.enabled) { crosshair.enabled = false; crosshairHidden = true; }
+            else if (!hide && crosshairHidden) { crosshair.enabled = true; crosshairHidden = false; }
         }
 
         void RestoreCamera(Camera cam)
@@ -139,6 +270,8 @@ namespace StansGame.Additions
 
         void OnDisable()
         {
+            HideCrosshair(false);
+            HideBody(false, null);
             SetHeadHidden(false);
             if (soldier != null && soldier.cam != null) RestoreCamera(soldier.cam);
         }
