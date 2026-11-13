@@ -5,7 +5,7 @@ Game project by spuzzelsnest and Stan.
 - `3d-model/`: the Stan Airborne character (Blender 5.3 + MPFB 2.0.18), its build script and renders.
 - `vault/`: Obsidian notes for the project. Open the `vault/` folder in Obsidian as a vault and start at `Home.md`.
 - `CLAUDE.md`: project rules for Claude Code and for git (LFS, what never gets committed).
-- `unity-additions/`: drop-in scripts for first-person view, hit feedback, a health bar, an F10 settings window, climbing over low obstacles and AI that gets out from behind the gliders (see its README).
+- `unity-additions/`: drop-in scripts for first-person view, hit feedback, a health bar, an F10 settings window, climbing over low obstacles, AI that gets out from behind the gliders, a title screen with main menu, level select and save file, a glider exit on the open side, objective markers and banners, and iron sights when aiming (see its README).
 - `tools/join-repo.ps1`: puts an existing local Unity project on top of `main` without losing any file (see below).
 
 ## Adding an existing Unity project (first push)

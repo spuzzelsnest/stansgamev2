@@ -7,6 +7,7 @@ namespace StansGame.Additions
     /// F10 opens a small settings window: view, field of view, aim field of view, mouse sensitivity,
     /// hit effects, heartbeat and volume. While it is open the local player's controller is paused
     /// (no shooting or turning when you click a slider) and the cursor is free. Co-op keeps running.
+    /// The main menu opens it too (<see cref="Show"/>); there Esc also closes it.
     /// </summary>
     public sealed class SettingsPanel : MonoBehaviour
     {
@@ -25,15 +26,23 @@ namespace StansGame.Additions
             if (kb == null) return;
             // F10 only: Esc already opens the game's own menu (NetSession).
             if (kb[Key.F10].wasPressedThisFrame) SetOpen(!Open);
+            else if (Open && Net.InMenu && kb.escapeKey.wasPressedThisFrame) SetOpen(false);
 
             // The player died or respawned while the window was open: let go of the old one.
             if (Open && PausedPlayer != null && AdditionsBootstrap.LocalPlayer() != PausedPlayer) Release();
         }
 
+        /// <summary>Opens or closes the window (used by the main menu).</summary>
+        public static void Show(bool open)
+        {
+            SettingsPanel panel = FindAnyObjectByType<SettingsPanel>();
+            if (panel != null) panel.SetOpen(open);
+        }
+
         void SetOpen(bool open)
         {
             if (open == Open) return;
-            if (open && (CinematicDirector.Playing || Net.InMenu)) return;
+            if (open && CinematicDirector.Playing) return;
             Open = open;
 
             if (open)
@@ -73,6 +82,7 @@ namespace StansGame.Additions
         void OnGUI()
         {
             if (!Open) return;
+            GUI.depth = -200;   // over the main menu
             float s = Screen.height / 1080f;
             float w = 460f * s, h = 470f * s;
             window = new Rect((Screen.width - w) * 0.5f, (Screen.height - h) * 0.5f, w, h);

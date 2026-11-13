@@ -1,0 +1,69 @@
+namespace StansGame.Additions
+{
+    /// <summary>One entry in the level select.</summary>
+    public sealed class LevelInfo
+    {
+        public string Id;          // stable key in the save file
+        public int Number;
+        public string Title;
+        public string Place;
+        public string Date;
+        public string Summary;
+        public bool Available;     // false: shown as "in development", cannot be started
+        public bool Coop;
+    }
+
+    /// <summary>
+    /// The levels shown in the level select, in order. Level N+1 unlocks when level N is completed.
+    /// Once the Unity source is in, this list belongs in a ScriptableObject asset (see the game
+    /// structure plan, R6), so a new level is one new entry and no code change.
+    /// </summary>
+    public static class LevelCatalogue
+    {
+        public static readonly LevelInfo[] All =
+        {
+            new LevelInfo
+            {
+                Id = "pegasus-bridge",
+                Number = 1,
+                Title = "Pegasus Bridge",
+                Place = "Bénouville, Normandy",
+                Date = "6 June 1944, 00:16",
+                Summary = "Operation Deadstick. D Company, 2nd Ox & Bucks Light Infantry, lands by glider next to the canal bridge. Take it intact and hold it until the commandos arrive.",
+                Available = true,
+                Coop = true,
+            },
+            new LevelInfo
+            {
+                Id = "level-2",
+                Number = 2,
+                Title = "Next mission",
+                Place = "In development",
+                Date = "",
+                Summary = "Joan is building this mission. It appears here once it is in the game.",
+                Available = false,
+                Coop = true,
+            },
+        };
+
+        /// <summary>Level 1 is always open; every next level opens when the one before is completed.</summary>
+        public static bool IsUnlocked(int index)
+        {
+            if (index < 0 || index >= All.Length || !All[index].Available) return false;
+            return index == 0 || Progress.Get(All[index - 1].Id).completed;
+        }
+
+        /// <summary>The first open level that is not completed yet, or the last open one when all are done.</summary>
+        public static int ContinueIndex()
+        {
+            int last = 0;
+            for (int i = 0; i < All.Length; i++)
+            {
+                if (!IsUnlocked(i)) break;
+                last = i;
+                if (!Progress.Get(All[i].Id).completed) return i;
+            }
+            return last;
+        }
+    }
+}

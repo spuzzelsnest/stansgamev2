@@ -5,7 +5,9 @@ namespace StansGame.Additions
     /// <summary>
     /// Starts itself when the game loads (no scene or prefab changes needed) and adds
     /// PlayerView, HitFeedback, HealthHud and Mantle to the local player whenever one appears,
-    /// including after a respawn, and AiUnstick to every AI soldier.
+    /// including after a respawn, and AiUnstick to every AI soldier. Also runs the main menu,
+    /// level select and level completion tracking (MainMenu, MissionWatch), the glider exit
+    /// (GliderExit) and the objective marker and banner (ObjectiveHud).
     /// </summary>
     public sealed class AdditionsBootstrap : MonoBehaviour
     {
@@ -21,8 +23,12 @@ namespace StansGame.Additions
             DontDestroyOnLoad(go);
             instance = go.AddComponent<AdditionsBootstrap>();
             go.AddComponent<SettingsPanel>();
+            go.AddComponent<MainMenu>();
+            go.AddComponent<MissionWatch>();
+            go.AddComponent<GliderExit>();
+            go.AddComponent<ObjectiveHud>();
             AudioListener.volume = GameSettings.MasterVolume;
-            Debug.Log("Stan's Game: additions loaded (first-person view, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick)");
+            Debug.Log("Stan's Game: additions loaded (first-person view, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick, main menu and level select, glider exit, objective markers)");
         }
 
         /// <summary>The player this PC controls, or null (menu, between respawns).</summary>
