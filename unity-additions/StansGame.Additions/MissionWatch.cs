@@ -15,7 +15,7 @@ namespace StansGame.Additions
         static readonly FieldInfo finaleDone = typeof(CinematicDirector).GetField("finaleDone", Any);
 
         /// <summary>The catalogue entry for the level that is loaded (only level 1 exists in the build).</summary>
-        public static LevelInfo Current { get { return LevelCatalogue.All[0]; } }
+        public static LevelInfo Current { get { return LevelCatalogue.All[LevelCatalogue.IndexOf("pegasus-bridge")]; } }
 
         MissionDirector watched;
         float controlSince = -1f;
@@ -38,7 +38,7 @@ namespace StansGame.Additions
                 done = false;
                 cardUntil = 0f;
             }
-            if (md == null || Net.InMenu) { controlSince = -1f; return; }
+            if (md == null || Net.InMenu || Bootcamp.Active) { controlSince = -1f; return; }
 
             SoldierController p = AdditionsBootstrap.LocalPlayer();
             if (controlSince < 0f && p != null && p.enabled && !CinematicDirector.Playing) controlSince = Time.realtimeSinceStartup;

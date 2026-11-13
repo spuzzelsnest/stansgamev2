@@ -63,7 +63,7 @@ namespace StansGame.Additions
                 exitPlayed = false;
                 lastPlayer = null;
             }
-            if (md == null || Net.InMenu || md.gliders == null) return;
+            if (md == null || Net.InMenu || md.gliders == null || Bootcamp.Active) return;
 
             for (int i = 0; i < md.gliders.Length; i++)
             {
