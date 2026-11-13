@@ -78,7 +78,8 @@ namespace StansGame.Additions
         bool InControl()
         {
             return soldier != null && soldier.enabled && AdditionsBootstrap.LocalPlayer() == soldier && !CinematicDirector.Playing
-                && !GliderExit.Exiting && !Net.InMenu && !MainMenu.Showing && !SettingsPanel.Open && (health == null || !health.IsDead);
+                && !GliderExit.Exiting && !Net.InMenu && !MainMenu.Showing && !SettingsPanel.Open && (health == null || !health.IsDead)
+                && !Bootcamp.Active;   // nobody to call on the training ground
         }
 
         /// <summary>Keeps the runner from stopping to look for targets or to fire a burst.</summary>

@@ -11,10 +11,12 @@ namespace StansGame.Additions
         public string Summary;
         public bool Available;     // false: shown as "in development", cannot be started
         public bool Coop;
+        public bool Training;      // the bootcamp: always open, never locks or unlocks a level
     }
 
     /// <summary>
-    /// The levels shown in the level select, in order. Level N+1 unlocks when level N is completed.
+    /// The levels shown in the level select, in order, the bootcamp first. Level N+1 unlocks when level N
+    /// is completed; the bootcamp is always open and plays no part in unlocking.
     /// Once the Unity source is in, this list belongs in a ScriptableObject asset (see the game
     /// structure plan, R6), so a new level is one new entry and no code change.
     /// </summary>
@@ -22,6 +24,18 @@ namespace StansGame.Additions
     {
         public static readonly LevelInfo[] All =
         {
+            new LevelInfo
+            {
+                Id = Bootcamp.Id,
+                Number = 0,
+                Title = "Bootcamp",
+                Place = "Countess Wear, Exeter",
+                Date = "Spring 1944",
+                Summary = "D Company rehearsed the bridges here before Normandy. Five minutes, nine stations, every control of the game: move, climb, crawl, swim, shoot, throw, the PIAT, the field dressing and the wireless.",
+                Available = true,
+                Coop = false,
+                Training = true,
+            },
             new LevelInfo
             {
                 Id = "pegasus-bridge",
@@ -46,24 +60,41 @@ namespace StansGame.Additions
             },
         };
 
-        /// <summary>Level 1 is always open; every next level opens when the one before is completed.</summary>
+        /// <summary>The bootcamp is always open, the first mission too; every next mission opens when the one before is completed.</summary>
         public static bool IsUnlocked(int index)
         {
             if (index < 0 || index >= All.Length || !All[index].Available) return false;
-            return index == 0 || Progress.Get(All[index - 1].Id).completed;
+            if (All[index].Training) return true;
+            for (int i = index - 1; i >= 0; i--)
+                if (!All[i].Training) return Progress.Get(All[i].Id).completed;
+            return true;
         }
 
-        /// <summary>The first open level that is not completed yet, or the last open one when all are done.</summary>
+        /// <summary>The first open mission that is not completed yet, or the last open one when all are done. Never the bootcamp.</summary>
         public static int ContinueIndex()
         {
-            int last = 0;
+            int last = IndexOf("pegasus-bridge");
             for (int i = 0; i < All.Length; i++)
             {
+                if (All[i].Training) continue;
                 if (!IsUnlocked(i)) break;
                 last = i;
                 if (!Progress.Get(All[i].Id).completed) return i;
             }
             return last;
+        }
+
+        /// <summary>Index of the bootcamp entry.</summary>
+        public static int BootcampIndex()
+        {
+            return IndexOf(Bootcamp.Id);
+        }
+
+        /// <summary>Index of the entry with this id, or 0 when there is none.</summary>
+        public static int IndexOf(string id)
+        {
+            for (int i = 0; i < All.Length; i++) if (All[i].Id == id) return i;
+            return 0;
         }
     }
 }
