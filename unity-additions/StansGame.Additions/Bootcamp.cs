@@ -74,6 +74,8 @@ namespace StansGame.Additions
             "Timed run: clear the defenders, take the bridge, send Ham and Jam.",
         };
 
+        const string EndLine = "Ham and Jam. That'll do, lads. Next time it's the real thing: the canal bridge at Bénouville, 6 June 1944, 00:16.";
+
         static readonly string[] Lines =
         {
             "Right, you lot, eyes front! Look left, look right, then double over to my flag.",
@@ -104,6 +106,7 @@ namespace StansGame.Additions
         int station;
         bool[] ticks = new bool[8];
         float stationStart, startTime, finishTime, praiseUntil, lastSkip;
+        float lastProgress;   // a station start or a step done; the hint timer runs from here
         string praise;
 
 
@@ -152,10 +155,31 @@ namespace StansGame.Additions
         }
 
         /// <summary>Shows the one-time "bootcamp first?" question over the main menu. <paramref name="start"/> gets the catalogue index to start.</summary>
+        /// <summary>
+        /// Raised for every instructor line, so a voice can speak it (the instructor voice hooks it by
+        /// reflection). Ids: <c>s0.intro</c> to <c>s8.intro</c> (a station starts), <c>s0.praise</c> to
+        /// <c>s7.praise</c> (a station cleared), <c>s0.hint</c> to <c>s8.hint</c> (no progress for a while),
+        /// <c>offer</c> (the menu question), <c>skip</c> (Backspace) and <c>end</c> (the end card).
+        /// The text is what the screen shows for that moment.
+        /// </summary>
+        public static event Action<string, string> InstructorLine;
+
+        /// <summary>Seconds without a step done before the instructor gives a hint, and again after each hint.</summary>
+        public const float HintAfter = 30f;
+
+        static void Say(string id, string text)
+        {
+            Action<string, string> h = InstructorLine;
+            if (h == null) return;
+            try { h(id, text); }
+            catch (Exception e) { Debug.LogWarning("Stan's Game: bootcamp line " + id + " listener failed (" + e.Message + ")"); }
+        }
+
         public static void Offer(Action<int> start)
         {
             PlayerPrefs.SetInt(OfferedKey, 1);
             PlayerPrefs.Save();
+            Say("offer", "Bootcamp first? Five minutes at Countess Wear, or straight to Pegasus Bridge.");
             offerStart = start;
             offerFocus = 0;
             offerOpened = Time.unscaledTime;
@@ -282,6 +306,11 @@ namespace StansGame.Additions
                 return;
             }
             if (Time.time < praiseUntil) return;
+            if (Time.time - lastProgress > HintAfter)
+            {
+                lastProgress = Time.time;
+                Say("s" + station + ".hint", ItemText(station, Mathf.Min(FirstOpen(), ItemCount(station) - 1)));
+            }
             Check();
         }
 
@@ -444,6 +473,8 @@ namespace StansGame.Additions
             popNextAt = Time.time + 1f;
             if (s == 8) ResetRun(lo);
             Play(whistle, 0.6f);
+            lastProgress = Time.time;
+            Say("s" + s + ".intro", Lines[s]);
             Debug.Log("Stan's Game: bootcamp station " + (s + 1) + " " + StationTitles[s]);
         }
 
@@ -507,6 +538,7 @@ namespace StansGame.Additions
             if (ticks[i]) return;
             if (Sequential(station) && FirstOpen() != i) return;
             ticks[i] = true;
+            lastProgress = Time.time;
             Play(tick, 0.5f);
             Debug.Log("Stan's Game: bootcamp " + StationTitles[station] + " item " + (i + 1) + " done");
         }
@@ -685,6 +717,8 @@ namespace StansGame.Additions
             }
             praise = skipped ? "Skipped. Next station: " + StationTitles[station + 1] + "."
                              : Praise(station) + "  Next station: " + StationTitles[station + 1] + ".";
+            if (skipped) Say("skip", praise);
+            else Say("s" + station + ".praise", praise);
             praiseUntil = Time.time + (skipped ? 0.8f : 2.6f);
             int next = station + 1;
             StartStation(next, skipped);
@@ -710,6 +744,7 @@ namespace StansGame.Additions
         {
             state = State.Finished;
             finishTime = Time.time;
+            Say("end", EndLine);
             runLine = "";
             if (runTime > 0f)
             {
@@ -1203,7 +1238,7 @@ namespace StansGame.Additions
             if (runLine.Length > 0) GUI.Label(new Rect(0f, y0 + 118f * s, Screen.width, 30f * s), runLine, card);
             GUI.color = new Color(1f, 1f, 1f, 0.85f);
             GUI.Label(new Rect(Screen.width * 0.2f, y0 + 154f * s, Screen.width * 0.6f, 60f * s),
-                "\"Ham and Jam. That'll do, lads. Next time it's the real thing: the canal bridge at Bénouville, 6 June 1944, 00:16.\"", card);
+                "\"" + EndLine + "\"", card);
             GUI.color = Color.white;
             GUI.Label(new Rect(0f, y0 + 230f * s, Screen.width, 30f * s), "Enter   on to Pegasus Bridge          R   run the bridge again          Esc, then Leave the game   main menu", card);
         }
