@@ -6,9 +6,9 @@ namespace StansGame.Additions
     /// <summary>
     /// Health panel for the local player, bottom left: colour by health, a light segment that shows the
     /// damage just taken, the numbers, stance or reloading, and a key hint line with the player's own
-    /// keyboard labels. It covers the game's own health and weapon text lines, so health and ammo
-    /// each show once (ammo stays in the game's weapon bar).
-    /// Styles are created once, not on every OnGUI call.
+    /// keyboard labels (key caps, can be turned off in the settings). It covers the game's own health and
+    /// weapon text lines, so health and ammo each show once (ammo is in the kit bar next to it).
+    /// Drawn in the house style (<see cref="Ui"/>) and scaled with the HUD size setting.
     /// </summary>
     public sealed class HealthHud : MonoBehaviour
     {
@@ -17,9 +17,8 @@ namespace StansGame.Additions
         float trail = -1f;
         float trailHoldUntil;
 
-        static GUIStyle label;
-        static GUIStyle hint;
-        static Texture2D white;
+        /// <summary>Where the panel was drawn last (for the kit bar next to it); zero when hidden.</summary>
+        public static Rect PanelRect { get; private set; }
 
         void Awake()
         {
@@ -47,91 +46,65 @@ namespace StansGame.Additions
             }
         }
 
-        static void EnsureStyles(float scale)
-        {
-            if (white == null)
-            {
-                white = new Texture2D(1, 1);
-                white.SetPixel(0, 0, Color.white);
-                white.Apply();
-            }
-            if (label == null)
-            {
-                label = new GUIStyle(GUI.skin.label);
-                label.fontStyle = FontStyle.Bold;
-                label.alignment = TextAnchor.MiddleLeft;
-                label.normal.textColor = Color.white;
-                hint = new GUIStyle(label);
-                hint.fontStyle = FontStyle.Normal;
-                hint.normal.textColor = new Color(1f, 1f, 1f, 0.75f);
-            }
-            label.fontSize = Mathf.RoundToInt(16f * scale);
-            hint.fontSize = Mathf.RoundToInt(13f * scale);
-        }
-
         void OnGUI()
         {
             GUI.depth = -10;   // over the game's own HUD; set on every event, Unity sorts on Layout
             if (Event.current.type != EventType.Repaint) return;
             if (soldier == null || health == null || AdditionsBootstrap.LocalPlayer() != soldier) return;
-            if (CinematicDirector.Playing || Net.InMenu) return;
+            if (CinematicDirector.Playing || Net.InMenu) { PanelRect = new Rect(); return; }
+            Ui.ApplyGameFont();
 
-            float s = Mathf.Clamp(Screen.height / 1080f, 0.85f, 1.25f);
-            EnsureStyles(s);
-            Color old = GUI.color;
+            float hs = Ui.HudScale, m = Ui.HudMargin;
+            bool hints = GameSettings.KeyHints;
+            float panelW = 330f * hs, panelH = (hints ? 92f : 66f) * hs;
+            Rect panel = new Rect(m, Screen.height - m - panelH, panelW, panelH);
+            // The game's own lines (MissionDirector.OnGUI: weapon at 20, H-60 and health at 20, H-34,
+            // fixed size, "Z prone" hard-coded) must stay covered at every HUD size.
+            Rect cover = new Rect(8f, Screen.height - 64f, 330f, 58f);
+            float xMin = Mathf.Min(panel.xMin, cover.xMin), yMin = Mathf.Min(panel.yMin, cover.yMin);
+            panel = Rect.MinMaxRect(xMin, yMin, Mathf.Max(panel.xMax, cover.xMax), Mathf.Max(panel.yMax, cover.yMax));
+            PanelRect = panel;
+            Ui.Fill(panel, Ui.A(Ui.Night, 1f));   // opaque, or the game's lines show through
+            Ui.Fill(new Rect(panel.x, panel.y, panel.width, Mathf.Max(2f, 2f * hs)), Ui.A(Ui.Brass, 0.85f));
 
-            // One panel over the spot where MissionDirector.OnGUI writes its own weapon line
-            // (20, H-60) and health line (20, H-34, with fixed "Z prone"). Ammo stays in the weapon
-            // bar next to it, so health and ammo each show once.
-            float panelW = 330f, panelH = Mathf.Max(66f, 84f * s);
-            Rect panel = new Rect(8f, Screen.height - 6f - panelH, panelW, panelH);
-            GUI.color = new Color(0.05f, 0.05f, 0.06f, 1f);   // opaque, or the game's lines show through
-            GUI.DrawTexture(panel, white);
-
-            float pad = 12f * s;
-            float x = panel.x + pad, w = panel.width - 2f * pad, h = 12f * s;
-            float rowH = 20f * s;
-            float y0 = panel.y + 8f * s;
-
-            GUI.color = Color.white;
-            string text = health.IsDead
-                ? "DOWN"
-                : string.Format("HEALTH   {0} / {1}", Mathf.CeilToInt(health.Current), Mathf.RoundToInt(health.maxHealth));
-            label.alignment = TextAnchor.MiddleLeft;
-            GUI.Label(new Rect(x, y0, w, rowH), text, label);
-
-            Weapon wpn = soldier.CurrentWeapon;
-            string state = wpn != null && wpn.IsReloading ? "RELOADING"
-                         : soldier.IsProne ? "PRONE" : soldier.IsCrouching ? "KNEELING" : "STANDING";
-            hint.alignment = TextAnchor.MiddleRight;
-            GUI.color = state == "RELOADING" ? new Color(0.95f, 0.75f, 0.3f) : Color.white;
-            GUI.Label(new Rect(x, y0, w, rowH), state, hint);
-            hint.alignment = TextAnchor.MiddleLeft;
+            float pad = 12f * hs;
+            float x = panel.x + pad, w = panel.width - 2f * pad;
+            float y = panel.y + 8f * hs;
+            float rowH = 26f * hs;
 
             float f = Fraction();
-            float y = y0 + rowH + 4f * s;
-            GUI.color = new Color(1f, 1f, 1f, 0.12f);
-            GUI.DrawTexture(new Rect(x, y, w, h), white);
-            if (trail > f)
+            Color fill = f > 0.6f ? Ui.Green : f > 0.3f ? Ui.Amber : Ui.Red;
+            if (health.IsDead)
+                Ui.Text(new Rect(x, y, w, rowH), "DOWN", UiFont.Body, 22f * hs, Ui.Red, TextAnchor.MiddleLeft, false, false, true);
+            else
             {
-                GUI.color = new Color(1f, 0.92f, 0.75f, 0.85f);
-                GUI.DrawTexture(new Rect(x + w * f, y, w * (trail - f), h), white);
+                float nw = Ui.Width(Mathf.CeilToInt(health.Current).ToString(), UiFont.Body, 26f * hs, true);
+                Ui.Text(new Rect(x, y, nw + 4f, rowH), Mathf.CeilToInt(health.Current).ToString(), UiFont.Body, 26f * hs, Ui.Paper, TextAnchor.MiddleLeft, false, false, true);
+                Ui.Text(new Rect(x + nw + 6f * hs, y + 3f * hs, 200f * hs, rowH), "/ " + Mathf.RoundToInt(health.maxHealth) + "   HEALTH",
+                        UiFont.Body, 14f * hs, Ui.Dim, TextAnchor.MiddleLeft, false, false, true);
             }
-            Color fill = f > 0.6f ? new Color(0.36f, 0.78f, 0.34f)
-                       : f > 0.3f ? new Color(0.95f, 0.70f, 0.18f)
-                       : new Color(0.90f, 0.18f, 0.14f);
+
+            Weapon wpn = soldier.CurrentWeapon;
+            bool reloading = wpn != null && wpn.IsReloading;
+            string state = reloading ? "RELOADING" : soldier.IsProne ? "PRONE" : soldier.IsCrouching ? "KNEELING" : "STANDING";
+            Ui.Text(new Rect(x, y + 3f * hs, w, rowH), state, UiFont.Body, 14f * hs, reloading ? Ui.Amber : Ui.A(Ui.Paper, 0.85f), TextAnchor.MiddleRight, false, false, true);
+
+            float bh = 12f * hs;
+            float by = y + rowH + 6f * hs;
+            Ui.Fill(new Rect(x, by, w, bh), Ui.A(Ui.Paper, 0.12f));
+            if (trail > f) Ui.Fill(new Rect(x + w * f, by, w * (trail - f), bh), new Color(1f, 0.92f, 0.75f, 0.85f));
             if (f <= 0.3f && !health.IsDead) fill.a = 0.65f + 0.35f * Mathf.Sin(Time.time * 8f);
-            GUI.color = fill;
-            GUI.DrawTexture(new Rect(x, y, w * f, h), white);
-            GUI.color = new Color(0f, 0f, 0f, 0.4f);
-            for (int i = 1; i < 4; i++) GUI.DrawTexture(new Rect(x + w * i / 4f - 1f, y, 2f, h), white);
+            Ui.Fill(new Rect(x, by, w * f, bh), fill);
+            for (int i = 1; i < 4; i++) Ui.Fill(new Rect(x + w * i / 4f - 1f, by, 2f, bh), new Color(0f, 0f, 0f, 0.45f));
 
-            GUI.color = new Color(1f, 1f, 1f, 0.7f);
-            string keys = string.Format("{0} move   {1} kneel   {2} prone   {3} view   F10",
-                KeyLabel.Move, KeyLabel.Of(Key.C), KeyLabel.Of(Key.Z), KeyLabel.Of(Key.V));
-            GUI.Label(new Rect(x, y + h + 4f * s, w, rowH), keys, hint);
-
-            GUI.color = old;
+            if (hints)
+            {
+                float hy = by + bh + 9f * hs, hh = 20f * hs;
+                Ui.Hints(x, hy, hh, new string[]
+                {
+                    KeyLabel.Move, "move", KeyLabel.Of(Key.C), "kneel", KeyLabel.Of(Key.Z), "prone", KeyLabel.Of(Key.V), "view",
+                }, 0.85f);
+            }
         }
     }
 }

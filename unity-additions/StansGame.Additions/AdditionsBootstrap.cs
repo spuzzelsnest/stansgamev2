@@ -4,9 +4,10 @@ namespace StansGame.Additions
 {
     /// <summary>
     /// Starts itself when the game loads (no scene or prefab changes needed) and adds
-    /// PlayerView, WeaponFeel, HitFeedback, HealthHud, Mantle, RoleKit and SquadCalls to the local player whenever one appears,
+    /// PlayerView, WeaponFeel, HitFeedback, HealthHud, KitBar, Mantle, RoleKit and SquadCalls to the local player whenever one appears,
     /// including after a respawn, and AiUnstick to every AI soldier. Also runs the main menu,
-    /// level select and level completion tracking (MainMenu, MissionWatch), the glider exit
+    /// level select and level completion tracking (MainMenu, MissionWatch), the pause menu and controls
+    /// page (PauseMenu, ControlsPage), the glider exit
     /// (GliderExit) and the objective marker and banner (ObjectiveHud).
     /// </summary>
     public sealed class AdditionsBootstrap : MonoBehaviour
@@ -24,6 +25,8 @@ namespace StansGame.Additions
             instance = go.AddComponent<AdditionsBootstrap>();
             go.AddComponent<SettingsPanel>();
             go.AddComponent<MainMenu>();
+            go.AddComponent<PauseMenu>();
+            go.AddComponent<ControlsPage>();
             go.AddComponent<MissionWatch>();
             go.AddComponent<GliderExit>();
             go.AddComponent<ObjectiveHud>();
@@ -31,6 +34,7 @@ namespace StansGame.Additions
             go.AddComponent<RagdollWrists>();
             go.AddComponent<Bootcamp>();
             AudioListener.volume = GameSettings.MasterVolume;
+            GameSettings.ApplyAtStart();
             Debug.Log("Stan's Game: additions loaded (first-person view, weapon feel, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick, main menu and level select, glider exit, objective markers, roles, calls for a medic or ammunition, relaxed wrists on the dead, bootcamp)");
         }
 
@@ -53,6 +57,7 @@ namespace StansGame.Additions
             if (p.GetComponent<WeaponFeel>() == null) p.gameObject.AddComponent<WeaponFeel>();
             if (p.GetComponent<HitFeedback>() == null) p.gameObject.AddComponent<HitFeedback>();
             if (p.GetComponent<HealthHud>() == null) p.gameObject.AddComponent<HealthHud>();
+            if (p.GetComponent<KitBar>() == null) p.gameObject.AddComponent<KitBar>();
             if (p.GetComponent<Mantle>() == null) p.gameObject.AddComponent<Mantle>();
             if (p.GetComponent<RoleKit>() == null) p.gameObject.AddComponent<RoleKit>();
             if (p.GetComponent<SquadCalls>() == null) p.gameObject.AddComponent<SquadCalls>();
