@@ -10,6 +10,7 @@ Repository: https://github.com/spuzzelsnest/stansgamev2, default branch `main`.
 | `Assets/`, `Packages/`, `ProjectSettings/` | The Unity project. The editor version is in `ProjectSettings/ProjectVersion.txt`; open the project with exactly that version. |
 | `3d-model/` | Blender source for the Stan Airborne character (`final/stan_airborne.blend`), renders and the build script. Kept outside `Assets/` on purpose so Unity does not import `.blend` files (that needs Blender on every machine). To use the character in the game, export an FBX into `Assets/` instead. |
 | `vault/` | Obsidian notes for the project. Open `vault/` itself in Obsidian as a vault (not the repository root, or Obsidian indexes `Library/`) and start at `Home.md`. |
+| `unity-additions/` | Drop-in C# scripts (first-person view, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick) kept outside `Assets/` until someone copies them in; see its `README.md` (a few private game fields are used by name). |
 | `_downloads/` | Raw source material (scans, LiDAR tiles, aerial photos). Ignored by git, never committed. |
 
 Read `vault/Home.md` before design work and update the relevant note when a design decision changes.
