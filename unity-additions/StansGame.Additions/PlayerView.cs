@@ -143,10 +143,20 @@ namespace StansGame.Additions
             cam.nearClipPlane = nearClip;
 
             Weapon w = soldier.enabled ? soldier.CurrentWeapon : null;
-            if (w != lastWeapon) { ads = 0f; lastWeapon = w; }   // a new weapon starts at the hip
+            if (w != lastWeapon) { ads = 0f; raise = 0f; lastWeapon = w; }   // a new weapon comes up from below, at the hip
             IronSights irons = w != null && w.muzzle != null ? IronSights.For(w) : null;
 
-            bool want = soldier.IsAiming && w != null && w.muzzle != null;
+            // Reload: the weapon comes down from the eye, tilts to show the magazine well, jerks down as
+            // the empty magazine comes out and up as the full one goes in, then comes back.
+            bool reloading = w != null && w.IsReloading;
+            if (reloading) { if (reloadStart < 0f) reloadStart = Time.time; }
+            else reloadStart = -1f;
+            float rp = reloading ? Mathf.Clamp01((Time.time - reloadStart) / Mathf.Max(0.3f, w.reloadTime)) : 1f;
+            reloadPose = Mathf.MoveTowards(reloadPose, reloading && rp < 0.86f ? 1f : 0f, Time.deltaTime / 0.2f);
+            float bump = reloading ? Pulse(rp, 0.32f) * -1f + Pulse(rp, 0.64f) : 0f;
+            ReloadProgress = reloading ? rp : 0f;
+
+            bool want = soldier.IsAiming && w != null && w.muzzle != null && !reloading;
             ads = Mathf.MoveTowards(ads, want ? 1f : 0f, Time.deltaTime / AdsSeconds(w));
             float k = Mathf.SmoothStep(0f, 1f, ads);
 
@@ -164,7 +174,10 @@ namespace StansGame.Additions
             Vector3 sightEye;
             if (irons != null)
             {
-                if (ads > 0f) BringUp(w, irons, cam.transform, k);
+                raise = Mathf.MoveTowards(raise, 1f, Time.deltaTime / RaiseSeconds);
+                bool sprinting = cc != null && cc.isGrounded && new Vector2(cc.velocity.x, cc.velocity.z).magnitude > soldier.runSpeed + 0.5f && !want;
+                sprint = Mathf.MoveTowards(sprint, sprinting ? 1f : 0f, Time.deltaTime / (sprinting ? 0.25f : 0.18f));
+                Hold(w, irons, cam.transform, k, Mathf.SmoothStep(0f, 1f, raise), Mathf.SmoothStep(0f, 1f, sprint), Mathf.SmoothStep(0f, 1f, reloadPose), bump);
             }
             else if (ads > 0f && w != null && w.muzzle != null && SightEye(w, cam.transform, out sightEye))
             {
@@ -175,6 +188,82 @@ namespace StansGame.Additions
         }
 
         Weapon lastWeapon;
+        float raise = 1f, sprint;
+        const float RaiseSeconds = 0.3f;
+        float reloadStart = -1f, reloadPose;
+
+        /// <summary>For tests: how far the current reload is (0 to 1), 0 when not reloading.</summary>
+        public float ReloadProgress { get; private set; }
+
+        /// <summary>A short bump around <paramref name="centre"/> (0 to 1 progress), 1 at its peak.</summary>
+        static float Pulse(float t, float centre)
+        {
+            float d = (t - centre) / 0.05f;
+            return Mathf.Exp(-d * d);
+        }
+
+        /// <summary>
+        /// Where the weapon sits at the hip in first person, in view space (metres, x right, y up, z
+        /// forward): the point behind the rear sight goes here. The game's own hold is made for the
+        /// third-person body (the pistol, for one, is held against the chest and cannot be seen from
+        /// the eyes), so first person gets its own hold, low and to the right, pointing where you look.
+        /// </summary>
+        static Vector3 HipOffset(Weapon w)
+        {
+            switch (w.hold)
+            {
+                // Its eye point is 0.45 m behind the rear sight: held out low in both hands (low ready),
+                // the aimed grip lowered, so the hands wrap it as they do when aiming.
+                case HoldStyle.Pistol: return new Vector3(0.05f, -0.13f, -0.03f);
+                case HoldStyle.SMG: return new Vector3(0.13f, -0.15f, 0.09f);
+                case HoldStyle.Rifle: return new Vector3(0.13f, -0.15f, 0.06f);
+                case HoldStyle.Heavy: return new Vector3(0.15f, -0.19f, 0.08f);
+            }
+            return new Vector3(0.13f, -0.15f, 0.08f);
+        }
+
+        /// <summary>
+        /// Places the weapon for first person every frame: the hip pose, blended into the aimed pose by
+        /// <paramref name="k"/>, lowered while a newly selected weapon comes up (<paramref name="up"/>)
+        /// and turned down and across the chest while sprinting (<paramref name="run"/>).
+        /// </summary>
+        static void Hold(Weapon w, IronSights irons, Transform view, float k, float up, float run, float reload, float bump)
+        {
+            WeaponHolder holder = w.GetComponentInParent<WeaponHolder>();
+            if (holder == null) return;
+            Transform ht = holder.transform, wt = w.transform;
+            if (wt.parent != ht) return;   // only the plain holder > weapon set-up
+            Vector3 eyePoint = Vector3.Scale(irons.EyeLocal, wt.lossyScale);
+            bool pistol = w.hold == HoldStyle.Pistol;
+
+            // Hip: low right, toed in a little so the muzzle points at the middle of the screen.
+            Vector3 off = HipOffset(w);
+            off += new Vector3(-0.02f, -0.05f, -0.04f) * run + new Vector3(0f, -0.22f, -0.05f) * (1f - up);
+            Quaternion hipTurn = Quaternion.Euler(28f * run + 35f * (1f - up) + (pistol ? 4f : 0f), (pistol ? 0f : -2f) - 32f * run, (pistol ? 0f : -6f) - 18f * run);
+
+            // Reload: a pistol's muzzle tips up beside the face. A long arm is pushed out to the middle
+            // of the view, muzzle up and to the left, canted so the action and magazine well face the
+            // eyes (at the hip only the barrel is in view, the action sits below the screen).
+            if (reload > 0f || bump != 0f)
+            {
+                off += (pistol ? new Vector3(-0.02f, -0.03f, -0.02f) : new Vector3(-0.10f, 0.035f, 0.17f)) * reload + new Vector3(0f, 0.014f, 0f) * bump;
+                hipTurn = hipTurn * Quaternion.Euler((pistol ? -22f : -14f) * reload - 4f * bump, (pistol ? -8f : -28f) * reload, (pistol ? 15f : 32f) * reload);
+            }
+            Quaternion hipRot = view.rotation * hipTurn * irons.SightTurn;
+            Vector3 hipPos = view.position + view.rotation * off - hipRot * eyePoint;
+
+            // Aimed: the sight line along the view, the eye point at the camera. On the way up the
+            // weapon dips and cants a little, as a weapon being shouldered does.
+            float arc = Mathf.Sin(k * Mathf.PI);
+            Quaternion aimRot = Quaternion.AngleAxis(-arc * 6f, view.forward) * view.rotation * irons.SightTurn;
+            Vector3 aimPos = view.position - aimRot * eyePoint - view.up * (arc * 0.015f);
+
+            Quaternion wRot = Quaternion.Slerp(hipRot, aimRot, k);
+            Vector3 wPos = Vector3.Lerp(hipPos, aimPos, k);
+            Quaternion hRot = wRot * Quaternion.Inverse(wt.localRotation);
+            Vector3 hPos = wPos - hRot * Vector3.Scale(wt.localPosition, ht.lossyScale);
+            WeaponPose.SetHolder(holder, hPos, hRot);
+        }
 
         /// <summary>Seconds to bring each kind of weapon up to the eye (eased).</summary>
         static float AdsSeconds(Weapon w)
@@ -189,28 +278,6 @@ namespace StansGame.Additions
                 case HoldStyle.Launcher: return 0.35f;
             }
             return 0.25f;
-        }
-
-        /// <summary>
-        /// Moves the weapon from the game's hold towards the aimed pose, where the sight line (rear sight
-        /// to front sight, which can sit at a small angle to the bore) runs along the view and the eye
-        /// point behind the rear sight is at the camera. On the way up it dips and
-        /// cants a little, as a weapon being shouldered does.
-        /// </summary>
-        static void BringUp(Weapon w, IronSights irons, Transform view, float k)
-        {
-            WeaponHolder holder = w.GetComponentInParent<WeaponHolder>();
-            if (holder == null) return;
-            Transform ht = holder.transform, wt = w.transform;
-            if (wt.parent != ht) return;   // only the plain holder > weapon set-up
-
-            float arc = Mathf.Sin(k * Mathf.PI);
-            Quaternion wRot = Quaternion.AngleAxis(-arc * 6f, view.forward) * view.rotation * irons.SightTurn;
-            Vector3 wPos = view.position - wRot * Vector3.Scale(irons.EyeLocal, wt.lossyScale) - view.up * (arc * 0.015f);
-
-            Quaternion hRot = wRot * Quaternion.Inverse(wt.localRotation);
-            Vector3 hPos = wPos - hRot * Vector3.Scale(wt.localPosition, ht.lossyScale);
-            WeaponPose.SetHolder(holder, Vector3.Lerp(ht.position, hPos, k), Quaternion.Slerp(ht.rotation, hRot, k));
         }
 
         /// <summary>

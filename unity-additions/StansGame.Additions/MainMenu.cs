@@ -17,7 +17,7 @@ namespace StansGame.Additions
     /// </summary>
     public sealed class MainMenu : MonoBehaviour
     {
-        enum Page { None, Title, Main, Levels, Credits, Coop }
+        enum Page { None, Title, Main, Levels, Role, Credits, Coop }
 
         const BindingFlags Any = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
         static readonly MethodInfo playAlone = typeof(NetSession).GetMethod("PlayAlone", Any);
@@ -51,6 +51,8 @@ namespace StansGame.Additions
         Page page = Page.None;
         int focus;
         int levelFocus;
+        int roleFocus;
+        Page roleBack = Page.Main;
         float pageOpened;
         float startAt = -1f;
         Vector2 lastMouse = new Vector2(-1f, -1f);
@@ -146,6 +148,10 @@ namespace StansGame.Additions
             bool ok = (k != null && (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame))
                    || (g != null && g.buttonSouth.wasPressedThisFrame);
             bool back = (k != null && k.escapeKey.wasPressedThisFrame) || (g != null && g.buttonEast.wasPressedThisFrame);
+            bool left = (k != null && (k.leftArrowKey.wasPressedThisFrame || k.aKey.wasPressedThisFrame))
+                     || (g != null && (g.dpad.left.wasPressedThisFrame || g.leftStick.left.wasPressedThisFrame));
+            bool right = (k != null && (k.rightArrowKey.wasPressedThisFrame || k.dKey.wasPressedThisFrame))
+                      || (g != null && (g.dpad.right.wasPressedThisFrame || g.leftStick.right.wasPressedThisFrame));
 
             switch (page)
             {
@@ -159,6 +165,12 @@ namespace StansGame.Additions
                     if (down) { Move(ref levelFocus, 1, LevelCatalogue.All.Length); BuildBriefing(); }
                     if (ok) TryStart(levelFocus);
                     if (back) { Play(tick); Open(Page.Main); }
+                    break;
+                case Page.Role:
+                    if (left || up) Move(ref roleFocus, -1, Roles.Cards.Length);
+                    if (right || down) Move(ref roleFocus, 1, Roles.Cards.Length);
+                    if (ok) StartAs(roleFocus);
+                    if (back) { Play(tick); Open(roleBack); }
                     break;
                 case Page.Credits:
                     if (ok || back) { Play(tick); Open(Page.Main); }
@@ -193,7 +205,17 @@ namespace StansGame.Additions
         {
             if (!LevelCatalogue.IsUnlocked(index)) return;
             Play(choose);
-            // Only level 1 exists in the build; the catalogue index picks the scene once there are more.
+            roleBack = page == Page.Levels ? Page.Levels : Page.Main;
+            roleFocus = (int)Roles.Chosen;
+            Open(Page.Role);
+        }
+
+        /// <summary>Starts the level with the chosen role. Only level 1 exists in the build; the
+        /// catalogue index picks the scene once there are more.</summary>
+        void StartAs(int role)
+        {
+            Roles.Chosen = (Role)role;
+            Play(choose);
             startAt = Time.unscaledTime + 0.6f;
         }
 
@@ -331,6 +353,7 @@ namespace StansGame.Additions
                 case Page.Title: DrawTitle(s, fade); break;
                 case Page.Main: DrawMain(s, fade, e); break;
                 case Page.Levels: DrawLevels(s, fade, e); break;
+                case Page.Role: DrawRoles(s, fade, e); break;
                 case Page.Credits: DrawCredits(s, fade, e); break;
             }
 
@@ -500,6 +523,74 @@ namespace StansGame.Additions
             DrawFooter(s, fade, true);
         }
 
+        void DrawRoles(float s, float fade, Event e)
+        {
+            float x0 = 140f * s;
+            DrawHeader(s, fade, "CHOOSE YOUR ROLE");
+            GUI.color = new Color(Accent.r, Accent.g, Accent.b, fade);
+            Label(new Rect(x0, 190f * s, 1400f * s, 30f * s), "D Company, 2nd Oxfordshire and Buckinghamshire Light Infantry   ·   glider-borne   ·   6 June 1944", cardLine, TextAnchor.MiddleLeft);
+
+            int n = Roles.Cards.Length;
+            float gap = 30f * s;
+            float cw = Mathf.Min(500f * s, (Screen.width - 2f * x0 - (n - 1) * gap) / n);
+            float top = 250f * s, ch = 450f * s;
+            float pad = 26f * s, tw = cw - 2f * pad;
+            for (int i = 0; i < n; i++)
+            {
+                Roles.Card c = Roles.Cards[i];
+                Rect r = new Rect(x0 + i * (cw + gap), top, cw, ch);
+                if (MouseMovedTo(r, e) && roleFocus != i) { roleFocus = i; Play(tick); }
+                if (Clicked(r, e)) { if (roleFocus == i) StartAs(i); else { roleFocus = i; Play(tick); } }
+                bool on = roleFocus == i;
+                if (e.type == EventType.Repaint)
+                {
+                    GUI.color = new Color(0f, 0f, 0f, (on ? 0.75f : 0.45f) * fade);
+                    GUI.DrawTexture(r, white);
+                    if (on)
+                    {
+                        GUI.color = new Color(Accent.r, Accent.g, Accent.b, fade);
+                        GUI.DrawTexture(new Rect(r.x, r.y, r.width, 4f * s), white);
+                    }
+                }
+                float dim = on ? 1f : 0.6f;
+                float y = r.y + 24f * s;
+                GUI.color = new Color(Accent.r, Accent.g, Accent.b, dim * fade);
+                Label(new Rect(r.x + pad, y, tw, 24f * s), c.Tag, cardLine, TextAnchor.MiddleLeft);
+                y += 28f * s;
+                GUI.color = new Color(1f, 1f, 1f, dim * fade);
+                Label(new Rect(r.x + pad, y, tw, 40f * s), c.Name, cardTitle, TextAnchor.MiddleLeft);
+                y += 54f * s;
+                GUI.color = new Color(1f, 1f, 1f, 0.8f * dim * fade);
+                float hh = help.CalcHeight(new GUIContent(c.History), tw);
+                GUI.Label(new Rect(r.x + pad, y, tw, hh), c.History, help);
+                y += hh + 22f * s;
+                GUI.color = new Color(Accent.r, Accent.g, Accent.b, dim * fade);
+                Label(new Rect(r.x + pad, y, tw, 24f * s), "KIT", cardLine, TextAnchor.MiddleLeft);
+                y += 30f * s;
+                GUI.color = new Color(1f, 1f, 1f, dim * fade);
+                foreach (string k in c.Kit)
+                {
+                    float kh = help.CalcHeight(new GUIContent(k), tw - 18f * s);
+                    Label(new Rect(r.x + pad, y, 18f * s, kh), "·", help, TextAnchor.UpperLeft);
+                    GUI.Label(new Rect(r.x + pad + 18f * s, y, tw - 18f * s, kh), k, help);
+                    y += kh + 4f * s;
+                }
+                y += 18f * s;
+                GUI.color = new Color(Accent.r, Accent.g, Accent.b, dim * fade);
+                Label(new Rect(r.x + pad, y, tw, 24f * s), "IN THE FIELD", cardLine, TextAnchor.MiddleLeft);
+                y += 30f * s;
+                GUI.color = new Color(1f, 1f, 1f, dim * fade);
+                float ah = help.CalcHeight(new GUIContent(c.Ability), tw);
+                GUI.Label(new Rect(r.x + pad, y, tw, ah), c.Ability, help);
+            }
+            RememberMouse(e);
+
+            GUI.color = new Color(1f, 1f, 1f, 0.8f * fade);
+            Label(new Rect(x0, top + ch + 26f * s, 1400f * s, 30f * s),
+                "Every role:   " + KeyLabel.Of(Key.T) + "  calls a stretcher-bearer      " + KeyLabel.Of(Key.B) + "  calls for ammunition", help, TextAnchor.MiddleLeft);
+            DrawFooter(s, fade, "Left / Right  select      Enter  start      Esc  back");
+        }
+
         void DrawCredits(float s, float fade, Event e)
         {
             float h = Screen.height, w = Screen.width;
@@ -530,8 +621,12 @@ namespace StansGame.Additions
 
         void DrawFooter(float s, float fade, bool hasBack)
         {
+            DrawFooter(s, fade, hasBack ? "Up / Down  select      Enter  confirm      Esc  back" : "Up / Down  select      Enter  confirm");
+        }
+
+        void DrawFooter(float s, float fade, string text)
+        {
             GUI.color = new Color(1f, 1f, 1f, 0.55f * fade);
-            string text = hasBack ? "Up / Down  select      Enter  confirm      Esc  back" : "Up / Down  select      Enter  confirm";
             Label(new Rect(140f * s, Screen.height - 64f * s, 900f * s, 30f * s), text, footer, TextAnchor.MiddleLeft);
             Label(new Rect(0f, Screen.height - 64f * s, Screen.width - 60f * s, 30f * s), "Demo 0.1", footer, TextAnchor.MiddleRight);
         }

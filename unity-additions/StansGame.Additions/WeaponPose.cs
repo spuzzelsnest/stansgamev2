@@ -27,6 +27,26 @@ namespace StansGame.Additions
 
         static readonly HashSet<Weapon> aligned = new HashSet<Weapon>();
 
+        /// <summary>
+        /// How far each weapon sits too low in the hands, in metres. The M1911's slide is level with the
+        /// knuckles of the (large) gloves, so from the eyes the hands cover it; raising it in the grip
+        /// shows the slide above the fist.
+        /// </summary>
+        static readonly Dictionary<string, float> gripLift = new Dictionary<string, float>
+        {
+            { "M1911", 0.03f },
+        };
+
+        /// <summary>Raises the weapon in the hands once (the hands follow the holder, not the weapon).</summary>
+        public static void LiftInHands(Weapon w)
+        {
+            float lift;
+            if (w == null || !gripLift.TryGetValue(w.displayName ?? "", out lift)) return;
+            Transform wt = w.transform;
+            if (wt.parent == null) return;
+            wt.localPosition += wt.parent.InverseTransformDirection(wt.up) * (lift / Mathf.Max(0.0001f, wt.parent.lossyScale.y));
+        }
+
         /// <summary>Places the holder (and so the weapon) and records the pose for the hand IK.</summary>
         public static void SetHolder(WeaponHolder holder, Vector3 position, Quaternion rotation)
         {

@@ -4,7 +4,7 @@ namespace StansGame.Additions
 {
     /// <summary>
     /// Starts itself when the game loads (no scene or prefab changes needed) and adds
-    /// PlayerView, WeaponFeel, HitFeedback, HealthHud and Mantle to the local player whenever one appears,
+    /// PlayerView, WeaponFeel, HitFeedback, HealthHud, Mantle, RoleKit and SquadCalls to the local player whenever one appears,
     /// including after a respawn, and AiUnstick to every AI soldier. Also runs the main menu,
     /// level select and level completion tracking (MainMenu, MissionWatch), the glider exit
     /// (GliderExit) and the objective marker and banner (ObjectiveHud).
@@ -27,8 +27,9 @@ namespace StansGame.Additions
             go.AddComponent<MissionWatch>();
             go.AddComponent<GliderExit>();
             go.AddComponent<ObjectiveHud>();
+            go.AddComponent<Atmosphere>();
             AudioListener.volume = GameSettings.MasterVolume;
-            Debug.Log("Stan's Game: additions loaded (first-person view, weapon feel, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick, main menu and level select, glider exit, objective markers)");
+            Debug.Log("Stan's Game: additions loaded (first-person view, weapon feel, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick, main menu and level select, glider exit, objective markers, roles, calls for a medic or ammunition)");
         }
 
         /// <summary>The player this PC controls, or null (menu, between respawns).</summary>
@@ -51,6 +52,8 @@ namespace StansGame.Additions
             if (p.GetComponent<HitFeedback>() == null) p.gameObject.AddComponent<HitFeedback>();
             if (p.GetComponent<HealthHud>() == null) p.gameObject.AddComponent<HealthHud>();
             if (p.GetComponent<Mantle>() == null) p.gameObject.AddComponent<Mantle>();
+            if (p.GetComponent<RoleKit>() == null) p.gameObject.AddComponent<RoleKit>();
+            if (p.GetComponent<SquadCalls>() == null) p.gameObject.AddComponent<SquadCalls>();
             FriendlyPassThrough.SetPlayer(p);
 
             // AI soldiers are spawned during the mission (glider sections, waves), so look for new ones.

@@ -84,12 +84,12 @@ namespace StansGame.Additions
             if (!Open) return;
             GUI.depth = -200;   // over the main menu
             float s = Screen.height / 1080f;
-            float w = 460f * s, h = 580f * s;
+            float w = 460f * s, h = 640f * s;
             window = new Rect((Screen.width - w) * 0.5f, (Screen.height - h) * 0.5f, w, h);
 
             Matrix4x4 keep = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(s, s, 1f));
-            Rect r = new Rect(window.x / s, window.y / s, 460f, 580f);
+            Rect r = new Rect(window.x / s, window.y / s, 460f, 640f);
             GUI.Box(r, "");
             GUILayout.BeginArea(new Rect(r.x + 20f, r.y + 16f, r.width - 40f, r.height - 32f));
 
@@ -116,6 +116,10 @@ namespace StansGame.Additions
 
             bool hb = GUILayout.Toggle(GameSettings.Heartbeat, "  Heartbeat at low health");
             if (hb != GameSettings.Heartbeat) GameSettings.Heartbeat = hb;
+            bool el = GUILayout.Toggle(GameSettings.EnhancedLighting, "  Enhanced night lighting");
+            if (el != GameSettings.EnhancedLighting) GameSettings.EnhancedLighting = el;
+            bool se = GUILayout.Toggle(GameSettings.SmoothEdges, "  Smooth edges (anti-aliasing, softer leaves)");
+            if (se != GameSettings.SmoothEdges) GameSettings.SmoothEdges = se;
 
             GUILayout.FlexibleSpace();
             GUILayout.Label("Keys on this keyboard: " + KeyLabel.Move + " move, " + KeyLabel.Of(Key.C) + " kneel, " + KeyLabel.Of(Key.Z) + " prone.");
