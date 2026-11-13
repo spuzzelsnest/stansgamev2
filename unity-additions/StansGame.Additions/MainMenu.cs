@@ -12,6 +12,8 @@ namespace StansGame.Additions
     /// Starting a level calls <c>NetSession.PlayAlone</c>, so the Intro film plays exactly as before.
     /// Works with mouse, keyboard (arrows or the move keys, Enter, Esc) and gamepad (d-pad, A, B).
     /// After Esc &gt; Leave the game reloads the level and the main menu opens again.
+    /// The bootcamp (<see cref="Bootcamp"/>) is offered once on the first Play and is always in the
+    /// level select; when it ends with "on to Pegasus Bridge" the menu starts level 1 straight away.
     /// This is the drop-in version for the compiled demo; with the Unity source it becomes the
     /// UI Toolkit screens of the game structure plan (phase 2).
     /// </summary>
@@ -58,6 +60,7 @@ namespace StansGame.Additions
         Page roleBack = Page.Main;
         float pageOpened;
         float startAt = -1f;
+        int startIndex;
         Vector2 lastMouse = new Vector2(-1f, -1f);
         readonly List<string> phaseTitles = new List<string>();
         readonly List<string> phaseGoals = new List<string>();
@@ -94,7 +97,12 @@ namespace StansGame.Additions
                 if (Time.unscaledTime >= startAt) StartLevel(ns);
                 return;
             }
-            if (SettingsPanel.Open) return;
+            if (SettingsPanel.Open || Bootcamp.OfferBusy) return;
+            if (page == Page.Main && Bootcamp.TakeContinue())
+            {
+                TryStart(LevelCatalogue.ContinueIndex());
+                return;
+            }
             HandleKeys();
         }
 
@@ -180,7 +188,10 @@ namespace StansGame.Additions
             Play(choose);
             switch (i)
             {
-                case 0: TryStart(LevelCatalogue.ContinueIndex()); break;
+                case 0:
+                    if (Bootcamp.ShouldOffer()) Bootcamp.Offer(TryStart);
+                    else TryStart(LevelCatalogue.ContinueIndex());
+                    break;
                 case 1: levelFocus = LevelCatalogue.ContinueIndex(); Open(Page.Levels); break;
                 case 2: Open(Page.Coop); break;
                 case 3: SettingsPanel.Show(true); break;
@@ -193,13 +204,21 @@ namespace StansGame.Additions
         {
             if (!LevelCatalogue.IsUnlocked(index)) return;
             Play(choose);
+            startIndex = index;
+            // The bootcamp is trained with the standard kit, so it starts straight away; a level asks for the role first.
+            if (LevelCatalogue.All[index].Training)
+            {
+                startAt = Time.unscaledTime + 0.6f;
+                return;
+            }
             roleBack = page == Page.Levels ? Page.Levels : Page.Main;
             roleFocus = (int)Roles.Chosen;
             Open(Page.Role);
         }
 
         /// <summary>Starts the level with the chosen role. Only level 1 exists in the build; the
-        /// catalogue index picks the scene once there are more.</summary>
+        /// catalogue index picks the scene once there are more. The bootcamp runs in the same scene,
+        /// with the night mission held (see Bootcamp.Request).</summary>
         void StartAs(int role)
         {
             Roles.Chosen = (Role)role;
@@ -212,6 +231,7 @@ namespace StansGame.Additions
             startAt = -1f;
             titleSeen = true;
             ns.enabled = true;
+            if (LevelCatalogue.All[startIndex].Training) Bootcamp.Request();
             if (playAlone != null) playAlone.Invoke(ns, null);
             else Debug.LogError("Stan's Game: NetSession.PlayAlone not found; the menu cannot start the level");
         }
@@ -222,6 +242,12 @@ namespace StansGame.Additions
             phaseTitles.Clear();
             phaseGoals.Clear();
             LevelInfo l = LevelCatalogue.All[levelFocus];
+            if (l.Training)
+            {
+                phaseTitles.AddRange(Bootcamp.StationTitles);
+                phaseGoals.AddRange(Bootcamp.StationGoals);
+                return;
+            }
             MissionDirector md = MissionDirector.Instance;
             if (!l.Available || l != MissionWatch.Current || md == null || md.phases == null) return;
             foreach (MissionDirector.Phase ph in md.phases)
@@ -272,7 +298,7 @@ namespace StansGame.Additions
 
         bool MouseMovedTo(Rect r, Event e)
         {
-            if (e.type != EventType.Repaint || !r.Contains(e.mousePosition)) return false;
+            if (e.type != EventType.Repaint || !r.Contains(e.mousePosition) || Bootcamp.OfferBusy) return false;
             bool moved = (e.mousePosition - lastMouse).sqrMagnitude > 1f;
             return moved;
         }
@@ -284,7 +310,7 @@ namespace StansGame.Additions
 
         bool Clicked(Rect r, Event e)
         {
-            if (e.type == EventType.MouseDown && e.button == 0 && r.Contains(e.mousePosition) && startAt < 0f && !SettingsPanel.Open)
+            if (e.type == EventType.MouseDown && e.button == 0 && r.Contains(e.mousePosition) && startAt < 0f && !SettingsPanel.Open && !Bootcamp.OfferBusy)
             {
                 e.Use();
                 return true;
@@ -362,7 +388,7 @@ namespace StansGame.Additions
                     Ui.Fill(new Rect(r.x, r.y, 5f * s, r.height), Ui.A(Ui.Brass, fade));
                 }
                 float dim = open ? 1f : 0.45f;
-                Ui.Text(new Rect(r.x + 10f * s, r.y, 100f * s, r.height), l.Number.ToString("00"), UiFont.Display, 56f * s, Ui.A(Ui.Brass, dim * fade), TextAnchor.MiddleCenter);
+                Ui.Text(new Rect(r.x + 10f * s, r.y, 100f * s, r.height), l.Training ? "BC" : l.Number.ToString("00"), UiFont.Display, 56f * s, Ui.A(Ui.Brass, dim * fade), TextAnchor.MiddleCenter);
                 Ui.Text(new Rect(r.x + 120f * s, r.y + 14f * s, 500f * s, 38f * s), l.Title.ToUpperInvariant(), UiFont.Body, 28f * s, Ui.A(Ui.Paper, dim * fade), TextAnchor.MiddleLeft, false, false, true);
                 Ui.Text(new Rect(r.x + 120f * s, r.y + 54f * s, 500f * s, 26f * s), string.IsNullOrEmpty(l.Date) ? l.Place : l.Place + "   ·   " + l.Date,
                         UiFont.Body, 18f * s, Ui.A(Ui.Dim, dim * fade), TextAnchor.MiddleLeft);
@@ -370,6 +396,7 @@ namespace StansGame.Additions
                 Color sc;
                 if (!l.Available) { status = "LOCKED   ·   IN DEVELOPMENT"; sc = Ui.Dim; }
                 else if (!open) { status = "LOCKED   ·   COMPLETE LEVEL " + (l.Number - 1) + " FIRST"; sc = Ui.Dim; }
+                else if (l.Training && !rec.completed) { status = "OPTIONAL   ·   ABOUT 5 MINUTES"; sc = Ui.A(Ui.Paper, 0.8f); }
                 else if (rec.completed) { status = "COMPLETED   ·   BEST " + Progress.FormatTime(rec.bestTimeSeconds); sc = Ui.Green; }
                 else { status = "NOT COMPLETED YET"; sc = Ui.A(Ui.Paper, 0.8f); }
                 Ui.Text(new Rect(r.x + 120f * s, r.y + 86f * s, 500f * s, 26f * s), status, UiFont.Body, 17f * s, Ui.A(sc, fade), TextAnchor.MiddleLeft, false, false, true);
@@ -402,7 +429,7 @@ namespace StansGame.Additions
             y += sumH + 24f * s;
             if (phaseTitles.Count > 0)
             {
-                Ui.Text(new Rect(cx, y, tw, 26f * s), "OBJECTIVES", UiFont.Type, 18f * s, Ui.A(new Color(0.55f, 0.12f, 0.06f), fade), TextAnchor.MiddleLeft, false, false, true);
+                Ui.Text(new Rect(cx, y, tw, 26f * s), f.Training ? "STATIONS" : "OBJECTIVES", UiFont.Type, 18f * s, Ui.A(new Color(0.55f, 0.12f, 0.06f), fade), TextAnchor.MiddleLeft, false, false, true);
                 y += 34f * s;
                 float indent = 34f * s;
                 for (int i = 0; i < phaseTitles.Count && y < card.yMax - pad; i++)

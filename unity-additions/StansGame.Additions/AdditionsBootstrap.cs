@@ -32,9 +32,10 @@ namespace StansGame.Additions
             go.AddComponent<ObjectiveHud>();
             go.AddComponent<Atmosphere>();
             go.AddComponent<RagdollWrists>();
+            go.AddComponent<Bootcamp>();
             AudioListener.volume = GameSettings.MasterVolume;
             GameSettings.ApplyAtStart();
-            Debug.Log("Stan's Game: additions loaded (first-person view, weapon feel, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick, main menu and level select, glider exit, objective markers, roles, calls for a medic or ammunition, relaxed wrists on the dead)");
+            Debug.Log("Stan's Game: additions loaded (first-person view, weapon feel, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick, main menu and level select, glider exit, objective markers, roles, calls for a medic or ammunition, relaxed wrists on the dead, bootcamp)");
         }
 
         /// <summary>The player this PC controls, or null (menu, between respawns).</summary>
