@@ -7,7 +7,8 @@ namespace StansGame.Additions
     /// PlayerView, WeaponFeel, HitFeedback, HealthHud, Mantle, RoleKit and SquadCalls to the local player whenever one appears,
     /// including after a respawn, and AiUnstick to every AI soldier. Also runs the main menu,
     /// level select and level completion tracking (MainMenu, MissionWatch), the glider exit
-    /// (GliderExit) and the objective marker and banner (ObjectiveHud).
+    /// (GliderExit), the objective marker and banner (ObjectiveHud), and the graphics: night lighting and
+    /// sky (Atmosphere, NightSky), grass and leaves (Foliage) and flare lights (FlareLights).
     /// </summary>
     public sealed class AdditionsBootstrap : MonoBehaviour
     {
@@ -28,9 +29,12 @@ namespace StansGame.Additions
             go.AddComponent<GliderExit>();
             go.AddComponent<ObjectiveHud>();
             go.AddComponent<Atmosphere>();
+            go.AddComponent<Foliage>();
+            go.AddComponent<FlareLights>();
             go.AddComponent<RagdollWrists>();
+            TracerFix.Apply();
             AudioListener.volume = GameSettings.MasterVolume;
-            Debug.Log("Stan's Game: additions loaded (first-person view, weapon feel, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick, main menu and level select, glider exit, objective markers, roles, calls for a medic or ammunition, relaxed wrists on the dead)");
+            Debug.Log("Stan's Game: additions loaded (first-person view, weapon feel, hit feedback, health bar, F10 settings, climbing over low obstacles, AI unstick, main menu and level select, glider exit, objective markers, roles, calls for a medic or ammunition, relaxed wrists on the dead, night sky and lighting, detailed foliage, flares)");
         }
 
         /// <summary>The player this PC controls, or null (menu, between respawns).</summary>

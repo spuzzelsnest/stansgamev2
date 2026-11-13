@@ -5,7 +5,8 @@ namespace StansGame.Additions
 {
     /// <summary>
     /// F10 opens a small settings window: view, field of view, aim field of view, mouse sensitivity,
-    /// hit effects, heartbeat and volume. While it is open the local player's controller is paused
+    /// hit effects, weapon motion, volume, heartbeat and the graphics switches (night lighting, smooth edges,
+    /// detailed grass and trees, flares). While it is open the local player's controller is paused
     /// (no shooting or turning when you click a slider) and the cursor is free. Co-op keeps running.
     /// The main menu opens it too (<see cref="Show"/>); there Esc also closes it.
     /// </summary>
@@ -84,12 +85,12 @@ namespace StansGame.Additions
             if (!Open) return;
             GUI.depth = -200;   // over the main menu
             float s = Screen.height / 1080f;
-            float w = 460f * s, h = 640f * s;
+            float w = 460f * s, h = 690f * s;
             window = new Rect((Screen.width - w) * 0.5f, (Screen.height - h) * 0.5f, w, h);
 
             Matrix4x4 keep = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(s, s, 1f));
-            Rect r = new Rect(window.x / s, window.y / s, 460f, 640f);
+            Rect r = new Rect(window.x / s, window.y / s, 460f, 690f);
             GUI.Box(r, "");
             GUILayout.BeginArea(new Rect(r.x + 20f, r.y + 16f, r.width - 40f, r.height - 32f));
 
@@ -120,6 +121,10 @@ namespace StansGame.Additions
             if (el != GameSettings.EnhancedLighting) GameSettings.EnhancedLighting = el;
             bool se = GUILayout.Toggle(GameSettings.SmoothEdges, "  Smooth edges (anti-aliasing, softer leaves)");
             if (se != GameSettings.SmoothEdges) GameSettings.SmoothEdges = se;
+            bool df = GUILayout.Toggle(GameSettings.DetailedFoliage, "  Detailed grass and trees");
+            if (df != GameSettings.DetailedFoliage) GameSettings.DetailedFoliage = df;
+            bool fl = GUILayout.Toggle(GameSettings.Flares, "  Flares over the battlefield");
+            if (fl != GameSettings.Flares) GameSettings.Flares = fl;
 
             GUILayout.FlexibleSpace();
             GUILayout.Label("Keys on this keyboard: " + KeyLabel.Move + " move, " + KeyLabel.Of(Key.C) + " kneel, " + KeyLabel.Of(Key.Z) + " prone.");
