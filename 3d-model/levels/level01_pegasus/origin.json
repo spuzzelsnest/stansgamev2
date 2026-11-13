@@ -1,0 +1,47 @@
+{
+  "level": "01",
+  "name": "Pegasus Bridge",
+  "crs": "EPSG:2154 (RGF93 / Lambert-93)",
+  "origin_anchor": "ww2maps.net site 995 position, 'bridge centre' per the level plan and CATHAL's figure",
+  "origin_wgs84": {
+    "lat": 49.242462,
+    "lng": -0.274578
+  },
+  "l93_x": 461580,
+  "l93_y": 6909698,
+  "origin_note": "origin rounded to whole metres; local = L93 - origin; local axes are Lambert-93 grid axes (X east, Y grid north)",
+  "height_base": {
+    "value_m": 3.4,
+    "datum": "NGF-IGN69",
+    "note": "z_local = NGF-IGN69 height - base. Base = RGE ALTI 1 m height at the origin (bridge point), bilinear, rounded to 0.01 m. Set by terrain.py in S3."
+  },
+  "north": {
+    "type": "grid north",
+    "meridian_convergence_deg": -2.376,
+    "note": "at lng -0.2746 grid north is about 2.4 deg west of true north (true north is 2.4 deg east of local +Y)"
+  },
+  "playable_box_wgs84": {
+    "sw": {
+      "lat": 49.2385,
+      "lng": -0.283
+    },
+    "ne": {
+      "lat": 49.2485,
+      "lng": -0.265
+    }
+  },
+  "playable_box_l93": {
+    "x_min": 460948.78,
+    "x_max": 462304.68,
+    "y_min": 6909283.49,
+    "y_max": 6910340.56,
+    "note": "bounding box of the lat/lng box; the box is slightly rotated in grid terms, so this is the enclosing rectangle"
+  },
+  "playable_box_local": {
+    "x_min": -631.22,
+    "x_max": 724.68,
+    "y_min": -414.51,
+    "y_max": 642.56
+  },
+  "units": "metres, Z up, 1 Blender unit = 1 m"
+}
