@@ -1,0 +1,15 @@
+{
+ "source": "IGN LiDAR HD MNT 0.5 m, tiles 0386_6932 0386_6933 0387_6932 0387_6933 (Lambert-93 / IGN69, acquired 2022), Etalab Open Licence 2.0; post-war earthworks (the N13 bypass and its interchange) smoothed out",
+ "resolution": 1025,
+ "size": 1024.0,
+ "baseY": -13.0,
+ "height": 25.0,
+ "zref": 26.71,
+ "coverage": 1.0,
+ "rowOrder": "row 0 = z -512, column 0 = x -512",
+ "origin_L93": [
+  386808.5,
+  6931821.0
+ ],
+ "gridBearingDeg": 340.0
+}

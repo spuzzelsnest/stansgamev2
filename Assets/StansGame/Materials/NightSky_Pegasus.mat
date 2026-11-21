@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: NightSky_Pegasus
+  m_Shader: {fileID: 4800000, guid: 7ba278c9f6d2a684b97d760918e66b63, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _CloudTex:
+        m_Texture: {fileID: 2800000, guid: 77a0ac3a738588a4190c44e487f6ab7c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MoonTex:
+        m_Texture: {fileID: 2800000, guid: e10ab77aa9c43ec42b373a16d113fdec, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Panorama:
+        m_Texture: {fileID: 2800000, guid: 65a1478990db5a4478f8d4acb75afa0e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _CloudScale: 0.4
+    - _Coverage: 0.5
+    - _MoonBright: 2.2
+    - _MoonSize: 0.42
+    - _StarBright: 1.3
+    m_Colors:
+    - _CloudDark: {r: 0.05, g: 0.06, b: 0.085, a: 1}
+    - _CloudLit: {r: 0.2, g: 0.22, b: 0.27, a: 1}
+    - _GlowColor: {r: 0.19999996, g: 0.24999997, b: 0.35999998, a: 1}
+    - _MoonColor: {r: 1, g: 0.96999997, b: 0.9, a: 1}
+    - _Wind: {r: -0.0045, g: 0.0032, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

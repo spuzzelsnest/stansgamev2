@@ -1,0 +1,54 @@
+class Builder:
+    def __init__(s): s.bm = bmesh.new(); s.mi = {}
+    def _mi(s, m):
+        if m not in s.mi: s.mi[m] = len(s.mi)
+        return s.mi[m]
+    def _faces(s, verts, faces, m):
+        vs = [s.bm.verts.new(v) for v in verts]
+        i = s._mi(m)
+        for f in faces:
+            try:
+                fc = s.bm.faces.new([vs[k] for k in f]); fc.material_index = i
+            except ValueError: pass
+    def box(s, x0, x1, y0, y1, z0, z1, m='paint'):
+        x0, x1 = min(x0, x1), max(x0, x1); y0, y1 = min(y0, y1), max(y0, y1); z0, z1 = min(z0, z1), max(z0, z1)
+        v = [(x0,y0,z0),(x1,y0,z0),(x1,y1,z0),(x0,y1,z0),(x0,y0,z1),(x1,y0,z1),(x1,y1,z1),(x0,y1,z1)]
+        s._faces(v, [(0,3,2,1),(4,5,6,7),(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7)], m)
+    def bar(s, p, q, w, h, m='paint', up=(0,0,1)):
+        """square-ish member from p to q, w across (local side), h in the 'up' plane"""
+        p = Vector(p); q = Vector(q); d = (q - p); L = d.length
+        if L < 1e-4: return
+        a = d / L; u = Vector(up)
+        if abs(a.dot(u)) > 0.95: u = Vector((1, 0, 0)) if abs(a.x) < 0.9 else Vector((0, 1, 0))
+        side = a.cross(u).normalized(); up2 = side.cross(a).normalized()
+        c = []
+        for t in (p, q):
+            for sx, sz in ((-1,-1),(1,-1),(1,1),(-1,1)):
+                c.append(tuple(t + side * (sx * w / 2) + up2 * (sz * h / 2)))
+        s._faces(c, [(0,1,2,3),(4,7,6,5),(0,4,5,1),(1,5,6,2),(2,6,7,3),(3,7,4,0)], m)
+    def prism_xz(s, prof, y0, y1, m='paint'):
+        """extrude a convex/simple polygon given in (x, z) between y0 and y1"""
+        n = len(prof)
+        v = [(x, y0, z) for x, z in prof] + [(x, y1, z) for x, z in prof]
+        f = [tuple(range(n))[::-1], tuple(range(n, 2 * n))]
+        for i in range(n):
+            j = (i + 1) % n; f.append((i, j, n + j, n + i))
+        s._faces(v, f, m)
+    def ring(s, cx, cz, r0, r1, a0, a1, y0, y1, m='paint', steps=24):
+        """annular sector in the XZ plane (angles in degrees), extruded in Y"""
+        for k in range(steps):
+            t0 = math.radians(a0 + (a1 - a0) * k / steps); t1 = math.radians(a0 + (a1 - a0) * (k + 1) / steps)
+            pts = [(cx + r0 * math.cos(t0), cz + r0 * math.sin(t0)), (cx + r1 * math.cos(t0), cz + r1 * math.sin(t0)),
+                   (cx + r1 * math.cos(t1), cz + r1 * math.sin(t1)), (cx + r0 * math.cos(t1), cz + r0 * math.sin(t1))]
+            s.prism_xz(pts, y0, y1, m)
+    def cyl_y(s, cx, cz, r, y0, y1, m='paint', n=16):
+        pts = [(cx + r * math.cos(2 * math.pi * k / n), cz + r * math.sin(2 * math.pi * k / n)) for k in range(n)]
+        s.prism_xz(pts, y0, y1, m)
+    def finish(s, name, origin=(0, 0, 0)):
+        me = bpy.data.meshes.new(name); s.bm.to_mesh(me); s.bm.free()
+        for m, i in sorted(s.mi.items(), key=lambda kv: kv[1]): me.materials.append(M[m])
+        me.transform(Matrix.Translation(-Vector(origin)))
+        ob = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(ob)
+        ob.location = origin
+        return ob
+

@@ -1,0 +1,22 @@
+# One photograph a line: file | caption | credit. Edit freely; the order here is the order of the slideshow.
+pb_aerial_march | Spring 1944: an RAF photograph of the canal bridge. For months the planners studied pictures like this one. | RAF reconnaissance photograph, 1944
+pb_aerial_high | From high above: the Caen Canal, the River Orne and the flat fields between them. Two bridges, a few hundred metres apart, carried the only road across. | RAF reconnaissance photograph, 1944
+pb_glider_tow | A Horsa glider on tow behind its tug. On the night of 5 June, Halifax bombers towed six Horsas with Major Howard's men towards the bridges. | Wartime photograph
+pb_aerial_june | June 1944: the canal bridge from the air. The Horsas lie in the small field right beside it, exactly where the plan wanted them. | RAF reconnaissance photograph, 1944
+pb_aerial_june2 | Closer in: the German trenches zig-zag beside the road, and a glider rests where it came down. | RAF reconnaissance photograph, 1944
+pb_aerial_lz | Later on D-Day many more gliders landed in the fields around the bridges, bringing more men, jeeps and guns. | RAF reconnaissance photograph, 1944
+pb02 | A Horsa where it stopped, its nose in the grass. The pilots landed in the dark, flying by stopwatch and compass. | Wartime photograph
+pb03 | A glider broken open by its landing. They were built of wood, and many did not survive a hard landing. | Wartime photograph
+pb06 | The black and white stripes on the wings were painted on for D-Day, so that Allied gunners would not fire on their own aircraft. | Wartime photograph
+pb13 | A Horsa lies where it came to rest beside the canal road. | Wartime photograph
+pb11 | Wreckage in the landing zone, with the houses on the far bank behind it. | Wartime photograph
+pb12 | Field graves beside the landing zone. Each cross was a soldier who did not come home. | Wartime photograph
+pb04 | The bridge and, on the left, the Café Gondrée: one of the first houses in France to be freed. | Wartime photograph
+pb08 | The bridge from the canal, with the house and the bridge-keeper's hut on the bank. | Wartime photograph
+pb01 | Soon after D-Day, lorries and jeeps cross the bridge, now firmly in British hands. | Wartime photograph
+pb05 | Supply lorries on the road to the bridge. For weeks it was the main way across for the troops east of the Orne. | Wartime photograph
+pb07 | A carrier full of soldiers drives over the bridge. | Wartime photograph
+pb09 | A jeep with a stretcher carries a wounded man across the bridge. | Wartime photograph
+pb10 | The road from Bénouville to the bridge, with the bridge tower at the end. | Wartime photograph
+pb14 | British soldiers march off the bridge. | Wartime photograph
+chateau_today | The Château de Bénouville today. In 1944 it was a maternity home, run by Madame Léa Vion, and it stood in the middle of the fighting. | Photograph of today
