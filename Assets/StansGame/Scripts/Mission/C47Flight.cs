@@ -34,7 +34,7 @@ namespace StansGame
         void Awake()
         {
             drone = gameObject.AddComponent<AudioSource>();
-            drone.clip = Sfx.AircraftDrone; drone.loop = true; drone.spatialBlend = 1f; drone.minDistance = 20f; drone.maxDistance = 1500f; drone.volume = 0.8f;
+            drone.clip = Sfx.AircraftDrone; drone.loop = true; drone.spatialBlend = 1f; drone.minDistance = 20f; drone.maxDistance = 1500f; drone.volume = 0.45f;
             foreach (var p in stick) if (p && p.Current == ParachuteDrop.State.Waiting) p.gameObject.SetActive(false);   // in the aircraft
         }
 

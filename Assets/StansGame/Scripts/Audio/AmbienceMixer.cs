@@ -42,13 +42,22 @@ namespace StansGame
                 nextProbe = Time.time + 0.2f;
                 // height above whatever is below (ground, roof, deck); nothing within 400 m = high in the air
                 // (the aircraft you're riding in - C-47 or glider - doesn't count as ground)
-                height = 400f;
+                height = 400f; bool hitSomething = false;
                 int n = Physics.RaycastNonAlloc(p + Vector3.up * 0.5f, Vector3.down, hits, 400f, ~0, QueryTriggerInteraction.Ignore);
                 for (int i = 0; i < n; i++)
                 {
                     var c = hits[i].collider;
                     if (c.GetComponentInParent<C47Flight>() || c.GetComponentInParent<GliderApproach>()) continue;
                     height = Mathf.Min(height, Mathf.Max(0f, hits[i].distance - 0.5f));
+                    hitSomething = true;
+                }
+                // nothing with a collider below (a mesh without one, an unfinished corner, a cinematic camera):
+                // don't take that as "high in the air", or the rush of wind plays on and on at ground level
+                if (!hitSomething)
+                {
+                    var terrain = Terrain.activeTerrain;
+                    height = terrain ? Mathf.Max(0f, p.y - terrain.SampleHeight(p) - terrain.transform.position.y)
+                                     : (p.y > 80f ? 400f : 0f);
                 }
             }
             if (haveLastY && Time.deltaTime > 0f) fallSpeed = Mathf.Lerp(fallSpeed, Mathf.Max(0f, (lastY - p.y) / Time.deltaTime), Time.deltaTime * 2f);

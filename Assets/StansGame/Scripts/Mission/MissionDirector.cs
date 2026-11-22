@@ -484,11 +484,7 @@ namespace StansGame
                 GUI.Label(new Rect(20, Screen.height - 10 - Hud.HealthHeight - 30, 600, 26), held, style);
                 string pose = player.IsProne ? "prone" : player.IsCrouching ? "kneeling" : "standing";
                 if (hs) Hud.HealthBar(hs, 20, Screen.height - 10, pose);
-                var entry = player.GetComponent<VehicleEntry>();
-                if (entry && (entry.Nearby || entry.NearbyGun || entry.NearbyTruck) && !(kit && kit.NearbyPickup))
-                    GUI.Label(new Rect(Screen.width / 2 - 80, Screen.height / 2 + 40, 400, 26),
-                              entry.NearbyGun ? $"Press E to man the {entry.NearbyGun.displayName}"
-                              : entry.NearbyTruck ? $"Press E to drive the {entry.NearbyTruck.displayName}" : "Press E to get in", style);
+                // "Press E to ..." is drawn by VehicleEntry itself
             }
             else if (player)
             {

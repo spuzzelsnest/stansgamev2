@@ -66,6 +66,11 @@ namespace StansGame
         [Tooltip("A recording in Resources/Audio for the engine (car_engine for the Kübelwagen); empty: the lorry engine.")]
         public string engineSound = "";
 
+        [Header("Seats")]
+        [Tooltip("Lorry: driver and mate in the cab, eight on the benches in the back. Car (Kübelwagen): two in front, two behind.")]
+        public SeatLayout layout = SeatLayout.Lorry;
+        public enum SeatLayout { Lorry, Car }
+
         [Header("Camera")]
         public float cameraDistance = 9.5f;
         public float cameraHeight = 2.4f;
@@ -82,6 +87,11 @@ namespace StansGame
         public bool DrivenByMe => localDriver != null;
 
         SoldierController localDriver, pending;
+        // a passenger: this machine's own soldier riding along (each player looks after his own seat; his position
+        // goes to the others with the rest of him, so nothing extra crosses the network)
+        SoldierController localRider; int riderSeat = -1; float riderAt;
+        SoldierController Occupant => localDriver ? localDriver : localRider;
+        Vector3[] seats; int cabSeats;
         float pendingUntil;
         bool takenOver;
         AmbientVehicle ambient;
@@ -165,7 +175,91 @@ namespace StansGame
         // ------------------------------------------------------------------ getting in and out
 
         /// <summary>Can this soldier get in now? (Not while someone else is driving, nor while it's parked off the map.)</summary>
-        public bool CanEnter => !Occupied && pending == null && transform.position.y > -AmbientVehicle.HiddenDepth * 0.5f;
+        public bool CanEnter => !Occupied && pending == null && localRider == null && transform.position.y > -AmbientVehicle.HiddenDepth * 0.5f;
+        /// <summary>Is there a passenger seat free (the driver's is taken)?</summary>
+        public bool CanRide => localDriver == null && localRider == null && pending == null && transform.position.y > -AmbientVehicle.HiddenDepth * 0.5f && FreeSeat() >= 0;
+
+        // ------------------------------------------------------------------ seats
+
+        void MakeSeats()
+        {
+            if (layout == SeatLayout.Car)
+            {
+                float fz = frontZ - 0.95f, rz = frontZ - 1.85f;
+                seats = new[] { new Vector3(-0.33f, 0.55f, fz), new Vector3(0.33f, 0.55f, fz), new Vector3(-0.33f, 0.65f, rz), new Vector3(0.33f, 0.65f, rz) };
+                cabSeats = 0;   // an open car: everyone keeps his rifle
+                return;
+            }
+            var list = new List<Vector3> { new Vector3(-0.42f, 1.3f, frontZ - 0.95f), new Vector3(0.42f, 1.3f, frontZ - 0.95f) };
+            for (int k = 0; k < 4; k++)   // the benches down both sides of the load bed
+            {
+                float z = frontZ - 2.55f - k * 0.85f;
+                list.Add(new Vector3(-0.72f, 1.5f, z)); list.Add(new Vector3(0.72f, 1.5f, z));
+            }
+            seats = list.ToArray(); cabSeats = 2;
+        }
+
+        const float SitDrop = 0.55f;   // the kneeling pose's hips are this far above its feet
+        Vector3 SeatRoot(int i) => transform.TransformPoint(seats[i]) + Vector3.down * SitDrop;
+        Quaternion SeatFacing(int i)
+        {
+            // the cab and the car face forward; on the benches they face each other across the bed
+            float turn = i < cabSeats || layout == SeatLayout.Car ? 0f : seats[i].x < 0f ? 90f : -90f;
+            return Quaternion.Euler(0f, transform.eulerAngles.y + turn, 0f);
+        }
+
+        int FreeSeat()
+        {
+            if (seats == null) MakeSeats();
+            for (int i = 1; i < seats.Length; i++)
+            {
+                Vector3 p = SeatRoot(i); bool taken = false;
+                foreach (var h in Health.All)
+                    if (h && !h.IsDead && (h.transform.position - p).sqrMagnitude < 0.3f) { taken = true; break; }
+                if (!taken) return i;
+            }
+            return -1;
+        }
+
+        /// <summary>A soldier on a seat: seen through the glass, kneeling as if sat (there is no sitting clip), the
+        /// rifle put away in a closed cab.</summary>
+        void SitDown(SoldierController s, int seat)
+        {
+            s.SetControlActive(false);
+            bool cab = seat < cabSeats;
+            foreach (var r in s.GetComponentsInChildren<Renderer>(true)) r.enabled = !(cab && r.GetComponentInParent<Weapon>());
+            if (!s.TryGetComponent(out Stance st)) { st = s.gameObject.AddComponent<Stance>(); st.animator = s.animator; }
+            st.Set(StanceKind.Crouch);
+            if (s.animator) Locomotion.Set(s.animator, Vector3.zero, 0f, false);
+            s.transform.SetPositionAndRotation(SeatRoot(seat), SeatFacing(seat));
+        }
+
+        static void StandUp(SoldierController s)
+        {
+            if (s.TryGetComponent(out Stance st)) st.Set(StanceKind.Stand);
+        }
+
+        /// <summary>Climb in as a passenger.</summary>
+        public void Ride(SoldierController soldier)
+        {
+            if (!soldier || !CanRide) return;
+            int seat = FreeSeat(); if (seat < 0) return;
+            localRider = soldier; riderSeat = seat; riderAt = Time.time;
+            SitDown(soldier, seat);
+            soldier.InVehicle = seat < cabSeats;   // safe behind the cab's steel, not on an open bench
+            Cursor.lockState = CursorLockMode.Locked;
+            camYaw = transform.eulerAngles.y; camPitch = 12f; lastLook = -10f;
+            hintUntil = Time.time + 6f;
+        }
+
+        void GetOff()
+        {
+            var s = localRider; if (!s) return;
+            localRider = null; riderSeat = -1;
+            s.InVehicle = false;
+            StandUp(s);
+            s.SetControlActive(true, ExitSpot());
+        }
 
         public void Enter(SoldierController soldier)
         {
@@ -180,7 +274,8 @@ namespace StansGame
         {
             pending = null;
             localDriver = soldier;
-            soldier.SetControlActive(false);
+            if (seats == null) MakeSeats();
+            SitDown(soldier, 0);   // at the wheel, seen through the windscreen
             soldier.InVehicle = true;
             Cursor.lockState = CursorLockMode.Locked;
             camYaw = transform.eulerAngles.y; camPitch = 12f; lastLook = -10f;
@@ -194,6 +289,7 @@ namespace StansGame
             var s = localDriver;
             localDriver = null;
             s.InVehicle = false;
+            StandUp(s);
             s.SetControlActive(true, ExitSpot());
             if (link != null) { if (Net.IsRemoteClient) link.RequestExit(); else link.ServerRelease(); }
         }
@@ -255,6 +351,13 @@ namespace StansGame
                     // H: the horn - in co-op the host plays it on every machine
                     if (link != null) link.SendHorn(); else PlayHorn();
                 }
+            }
+
+            if (localRider)
+            {
+                var h = localRider.GetComponent<Health>();
+                if (h && h.IsDead) { var s = localRider; localRider = null; riderSeat = -1; s.InVehicle = false; }
+                else if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame && Time.time > riderAt + 0.4f) GetOff();
             }
 
             if (TakenOver && ambient && ambient.enabled) { ambient.Release(); RestWheels(); }
@@ -377,6 +480,9 @@ namespace StansGame
                 if (col.transform.IsChildOf(transform) || touching.Contains(col)) continue;
                 if (col is TerrainCollider) continue;
                 if (localDriver && col.transform.IsChildOf(localDriver.transform)) continue;
+                var who = col.GetComponentInParent<SoldierController>();
+                if (who && box && Aboard(who.transform.position)) continue;   // the crew and passengers, our own or other players'
+
                 if (col is CharacterController cc && !cc.enabled) continue;
                 return true;
             }
@@ -445,20 +551,28 @@ namespace StansGame
             seenSpeed = mv.sqrMagnitude > 400f ? 0f : Mathf.Lerp(seenSpeed, mv.magnitude / dtv, Mathf.Min(1f, dtv * 6f));   // how fast it's going, as this machine sees it
             lastPos = transform.position;
 
-            if (localDriver) { RideAlong(); ChaseCamera(); }
+            if (Occupant) { RideAlong(); ChaseCamera(); }
+        }
+
+        bool Aboard(Vector3 world)
+        {
+            Vector3 l = transform.InverseTransformPoint(world) - box.center;
+            return Mathf.Abs(l.x) < box.size.x * 0.5f + 0.2f && Mathf.Abs(l.z) < box.size.z * 0.5f + 0.2f && l.y > -box.size.y * 0.5f - 0.8f && l.y < box.size.y * 0.5f + 0.5f;
         }
 
         /// <summary>The driver's soldier sits in the cab (out of sight): enemies aim at the lorry, and the soldier is
         /// where the lorry is when he gets out.</summary>
         void RideAlong()
         {
-            Vector3 seat = transform.TransformPoint(new Vector3(-0.45f, 0.4f, frontZ - 0.9f));
-            localDriver.transform.SetPositionAndRotation(seat, Quaternion.Euler(0f, transform.eulerAngles.y, 0f));
+            if (seats == null) MakeSeats();
+            int i = localDriver ? 0 : riderSeat;
+            Occupant.transform.SetPositionAndRotation(SeatRoot(i), SeatFacing(i));
+            if (Occupant.animator) Locomotion.Set(Occupant.animator, Vector3.zero, 0.1f, false);
         }
 
         void ChaseCamera()
         {
-            var cam = localDriver.cam ? localDriver.cam : Camera.main;
+            var cam = Occupant.cam ? Occupant.cam : Camera.main;
             if (!cam) return;
             Vector2 look = GameInput.LookDelta * mouseSensitivity;
             if (look.sqrMagnitude > 0.0004f) lastLook = Time.time;
@@ -480,7 +594,7 @@ namespace StansGame
             for (int i = 0; i < n; i++)
             {
                 var c = hits[i].collider;
-                if (c.transform.IsChildOf(transform) || c.transform.IsChildOf(localDriver.transform) || c is CharacterController) continue;
+                if (c.transform.IsChildOf(transform) || c.transform.IsChildOf(Occupant.transform) || c is CharacterController) continue;
                 if (hits[i].distance > 0f && hits[i].distance < best) best = hits[i].distance;
             }
             desired = pivot + dir.normalized * Mathf.Max(1.2f, best);
@@ -491,14 +605,16 @@ namespace StansGame
 
         void OnGUI()
         {
-            if (!localDriver || Time.time > hintUntil) return;
+            if (!Occupant || Time.time > hintUntil) return;
             var style = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleCenter };
+            if (!localDriver) { GUI.Label(new Rect(0, Screen.height - 120, Screen.width, 26), $"Riding in the {displayName}  ·  mouse: look around  ·  E  get off", style); return; }
             GUI.Label(new Rect(0, Screen.height - 120, Screen.width, 26), $"{displayName}:  W / S  drive and brake  ·  A / D  steer  ·  Space  handbrake  ·  H  horn  ·  E  get out", style);
         }
 
         void OnDestroy()
         {
             if (localDriver) { localDriver.InVehicle = false; localDriver.SetControlActive(true, transform.position + Vector3.up * 3f); }
+            if (localRider) { localRider.InVehicle = false; localRider.SetControlActive(true, transform.position + Vector3.up * 3f); }
         }
     }
 }

@@ -3,7 +3,22 @@ guid: c9ebe2516b721b94b9cf409e36bda18b
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Pak38_Paint
+    second: {fileID: 2100000, guid: c356f14d8dfae054c862a853beb084db, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Pak38_Rubber
+    second: {fileID: 2100000, guid: 0a51aca9f0c2e1146b3f0a8b12952c10, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Pak38_Steel
+    second: {fileID: 2100000, guid: e84038226a2eaeb42a0b7a582977b66c, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

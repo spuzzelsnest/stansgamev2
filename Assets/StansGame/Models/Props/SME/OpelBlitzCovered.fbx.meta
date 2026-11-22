@@ -3,7 +3,22 @@ guid: 155b67b3662424d40a837c5948f9c748
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: OpelBlitz_Body
+    second: {fileID: 2100000, guid: 79f5d9b49acd856419dda14417d0b4d3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: OpelBlitz_Glass
+    second: {fileID: 2100000, guid: 78fa4ad671113d64fb0d4127aa04f616, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: OpelBlitz_Wheel
+    second: {fileID: 2100000, guid: 8bc56cfa35c77a04a89204e80b17e1e5, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

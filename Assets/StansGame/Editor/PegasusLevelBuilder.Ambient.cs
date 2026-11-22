@@ -214,9 +214,10 @@ namespace StansGame.EditorTools
         /// </summary>
         static void WindowLightsFor(Transform group, int seed, float share, float litAtStart, Vector3 centre, int maxSpill)
         {
-            var lit = Mat("Window_Lit", new Color(0.35f, 0.25f, 0.12f), 0.8f);
+            // the blackout: every window is curtained, so a lamp inside shows only as a faint glow round the edges
+            var lit = Mat("Window_Lit", new Color(0.12f, 0.08f, 0.05f), 0.8f);
             lit.EnableKeyword("_EMISSION");
-            lit.SetColor("_EmissionColor", new Color(1f, 0.62f, 0.28f) * 2.4f);
+            lit.SetColor("_EmissionColor", new Color(1f, 0.55f, 0.25f) * 0.35f);
             lit.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
             EditorUtility.SetDirty(lit);
             var houses = new List<Transform>();
@@ -241,7 +242,7 @@ namespace StansGame.EditorTools
                         l = new GameObject("Window light").AddComponent<Light>();
                         l.transform.SetParent(house, false);
                         l.transform.position = w.position + outward * 1.3f;
-                        l.type = LightType.Point; l.range = 7f; l.intensity = 1.6f;
+                        l.type = LightType.Point; l.range = 3f; l.intensity = 0.25f;   // only what slips past the curtain
                         l.color = new Color(1f, 0.72f, 0.42f); l.shadows = LightShadows.None;
                     }
                     spill.Add(l);

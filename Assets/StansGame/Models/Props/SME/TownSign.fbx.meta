@@ -3,7 +3,12 @@ guid: 556009a4ffba50f40a3a79e6bcecab3c
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: SME_TownSign
+    second: {fileID: 2100000, guid: 4d38b3cfac509ba4ca9a6a2435ba0155, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,12 @@ guid: 8d1b442d87ceb24418a6952144994d8c
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wheelbarrow
+    second: {fileID: 2100000, guid: de39661a16f8f7e40b2c9fdd80786726, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

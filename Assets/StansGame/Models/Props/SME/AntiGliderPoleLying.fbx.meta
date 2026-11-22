@@ -3,7 +3,12 @@ guid: 175abce27bd39e243a77e4a818d3b182
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: AntiGliderPole
+    second: {fileID: 2100000, guid: ead2a82b85560434eb14322ba95b214a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

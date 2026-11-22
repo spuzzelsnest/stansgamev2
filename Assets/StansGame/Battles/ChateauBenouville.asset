@@ -1,0 +1,664 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2599ca87022ed3a4cb7311c4366b2b4d, type: 3}
+  m_Name: ChateauBenouville
+  m_EditorClassIdentifier: Assembly-CSharp::StansGame.BattlePlan
+  level: ChateauBenouville
+  notes: Written from the level as the builder placed it. Positions, facing and skill set here are applied on every rebuild.
+  attacker:
+    name: Kampfgruppe Rauch, 21st Panzer Division
+    faction: 1
+    notes: 
+    commander:
+      name: Josef Rauch
+      rank: Oberst
+      unit: Panzergrenadier-Regiment 192 (Kampfgruppe Rauch), 21st Panzer Division
+      portrait: {fileID: 2800000, guid: ffb354655d78ada448bd47a304f21823, type: 3}
+      bio: "His regiment's second battalion was sent against B\xE9nouville in the night of 5/6 June; through the day his men attacked A Company again and again, mostly from the west and north-west."
+      reinforceBelow: 0.6
+      fallBackBelow: 0.3
+      maxSend: 3
+      bounding: 1
+      boundSeconds: 7
+      regroupBelow: 0.4
+      orderInterval: 3
+    groups:
+    - id: "environment/ch\xE2teau-de-b\xE9nouville/lt-hoeller's-party-on-the-ch\xE2teau-roof"
+      name: "Lt Hoeller's party on the ch\xE2teau roof"
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.3
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: Lt Hans Hoeller (NCO with MP40)
+        kind: MP40
+        position: {x: -163.4127, y: 27.74901, z: -800.75116}
+        yaw: 11.534215
+      - name: Grenadier with Hoeller
+        kind: 
+        position: {x: -162, y: 27.749008, z: -799.99994}
+        yaw: 11.4475975
+      - name: Grenadier with Hoeller
+        kind: 
+        position: {x: -160.58728, y: 27.749012, z: -799.24884}
+        yaw: 11.360762
+    - id: actors/germans/germans-in-the-south-of-the-village-(02:00)
+      name: Germans in the south of the village (02:00)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.35
+      mgSkill: 0.35
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: NCO with MP40 (village)
+        kind: MP40
+        position: {x: -275.57663, y: 0.9489422, z: -467.03003}
+        yaw: 0
+      - name: Grenadier (village)
+        kind: 
+        position: {x: -254.03531, y: -0.6218529, z: -492}
+        yaw: 0
+      - name: Grenadier (village)
+        kind: 
+        position: {x: -282.05994, y: -0.5521717, z: -514.2918}
+        yaw: 0
+      - name: MG42 gunner (village)
+        kind: MG42
+        position: {x: -254.8488, y: -1.1170301, z: -532.2027}
+        yaw: 0
+      - name: Grenadier (village)
+        kind: 
+        position: {x: -278.8841, y: -1.5739698, z: -554.2027}
+        yaw: 0
+      - name: Grenadier (village)
+        kind: 
+        position: {x: -259.64136, y: 1.7787914, z: -578.63837}
+        yaw: 0
+      - name: Grenadier (village)
+        kind: 
+        position: {x: -282.90918, y: 0.87277126, z: -603.87445}
+        yaw: 0
+      - name: Grenadier (village)
+        kind: 
+        position: {x: -260.24707, y: 3.3016024, z: -624}
+        yaw: 0
+    - id: "actors/germans/germans-in-the-ch\xE2teau-park"
+      name: "Germans in the ch\xE2teau park"
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.35
+      mgSkill: 0.35
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: Grenadier (park)
+        kind: 
+        position: {x: -205, y: 5.464201, z: -735}
+        yaw: 20.000002
+      - name: MG42 gunner (park)
+        kind: MG42
+        position: {x: -180, y: 5.6303787, z: -748}
+        yaw: 20.000002
+      - name: Grenadier (park)
+        kind: 
+        position: {x: -135, y: 3.6623325, z: -742}
+        yaw: 20.000002
+      - name: Grenadier (park)
+        kind: 
+        position: {x: -112, y: -2.196484, z: -790}
+        yaw: 20.000002
+      - name: Grenadier (park)
+        kind: 
+        position: {x: -230, y: 5.6207657, z: -800}
+        yaw: 20.000002
+      - name: Grenadier (park)
+        kind: 
+        position: {x: -215, y: 5.9778433, z: -860}
+        yaw: 20.000002
+    - id: actors/germans/counter-attack-1-(west,-over-the-fields)
+      name: Counter-attack 1 (west, over the fields)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 1
+      awake: 1
+      skill: 0.4
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: objective
+      route: []
+      units:
+      - name: 'Counter-attack 1 (west, over the fields): NCO with MP40'
+        kind: MP40
+        position: {x: -559.7847, y: 9.885784, z: -517.00775}
+        yaw: 94.11491
+      - name: 'Counter-attack 1 (west, over the fields): Panzergrenadier'
+        kind: 
+        position: {x: -560.2583, y: 9.7221775, z: -523.5907}
+        yaw: 94.11491
+      - name: 'Counter-attack 1 (west, over the fields): Panzergrenadier'
+        kind: 
+        position: {x: -564.6857, y: 10.152584, z: -515.4521}
+        yaw: 94.11491
+      - name: 'Counter-attack 1 (west, over the fields): Panzergrenadier'
+        kind: 
+        position: {x: -565.33154, y: 9.916542, z: -524.42883}
+        yaw: 94.11491
+      - name: 'Counter-attack 1 (west, over the fields): Panzergrenadier'
+        kind: 
+        position: {x: -569.58673, y: 10.251081, z: -513.8963}
+        yaw: 94.11491
+      - name: 'Counter-attack 1 (west, over the fields): Panzergrenadier'
+        kind: 
+        position: {x: -570.4048, y: 10.063654, z: -525.26697}
+        yaw: 94.11491
+      - name: 'Counter-attack 1 (west, over the fields): Panzergrenadier'
+        kind: 
+        position: {x: -574.48773, y: 10.3900795, z: -512.34064}
+        yaw: 94.11491
+    - id: actors/germans/counter-attack-2-(south-west,-the-orchards)
+      name: Counter-attack 2 (south-west, the orchards)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 1
+      awake: 1
+      skill: 0.4
+      mgSkill: 0.4
+      smokeChance: 0
+      combatRoam: -1
+      objective: objective
+      route: []
+      units:
+      - name: 'Counter-attack 2 (south-west, the orchards): NCO with MP40'
+        kind: MP40
+        position: {x: -560.75287, y: 6.7818108, z: -757.096}
+        yaw: 75.46555
+      - name: 'Counter-attack 2 (south-west, the orchards): MG42 gunner'
+        kind: MG42
+        position: {x: -559.09656, y: 6.894766, z: -763.4848}
+        yaw: 75.46555
+      - name: 'Counter-attack 2 (south-west, the orchards): MG42 loader'
+        kind: MG42
+        position: {x: -565.894, y: 7.1213226, z: -757.1892}
+        yaw: 75.46555
+      - name: 'Counter-attack 2 (south-west, the orchards): Panzergrenadier'
+        kind: 
+        position: {x: -563.6354, y: 6.712948, z: -765.9012}
+        yaw: 75.46555
+      - name: 'Counter-attack 2 (south-west, the orchards): Panzergrenadier'
+        kind: 
+        position: {x: -571.0352, y: 7.3082085, z: -757.2825}
+        yaw: 75.46555
+      - name: 'Counter-attack 2 (south-west, the orchards): Panzergrenadier'
+        kind: 
+        position: {x: -568.1742, y: 6.8295155, z: -768.3176}
+        yaw: 75.46555
+      - name: 'Counter-attack 2 (south-west, the orchards): Panzergrenadier'
+        kind: 
+        position: {x: -576.17633, y: 6.8917065, z: -757.3756}
+        yaw: 75.46555
+    - id: actors/germans/counter-attack-3-(south,-the-caen-road)
+      name: Counter-attack 3 (south, the Caen road)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 1
+      awake: 1
+      skill: 0.4
+      mgSkill: 0.4
+      smokeChance: 0
+      combatRoam: -1
+      objective: objective
+      route: []
+      units:
+      - name: 'Counter-attack 3 (south, the Caen road): NCO with MP40'
+        kind: MP40
+        position: {x: -302.98962, y: 6.1747665, z: -999.75085}
+        yaw: 4.763641
+      - name: 'Counter-attack 3 (south, the Caen road): MG42 gunner'
+        kind: MG42
+        position: {x: -296.41245, y: 6.0825768, z: -1000.29895}
+        yaw: 4.763641
+      - name: 'Counter-attack 3 (south, the Caen road): MG42 loader'
+        kind: MG42
+        position: {x: -304.6007, y: 6.079439, z: -1004.6339}
+        yaw: 4.763641
+      - name: 'Counter-attack 3 (south, the Caen road): Panzergrenadier'
+        kind: 
+        position: {x: -295.6318, y: 6.0172577, z: -1005.38135}
+        yaw: 4.763641
+      - name: 'Counter-attack 3 (south, the Caen road): Panzergrenadier'
+        kind: 
+        position: {x: -306.2118, y: 6.2585087, z: -1009.517}
+        yaw: 4.763641
+      - name: 'Counter-attack 3 (south, the Caen road): Panzergrenadier'
+        kind: 
+        position: {x: -294.85117, y: 5.9939566, z: -1010.46375}
+        yaw: 4.763641
+      - name: 'Counter-attack 3 (south, the Caen road): Panzergrenadier'
+        kind: 
+        position: {x: -307.8229, y: 6.3207893, z: -1014.4001}
+        yaw: 4.763641
+      - name: 'Counter-attack 3 (south, the Caen road): Panzergrenadier'
+        kind: 
+        position: {x: -294.07056, y: 5.972666, z: -1015.5461}
+        yaw: 4.763641
+    - id: actors/germans/counter-attack-4-(north-west)
+      name: Counter-attack 4 (north-west)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 1
+      awake: 1
+      skill: 0.4
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: objective
+      route: []
+      units:
+      - name: 'Counter-attack 4 (north-west): NCO with MP40'
+        kind: MP40
+        position: {x: -558.5833, y: 10.249367, z: -327.35556}
+        yaw: 118.1786
+      - name: 'Counter-attack 4 (north-west): Panzergrenadier'
+        kind: 
+        position: {x: -561.7, y: 10.463963, z: -333.17334}
+        yaw: 118.1786
+      - name: 'Counter-attack 4 (north-west): Panzergrenadier'
+        kind: 
+        position: {x: -562.4241, y: 10.275801, z: -323.93668}
+        yaw: 118.1786
+      - name: 'Counter-attack 4 (north-west): Panzergrenadier'
+        kind: 
+        position: {x: -566.6741, y: 10.5112095, z: -331.87}
+        yaw: 118.1786
+      - name: 'Counter-attack 4 (north-west): Panzergrenadier'
+        kind: 
+        position: {x: -566.26483, y: 10.296284, z: -320.5178}
+        yaw: 118.1786
+      - name: 'Counter-attack 4 (north-west): Panzergrenadier'
+        kind: 
+        position: {x: -571.64813, y: 10.630526, z: -330.56665}
+        yaw: 118.1786
+      - name: 'Counter-attack 4 (north-west): Panzergrenadier'
+        kind: 
+        position: {x: -570.1055, y: 10.315468, z: -317.0989}
+        yaw: 118.1786
+    - id: actors/germans/counter-attack-5-(south-west,-evening)
+      name: Counter-attack 5 (south-west, evening)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 1
+      awake: 1
+      skill: 0.4
+      mgSkill: 0.4
+      smokeChance: 0
+      combatRoam: -1
+      objective: objective
+      route: []
+      units:
+      - name: 'Counter-attack 5 (south-west, evening): NCO with MP40'
+        kind: MP40
+        position: {x: -521.4884, y: 6.9477005, z: -897.39526}
+        yaw: 60.255123
+      - name: 'Counter-attack 5 (south-west, evening): MG42 gunner'
+        kind: MG42
+        position: {x: -518.2139, y: 6.849539, z: -903.1257}
+        yaw: 60.255123
+      - name: 'Counter-attack 5 (south-west, evening): MG42 loader'
+        kind: MG42
+        position: {x: -526.425, y: 6.8763447, z: -898.8341}
+        yaw: 60.255123
+      - name: 'Counter-attack 5 (south-west, evening): Panzergrenadier'
+        kind: 
+        position: {x: -521.9597, y: 6.8248615, z: -906.64825}
+        yaw: 60.255123
+      - name: 'Counter-attack 5 (south-west, evening): Panzergrenadier'
+        kind: 
+        position: {x: -531.3616, y: 7.122406, z: -900.2728}
+        yaw: 60.255123
+      - name: 'Counter-attack 5 (south-west, evening): Panzergrenadier'
+        kind: 
+        position: {x: -525.7056, y: 6.927374, z: -910.17084}
+        yaw: 60.255123
+      - name: 'Counter-attack 5 (south-west, evening): Panzergrenadier'
+        kind: 
+        position: {x: -536.29816, y: 7.484211, z: -901.7117}
+        yaw: 60.255123
+      - name: 'Counter-attack 5 (south-west, evening): Panzergrenadier'
+        kind: 
+        position: {x: -529.4514, y: 6.9650574, z: -913.6934}
+        yaw: 60.255123
+    - id: actors/germans/counter-attack-6-(west,-evening)
+      name: Counter-attack 6 (west, evening)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 1
+      awake: 1
+      skill: 0.4
+      mgSkill: 0.4
+      smokeChance: 0
+      combatRoam: -1
+      objective: objective
+      route: []
+      units:
+      - name: 'Counter-attack 6 (west, evening): NCO with MP40'
+        kind: MP40
+        position: {x: -580.20294, y: 9.019064, z: -617.0069}
+        yaw: 86.121475
+      - name: 'Counter-attack 6 (west, evening): MG42 gunner'
+        kind: MG42
+        position: {x: -579.7565, y: 9.009275, z: -623.59174}
+        yaw: 86.121475
+      - name: 'Counter-attack 6 (west, evening): MG42 loader'
+        kind: MG42
+        position: {x: -585.27264, y: 9.252289, z: -616.1478}
+        yaw: 86.121475
+      - name: 'Counter-attack 6 (west, evening): Panzergrenadier'
+        kind: 
+        position: {x: -584.6638, y: 9.246912, z: -625.1272}
+        yaw: 86.121475
+      - name: 'Counter-attack 6 (west, evening): Panzergrenadier'
+        kind: 
+        position: {x: -590.34235, y: 9.406477, z: -615.28876}
+        yaw: 86.121475
+      - name: 'Counter-attack 6 (west, evening): Panzergrenadier'
+        kind: 
+        position: {x: -589.5713, y: 9.306227, z: -626.66266}
+        yaw: 86.121475
+      - name: 'Counter-attack 6 (west, evening): Panzergrenadier'
+        kind: 
+        position: {x: -595.41205, y: 9.403183, z: -614.42975}
+        yaw: 86.121475
+      - name: 'Counter-attack 6 (west, evening): Panzergrenadier'
+        kind: 
+        position: {x: -594.47864, y: 9.299349, z: -628.1982}
+        yaw: 86.121475
+  defender:
+    name: A Company, 7th Parachute Battalion
+    faction: 0
+    notes: 
+    commander:
+      name: Nigel Taylor
+      rank: Major
+      unit: A Company, 7th Parachute Battalion, 5th Parachute Brigade
+      portrait: {fileID: 2800000, guid: 77b76d1f8b377594fb93f10bc5f1777a, type: 3}
+      bio: "Held the south and west of B\xE9nouville for about 17 hours, cut off, against attack after attack. Badly wounded in the leg early on, he went on directing the fight from a stretcher."
+      reinforceBelow: 0.6
+      fallBackBelow: 0.3
+      maxSend: 3
+      bounding: 1
+      boundSeconds: 7
+      regroupBelow: 0.4
+      orderInterval: 3
+    groups:
+    - id: actors/british/a-company---the-player's-section
+      name: A Company - the player's section
+      task: 
+      arrival: 0
+      phase: 
+      mode: 2
+      awake: 1
+      skill: 0.6
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: 'A Coy: Cpl (Sten)'
+        kind: 
+        position: {x: 22, y: 0.39018518, z: -6}
+        yaw: 270
+      - name: 'A Coy: Bren gunner'
+        kind: 
+        position: {x: 23.8, y: 0.3844164, z: -3.5}
+        yaw: 270
+      - name: 'A Coy: Rifleman'
+        kind: 
+        position: {x: 25.6, y: 0.3706835, z: -6}
+        yaw: 270
+      - name: 'A Coy: Rifleman'
+        kind: 
+        position: {x: 27.4, y: 0.34582406, z: -3.5}
+        yaw: 270
+      - name: 'A Coy: L/Cpl (Sten)'
+        kind: 
+        position: {x: 29.2, y: 0.31492501, z: -6}
+        yaw: 270
+    - id: actors/british/d-company,-ox-&-bucks-(howard)-at-the-bridge
+      name: D Company, Ox & Bucks (Howard) at the bridge
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.6
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: 'Ox & Bucks: holding the bridge'
+        kind: 
+        position: {x: -30, y: 0.0682106, z: 9}
+        yaw: 270
+      - name: 'Ox & Bucks: holding the bridge'
+        kind: 
+        position: {x: -31, y: 0.061344147, z: -8}
+        yaw: 270
+      - name: 'Ox & Bucks: holding the bridge'
+        kind: 
+        position: {x: -48, y: -0.29161358, z: 3}
+        yaw: 270
+      - name: 'Ox & Bucks: holding the bridge'
+        kind: 
+        position: {x: -42, y: 0.22202873, z: 14}
+        yaw: 270
+      - name: 'Ox & Bucks: holding the bridge'
+        kind: 
+        position: {x: 25, y: 0.18194447, z: 8}
+        yaw: 270
+      - name: 'Ox & Bucks: holding the bridge'
+        kind: 
+        position: {x: 27, y: 0.047610283, z: -9}
+        yaw: 270
+    - id: actors/british/a-company-dug-in-(from-the-hold)
+      name: A Company dug in (from the hold)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.6
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: 'A Coy: post 1'
+        kind: 
+        position: {x: -277.57663, y: 0.85816956, z: -467.03003}
+        yaw: 270
+      - name: 'A Coy: post 2'
+        kind: 
+        position: {x: -255, y: -0.41109657, z: -478}
+        yaw: 224.99998
+      - name: 'A Coy: post 3'
+        kind: 
+        position: {x: -284.2641, y: -1.4230042, z: -539.57666}
+        yaw: 270
+      - name: 'A Coy: post 4'
+        kind: 
+        position: {x: -258.29413, y: -0.9340296, z: -548}
+        yaw: 224.99998
+      - name: 'A Coy: post 5'
+        kind: 
+        position: {x: -284.58823, y: 1.0618048, z: -610}
+        yaw: 270
+      - name: 'A Coy: post 6'
+        kind: 
+        position: {x: -261.58823, y: 3.1250172, z: -618}
+        yaw: 224.99998
+      - name: 'A Coy: post 7'
+        kind: 
+        position: {x: -288.25, y: 1.1274261, z: -680}
+        yaw: 270
+      - name: 'A Coy: post 8'
+        kind: 
+        position: {x: -267.12445, y: 3.1704903, z: -687.30255}
+        yaw: 224.99998
+      - name: 'A Coy: post 9'
+        kind: 
+        position: {x: -215, y: 5.458707, z: -735}
+        yaw: 180
+      - name: 'A Coy: post 10'
+        kind: 
+        position: {x: -150, y: 5.330983, z: -735}
+        yaw: 180
+      - name: Major Nigel Taylor (OC A Company)
+        kind: 
+        position: {x: -247, y: 4.2020693, z: -598}
+        yaw: 270
+    - id: actors/british/c-company-platoon-(lt-macdonald),-19:00
+      name: C Company platoon (Lt MacDonald), 19:00
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.6
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: Lt MacDonald
+        kind: 
+        position: {x: -261.5, y: 7.709669, z: -240}
+        yaw: 180
+      - name: C Coy platoon
+        kind: 
+        position: {x: -258.5, y: 7.7996254, z: -237}
+        yaw: 180
+      - name: C Coy platoon
+        kind: 
+        position: {x: -261.5, y: 7.8250313, z: -234}
+        yaw: 180
+      - name: C Coy platoon
+        kind: 
+        position: {x: -258.5, y: 7.8957596, z: -231}
+        yaw: 180
+      - name: C Coy platoon
+        kind: 
+        position: {x: -261.5, y: 7.8834, z: -228}
+        yaw: 180
+      - name: C Coy platoon
+        kind: 
+        position: {x: -258.5, y: 7.933529, z: -225}
+        yaw: 180
+      - name: C Coy platoon
+        kind: 
+        position: {x: -261.5, y: 7.896446, z: -222}
+        yaw: 180
+      - name: C Coy platoon
+        kind: 
+        position: {x: -258.5, y: 7.9321556, z: -219}
+        yaw: 180
+    - id: actors/british/2nd-royal-warwickshire-regiment-(relief)
+      name: 2nd Royal Warwickshire Regiment (relief)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.6
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -261.5, y: 2.1914482, z: 60}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -258.5, y: 2.0355701, z: 63}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -261.5, y: 1.9675884, z: 66}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -258.5, y: 1.82407, z: 69}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -261.5, y: 1.7361746, z: 72}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -258.5, y: 1.6208115, z: 75}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -261.5, y: 1.5404682, z: 78}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -258.5, y: 1.4470787, z: 81}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -261.5, y: 1.3825302, z: 84}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -258.5, y: 1.2918873, z: 87}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -261.5, y: 1.2410736, z: 90}
+        yaw: 180
+      - name: 2nd Royal Warwicks
+        kind: 
+        position: {x: -258.5, y: 1.1449366, z: 93}
+        yaw: 180

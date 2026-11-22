@@ -32,7 +32,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5618380015187147426}
+  - {fileID: 3250136006033252533}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &5200129793624073025
@@ -112,7 +112,7 @@ MonoBehaviour:
   smokeColour: {r: 0.78, g: 0.78, b: 0.76, a: 0.6}
   smokeRadius: 7
   smokeDuration: 60
---- !u!1001 &5364569623085669705
+--- !u!1001 &3067078920758937438
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -169,8 +169,8 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 88cde96a7e84ba74f888ef85d42585d3, type: 3}
---- !u!4 &5618380015187147426 stripped
+--- !u!4 &3250136006033252533 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 88cde96a7e84ba74f888ef85d42585d3, type: 3}
-  m_PrefabInstance: {fileID: 5364569623085669705}
+  m_PrefabInstance: {fileID: 3067078920758937438}
   m_PrefabAsset: {fileID: 0}

@@ -65,6 +65,7 @@ MonoBehaviour:
   fireClip: {fileID: 0}
   reloadClip: {fileID: 0}
   emptyClip: {fileID: 0}
+  lastRoundClip: {fileID: 0}
   impactPrefab: {fileID: 0}
   hitMask:
     serializedVersion: 2

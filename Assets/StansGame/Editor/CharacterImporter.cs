@@ -497,10 +497,20 @@ namespace StansGame.EditorTools
                 var rb = t.gameObject.AddComponent<Rigidbody>(); rb.mass = mass; rb.isKinematic = true;
                 rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative; return rb;
             }
-            void Joint(Transform t, Transform parent, float lowTwist, float highTwist, float swing1, float swing2)
+            void Joint(Transform t, Transform parent, float lowTwist, float highTwist, float swing1, float swing2, Transform child = null)
             {
                 var j = t.gameObject.AddComponent<CharacterJoint>();
                 j.connectedBody = parent.GetComponent<Rigidbody>();
+                if (child)
+                {
+                    // twist about the bone itself and swing about the body's left-right line: with Unity's default
+                    // axes (the bone's local x) the arms locked out in a T after death (Joan's printscreen 12)
+                    Vector3 along = t.InverseTransformDirection((child.position - t.position).normalized);
+                    Vector3 side = t.InverseTransformDirection(a.transform.right);
+                    side = Vector3.ProjectOnPlane(side, along);
+                    if (side.sqrMagnitude < 1e-4f) side = Vector3.ProjectOnPlane(t.InverseTransformDirection(a.transform.forward), along);
+                    j.axis = along; j.swingAxis = side.normalized;
+                }
                 j.lowTwistLimit = new SoftJointLimit { limit = lowTwist }; j.highTwistLimit = new SoftJointLimit { limit = highTwist };
                 j.swing1Limit = new SoftJointLimit { limit = swing1 }; j.swing2Limit = new SoftJointLimit { limit = swing2 };
                 j.enableProjection = true;
@@ -533,8 +543,10 @@ namespace StansGame.EditorTools
             {
                 var u = B(upper); var l = B(lower); var e = B(end);
                 if (!u || !l || !e) return;
-                Body(u, massU); Joint(u, parent, leg ? -20f : -70f, leg ? 70f : 10f, leg ? 30f : 50f, 0f); Capsule(u, l, r);
-                Body(l, massL); Joint(l, u, leg ? -80f : -90f, 0f, 0f, 0f); Capsule(l, e, r * 0.85f);
+                // shoulder and hip: a ball joint (arms hang and flop, legs swing forward more than sideways)
+                Body(u, massU); Joint(u, parent, leg ? -20f : -45f, leg ? 20f : 45f, leg ? 75f : 95f, leg ? 35f : 70f, l); Capsule(u, l, r);
+                // elbow and knee: they bend, they don't twist much or swing sideways
+                Body(l, massL); Joint(l, u, -10f, 10f, leg ? 80f : 75f, 8f, e); Capsule(l, e, r * 0.85f);
             }
             Limb(HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm, HumanBodyBones.LeftHand, chest, 0.06f, 2.5f, 2f, false);
             Limb(HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm, HumanBodyBones.RightHand, chest, 0.06f, 2.5f, 2f, false);

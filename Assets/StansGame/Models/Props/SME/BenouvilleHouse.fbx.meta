@@ -3,7 +3,17 @@ guid: 88d60b46aa3358549a63ba9766a35549
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Benouville_Exterior
+    second: {fileID: 2100000, guid: 0e0e7ebcaeda9e74495f8adab5d9e8b5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Benouville_Interior
+    second: {fileID: 2100000, guid: edf7338075dca7b42af8f90eb2da4803, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

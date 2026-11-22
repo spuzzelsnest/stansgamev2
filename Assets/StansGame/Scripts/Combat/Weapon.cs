@@ -31,6 +31,8 @@ namespace StansGame
         public Light muzzleLight;
         public AudioSource audioSource;
         public AudioClip fireClip, reloadClip, emptyClip;
+        [Tooltip("Played with the last round (the M1 Garand's clip pinging out).")]
+        public AudioClip lastRoundClip;
         public GameObject impactPrefab;
         public LayerMask hitMask = ~0;
         [Header("How it is held (set by name in ApplySpecs)")]
@@ -230,6 +232,7 @@ namespace StansGame
             if (muzzleFlash) muzzleFlash.Play();
             if (muzzleLight) { muzzleLight.enabled = true; lightOff = Time.time + 0.05f; }
             if (fireClip && audioSource) audioSource.PlayOneShot(fireClip);
+            if (Ammo == 0 && lastRoundClip && audioSource) audioSource.PlayOneShot(lastRoundClip, 0.7f);
             NoiseEvents.Report(transform.position, 60f, shooter);
             return true;
         }

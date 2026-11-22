@@ -3,7 +3,12 @@ guid: 9bc36f4def3a4c14194ad356b3e95336
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: TrenchSpade
+    second: {fileID: 2100000, guid: be7df0d3e113e134d94bf6b64fe4c492, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

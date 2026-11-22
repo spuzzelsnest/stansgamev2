@@ -1,0 +1,422 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2599ca87022ed3a4cb7311c4366b2b4d, type: 3}
+  m_Name: SainteMereEglise
+  m_EditorClassIdentifier: Assembly-CSharp::StansGame.BattlePlan
+  level: SainteMereEglise
+  notes: Night of 5/6 June 1944. The 505th PIR drops on and around the town; the German garrison is out in the square with the townspeople fighting the fire at the Pommier house. By 04:00 the 3rd Battalion (Krause) holds the town; the Germans counter-attack from Carentan (south) and Neuville (north) during the day.
+  attacker:
+    name: 505th PIR, 82nd Airborne
+    faction: 0
+    notes: F Company's stick (the player's) jumps into the town; the 3rd Battalion gathers in the orchard west of it.
+    commander:
+      name: Edward C. Krause
+      rank: Lieutenant Colonel
+      unit: 3rd Battalion, 505th Parachute Infantry Regiment, 82nd Airborne
+      portrait: {fileID: 0}
+      bio: "Commanded the 3rd Battalion of the 505th. Gathered his scattered men west of the town in the dark and took Sainte-M\xE8re-\xC9glise before dawn on 6 June; the American flag went up at the town hall, making it one of the first towns freed in Normandy."
+      reinforceBelow: 0.6
+      fallBackBelow: 0.3
+      maxSend: 3
+      bounding: 1
+      boundSeconds: 7
+      regroupBelow: 0.4
+      orderInterval: 3
+    groups:
+    - id: stick
+      name: F Company, 2/505 - the player's stick
+      task: Jump from the C-47 over the town. Position = where each man lands (the 'Player' entry is the player's place in the door).
+      arrival: 1
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.5
+      mgSkill: 0.35
+      smokeChance: 0.35
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: F Co. paratrooper 1
+        kind: Rifleman
+        position: {x: -120, y: 0, z: 40}
+        yaw: 0
+      - name: F Co. paratrooper 2
+        kind: Thompson
+        position: {x: -70, y: 0, z: -30}
+        yaw: 0
+      - name: F Co. paratrooper 3
+        kind: Rifleman
+        position: {x: -25, y: 0, z: 30}
+        yaw: 0
+      - name: Player
+        kind: Player
+        position: {x: 0, y: 0, z: 0}
+        yaw: 0
+      - name: F Co. paratrooper 5
+        kind: Rifleman
+        position: {x: 5, y: 0, z: -26}
+        yaw: 0
+      - name: F Co. paratrooper 6
+        kind: Thompson
+        position: {x: -30, y: 0, z: -71}
+        yaw: 0
+      - name: F Co. paratrooper 7
+        kind: Rifleman
+        position: {x: 20, y: 0, z: 28}
+        yaw: 0
+      - name: F Co. paratrooper 8
+        kind: Carbine
+        position: {x: 25, y: 0, z: -40}
+        yaw: 0
+      - name: F Co. paratrooper 9
+        kind: Rifleman
+        position: {x: 100, y: 0, z: -90}
+        yaw: 0
+      - name: F Co. paratrooper 10
+        kind: Thompson
+        position: {x: 160, y: 0, z: 40}
+        yaw: 0
+    - id: krause
+      name: 3rd Battalion 505th PIR (Krause)
+      task: Gather in the orchard west of the town, then take it (the mission sends them to the square, the town hall and the Carentan road).
+      arrival: 2
+      phase: Rally in the orchard
+      mode: 0
+      awake: 1
+      skill: 0.6
+      mgSkill: 0.35
+      smokeChance: 0.35
+      combatRoam: 10
+      objective: 
+      route: []
+      units:
+      - name: Lt. Col. Edward Krause
+        kind: Rifleman
+        position: {x: -239.5, y: 0, z: -11}
+        yaw: 90
+      - name: 3/505 paratrooper 1
+        kind: Thompson
+        position: {x: -236.5, y: 0, z: -11}
+        yaw: 90
+      - name: 3/505 paratrooper 2
+        kind: Rifleman
+        position: {x: -233.5, y: 0, z: -11}
+        yaw: 90
+      - name: 3/505 paratrooper 3
+        kind: Carbine
+        position: {x: -230.5, y: 0, z: -11}
+        yaw: 90
+      - name: 3/505 paratrooper 4
+        kind: Rifleman
+        position: {x: -239.5, y: 0, z: -8}
+        yaw: 90
+      - name: 3/505 paratrooper 5
+        kind: Thompson
+        position: {x: -236.5, y: 0, z: -8}
+        yaw: 90
+      - name: 3/505 paratrooper 6
+        kind: Rifleman
+        position: {x: -233.5, y: 0, z: -8}
+        yaw: 90
+      - name: 3/505 paratrooper 7
+        kind: Carbine
+        position: {x: -230.5, y: 0, z: -8}
+        yaw: 90
+      - name: 3/505 paratrooper 8
+        kind: Rifleman
+        position: {x: -239.5, y: 0, z: -5}
+        yaw: 90
+      - name: 3/505 paratrooper 9
+        kind: Thompson
+        position: {x: -236.5, y: 0, z: -5}
+        yaw: 90
+      - name: 3/505 paratrooper 10
+        kind: Rifleman
+        position: {x: -233.5, y: 0, z: -5}
+        yaw: 90
+      - name: 3/505 paratrooper 11
+        kind: Carbine
+        position: {x: -230.5, y: 0, z: -5}
+        yaw: 90
+  defender:
+    name: German garrison
+    faction: 1
+    notes: Flak battery crew (north-east field) is built with the gun and is not on this sheet yet.
+    commander:
+      name: 
+      rank: 
+      unit: "German garrison, Sainte-M\xE8re-\xC9glise"
+      portrait: {fileID: 0}
+      bio: (Name, portrait and story to come.)
+      reinforceBelow: 0.6
+      fallBackBelow: 0.3
+      maxSend: 3
+      bounding: 1
+      boundSeconds: 7
+      regroupBelow: 0.4
+      orderInterval: 3
+    groups:
+    - id: night-garrison
+      name: Night garrison (in the square)
+      task: Guard the bucket chain at the fire and the square; awake, the shooting has started.
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.32
+      mgSkill: 0.35
+      smokeChance: 0.35
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: Sentry by the fire 1
+        kind: 
+        position: {x: -22, y: 0, z: -55}
+        yaw: 0
+      - name: Sentry by the fire 2
+        kind: 
+        position: {x: -40, y: 0, z: -54}
+        yaw: 30
+      - name: Sentry by the pump
+        kind: 
+        position: {x: -46, y: 0, z: -31}
+        yaw: 200
+      - name: Sentry at the church door
+        kind: 
+        position: {x: -30, y: 0, z: 0}
+        yaw: 270
+      - name: Sentry, square NE
+        kind: 
+        position: {x: 25, y: 0, z: 14}
+        yaw: 180
+      - name: Sentry, square E
+        kind: 
+        position: {x: 30, y: 0, z: -20}
+        yaw: 250
+      - name: Sentry MG42 by the town hall
+        kind: 
+        position: {x: -92, y: 0, z: -99}
+        yaw: 270
+      - name: Sentry MP40 NCO
+        kind: 
+        position: {x: -10, y: 0, z: -40}
+        yaw: 0
+      - name: Sentry, rue General de Gaulle
+        kind: 
+        position: {x: -89, y: 0, z: -150}
+        yaw: 180
+      - name: Sentry, square W
+        kind: 
+        position: {x: -84, y: 0, z: -5}
+        yaw: 90
+      - name: Leutnant MP40, town hall
+        kind: 
+        position: {x: -89, y: 0, z: -92}
+        yaw: 250
+    - id: patrol-n13
+      name: Patrol on the N13 (with the dog)
+      task: Up the N13 from the town hall to the street north of the square, along it to the east end, and back.
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.32
+      mgSkill: 0.35
+      smokeChance: 0.35
+      combatRoam: 10
+      objective: 
+      route:
+      - {x: -89, y: -1.5221637, z: -80}
+      - {x: -89, y: -4.5564203, z: 18}
+      - {x: -60, y: -3.406653, z: 26}
+      - {x: 20, y: -1.5645075, z: 26}
+      - {x: -60, y: -3.406653, z: 26}
+      - {x: -89, y: -4.5564203, z: 18}
+      units:
+      - name: Sentry patrol 1 (N13)
+        kind: 
+        position: {x: -89, y: -1.5221637, z: -80}
+        yaw: 0
+      - name: Sentry patrol 2 (N13)
+        kind: 
+        position: {x: -88.2, y: -1.5035474, z: -83}
+        yaw: 0
+    - id: patrol-church
+      name: Patrol round the church
+      task: Round the church, outside the churchyard wall.
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.32
+      mgSkill: 0.35
+      smokeChance: 0.35
+      combatRoam: 10
+      objective: 
+      route:
+      - {x: -40, y: -0.8797589, z: -20}
+      - {x: 28, y: 0.22537576, z: -20}
+      - {x: 28, y: -0.89768827, z: 18}
+      - {x: -40, y: -3.1270313, z: 18}
+      units:
+      - name: Sentry patrol 3 (church)
+        kind: 
+        position: {x: -40, y: -0.8797589, z: -20}
+        yaw: 90
+      - name: Sentry patrol 4 (church)
+        kind: 
+        position: {x: -43, y: -0.93469137, z: -20.8}
+        yaw: 90
+    - id: defenders-04
+      name: Defenders at 04:00
+      task: Most of the garrison has pulled out; a few posts are still held round the square and the town hall.
+      arrival: 2
+      phase: 04:00 - the town
+      mode: 0
+      awake: 1
+      skill: 0.32
+      mgSkill: 0.35
+      smokeChance: 0.35
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: MG42 at the town hall
+        kind: 
+        position: {x: -92, y: 0, z: -99}
+        yaw: 270
+      - name: Rifleman at the town hall
+        kind: 
+        position: {x: -90, y: 0, z: -87}
+        yaw: 270
+      - name: Rifleman behind the churchyard wall
+        kind: 
+        position: {x: -4, y: 0, z: -12.5}
+        yaw: 180
+      - name: MP40 by the church
+        kind: 
+        position: {x: 20, y: 0, z: -12.5}
+        yaw: 180
+      - name: Rifleman at the pump
+        kind: 
+        position: {x: -48, y: 0, z: -37}
+        yaw: 270
+      - name: Rifleman, rue General de Gaulle
+        kind: 
+        position: {x: -89, y: 0, z: -140}
+        yaw: 180
+      - name: Rifleman, square W
+        kind: 
+        position: {x: -84, y: 0, z: -15}
+        yaw: 90
+    - id: counter-south
+      name: Counter-attack from Carentan (south)
+      task: Advance up the N13 on the church square.
+      arrival: 2
+      phase: Counter-attacks (day)
+      mode: 1
+      awake: 1
+      skill: 0.32
+      mgSkill: 0.35
+      smokeChance: 0.35
+      combatRoam: 8
+      objective: 'Objective: church square'
+      route: []
+      units:
+      - name: MG42 team 1
+        kind: 
+        position: {x: -92.16312, y: 0, z: -330}
+        yaw: 0
+      - name: MP40 NCO 2
+        kind: 
+        position: {x: -88.01312, y: 0, z: -330}
+        yaw: 0
+      - name: Grenadier 3
+        kind: 
+        position: {x: -84.908394, y: 0, z: -330}
+        yaw: 0
+      - name: Grenadier 4
+        kind: 
+        position: {x: -92.16181, y: 0, z: -325}
+        yaw: 0
+      - name: Grenadier 5
+        kind: 
+        position: {x: -87.28382, y: 0, z: -325}
+        yaw: 0
+      - name: MP40 NCO 6
+        kind: 
+        position: {x: -83.36322, y: 0, z: -325}
+        yaw: 0
+      - name: Grenadier 7
+        kind: 
+        position: {x: -92.337135, y: 0, z: -320}
+        yaw: 0
+      - name: Grenadier 8
+        kind: 
+        position: {x: -88.28779, y: 0, z: -320}
+        yaw: 0
+      - name: Grenadier 9
+        kind: 
+        position: {x: -84.35509, y: 0, z: -320}
+        yaw: 0
+      - name: MP40 NCO 10
+        kind: 
+        position: {x: -91.67693, y: 0, z: -315}
+        yaw: 0
+    - id: counter-north
+      name: Counter-attack from Neuville (north, N13)
+      task: Advance up the N13 on the church square.
+      arrival: 2
+      phase: Counter-attacks (day)
+      mode: 1
+      awake: 1
+      skill: 0.32
+      mgSkill: 0.35
+      smokeChance: 0.35
+      combatRoam: 8
+      objective: 'Objective: church square'
+      route: []
+      units:
+      - name: MG42 team 1
+        kind: 
+        position: {x: -100.07035, y: 0, z: 340}
+        yaw: 180
+      - name: MP40 NCO 2
+        kind: 
+        position: {x: -96.035484, y: 0, z: 340}
+        yaw: 180
+      - name: Grenadier 3
+        kind: 
+        position: {x: -91.84621, y: 0, z: 340}
+        yaw: 180
+      - name: Grenadier 4
+        kind: 
+        position: {x: -99.42279, y: 0, z: 335}
+        yaw: 180
+      - name: Grenadier 5
+        kind: 
+        position: {x: -95.29234, y: 0, z: 335}
+        yaw: 180
+      - name: MP40 NCO 6
+        kind: 
+        position: {x: -91.14226, y: 0, z: 335}
+        yaw: 180
+      - name: Grenadier 7
+        kind: 
+        position: {x: -100.015755, y: 0, z: 330}
+        yaw: 180
+      - name: Grenadier 8
+        kind: 
+        position: {x: -96.59504, y: 0, z: 330}
+        yaw: 180

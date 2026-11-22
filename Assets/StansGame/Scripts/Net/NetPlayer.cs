@@ -58,8 +58,8 @@ namespace StansGame
             if (hp) hp.Sheltered = now;   // the host decides the hits: a client's driver is safe in the cab there too
             if (now)
             {
-                hidden.Clear();
-                foreach (var r in GetComponentsInChildren<Renderer>()) if (r.enabled) { r.enabled = false; hidden.Add(r); }
+                hidden.Clear();   // in the cab he stays in sight (seen through the windscreen); only his rifle is put away
+                foreach (var r in GetComponentsInChildren<Renderer>()) if (r.enabled && r.GetComponentInParent<Weapon>()) { r.enabled = false; hidden.Add(r); }
             }
             else
             {

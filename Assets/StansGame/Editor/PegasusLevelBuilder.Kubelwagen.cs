@@ -25,7 +25,7 @@ namespace StansGame.EditorTools
                 var canvas = Mat("Kw_Canvas", new Color(0.36f, 0.33f, 0.24f), 0.05f);
                 var seat = Mat("Kw_Seat", new Color(0.20f, 0.17f, 0.12f), 0.2f);
                 var wood = Mat("Kw_Wood", new Color(0.30f, 0.22f, 0.14f), 0.1f);
-                var glass = GlassMat();
+                var glass = VehicleGlassMat();   // see who is in it
                 foreach (var r in m.GetComponentsInChildren<Renderer>(true))
                 {
                     var ms = r.sharedMaterials;
@@ -48,6 +48,7 @@ namespace StansGame.EditorTools
             tc.wheels = wheels.ToArray(); tc.wheelRadius = 0.34f;
             tc.maxForwardSpeed = 22f; tc.acceleration = 4.2f; tc.maxSteer = 36f; tc.stepHeight = 0.4f;
             tc.cameraDistance = 7f; tc.cameraHeight = 2f;
+            tc.layout = TruckController.SeatLayout.Car;   // four seats: driver, front passenger, two behind
             if (networked)
             {
                 NetScenery(go, false);

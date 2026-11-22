@@ -31,7 +31,7 @@ namespace StansGame
             float best = range;
             foreach (var t in TruckController.All)
             {
-                if (!t || !t.CanEnter) continue;
+                if (!t || !(t.CanEnter || t.CanRide)) continue;
                 var c = t.GetComponent<Collider>();
                 float d = Vector3.Distance(transform.position, c ? c.ClosestPoint(transform.position) : t.transform.position);
                 if (d < best) { best = d; NearbyTruck = t; }
@@ -79,7 +79,26 @@ namespace StansGame
             var loadout = GetComponent<Loadout>();
             if (loadout && loadout.NearbyPickup) return;   // E picks things up first
             cooldown = 0.5f;
-            NearbyTruck.Enter(soldier);
+            if (NearbyTruck.CanEnter) NearbyTruck.Enter(soldier);   // the wheel if it's free, else a passenger seat
+            else NearbyTruck.Ride(soldier);
+        }
+
+        // the prompt is drawn here, so it shows in every level (not only where a mission script draws it)
+        GUIStyle promptStyle;
+        void OnGUI()
+        {
+            if (!soldier || !soldier.enabled || !(Nearby || NearbyGun || NearbyTruck) || cooldown > 0f) return;
+            var kit = GetComponent<Loadout>();
+            if (kit && kit.NearbyPickup) return;   // Loadout shows "E: pick up" instead
+            if (promptStyle == null)
+            {
+                promptStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+                promptStyle.normal.textColor = Color.white;
+            }
+            string text = NearbyGun ? $"Press E to man the {NearbyGun.displayName}"
+                        : NearbyTruck ? (NearbyTruck.CanEnter ? $"Press E to drive the {NearbyTruck.displayName}" : $"Press E to climb aboard the {NearbyTruck.displayName}")
+                        : "Press E to get in";
+            GUI.Label(new Rect(0, Screen.height / 2 + 40, Screen.width, 28), text, promptStyle);
         }
     }
 }

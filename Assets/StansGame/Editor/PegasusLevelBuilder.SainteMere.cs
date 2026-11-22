@@ -108,6 +108,7 @@ namespace StansGame.EditorTools
             var usSmg = BuildUsPrefab("US_Paratrooper_Thompson", "Thompson M1A1", 34f, 700f, true, 30);
             var usCarbine = BuildUsPrefab("US_Paratrooper_Carbine", "M1A1 carbine", 45f, 150f, false, 15);
 
+            var plan = SmeBattlePlan();   // who attacks and who defends, and where (Battles/SainteMereEglise.asset)
             var player = BuildUsPlayer(actors, mk2);
             var playerChute = player.gameObject.AddComponent<ParachuteDrop>();
             var canopy = SmeCanopyPrefab();
@@ -117,24 +118,21 @@ namespace StansGame.EditorTools
             var plane = SmeC47("C-47 (F Company, 2/505 - player's stick)", air);
             var flight = plane.GetComponent<C47Flight>();
             flight.start = new Vector3(-720f, 150f, 14f); flight.end = new Vector3(720f, 150f, -30f);
-            flight.greenLightAt = 0.36f; flight.playerSlot = 3;
-            var drops = new[]
+            flight.greenLightAt = 0.36f;
+            var stick = plan.Find("stick");
+            flight.playerSlot = Mathf.Max(0, stick.units.FindIndex(u => u.kind == "Player"));
+            for (int i = 0; i < stick.units.Count; i++)
             {
-                new Vector3(-120f, 0f, 40f), new Vector3(-70f, 0f, -30f), new Vector3(-25f, 0f, 30f), Vector3.zero,
-                new Vector3(5f, 0f, -26f), SmeFireHouse, new Vector3(20f, 0f, 28f), new Vector3(25f, 0f, -40f),
-                new Vector3(100f, 0f, -90f), new Vector3(160f, 0f, 40f),
-            };
-            for (int i = 0; i < drops.Length; i++)
-            {
-                if (i == flight.playerSlot) { flight.stick.Add(playerChute); continue; }
-                var prefab = i % 4 == 1 ? usSmg : i % 4 == 3 ? usCarbine : usRifle;
-                var man = (GameObject)PrefabUtility.InstantiatePrefab(prefab, actors);
-                man.name = $"F Co. paratrooper {i + 1}";
+                var u = stick.units[i];
+                if (u.kind == "Player") { flight.stick.Add(playerChute); continue; }
+                var man = (GameObject)PrefabUtility.InstantiatePrefab(UsPrefabFor(u.kind, usRifle, usSmg, usCarbine), actors);
+                man.name = u.name;
                 man.transform.position = flight.start;
                 var chute = man.AddComponent<ParachuteDrop>();
-                chute.aiLandingPoint = drops[i];
+                chute.aiLandingPoint = u.position;
                 chute.canopyPrefab = canopy;
-                var ai = man.GetComponent<SoldierAI>(); if (ai) { ai.startAlert = true; ai.skill = 0.5f; }
+                var ai = man.GetComponent<SoldierAI>(); if (ai) { ai.startAlert = stick.awake; ai.skill = stick.skill; }
+                TagUnit(man, plan, stick);
                 flight.stick.Add(chute);
             }
             var serial = new List<C47Flight>();
@@ -151,11 +149,11 @@ namespace StansGame.EditorTools
             SmeSteele(town);
 
             // the Germans and their civilians in the square during the drop
-            SmeNightGarrison(garrison);
-            SmeDefenders04(defenders04);
-            SmeKrause(krause, usRifle, usSmg, usCarbine);
-            SmeCounterAttack(waveSouth, new Vector3(SmeN13X + 4f, 0f, -330f), 10);
-            SmeCounterAttack(waveNorth, new Vector3(SmeN13X - 4f, 0f, 340f), 8);
+            SmeNightGarrison(garrison, plan);
+            SmeDefenders04(defenders04, plan);
+            SpawnAmericans(plan, "krause", krause, usRifle, usSmg, usCarbine);
+            SpawnGermans(plan, "counter-south", waveSouth);
+            SpawnGermans(plan, "counter-north", waveNorth);
             SmeStugWreck(waveNorth);   // the StuG III knocked out on the Neuville road (photos 14, 17)
             SmeAmbientLife(root, town, garrison, actors, air);   // colour grade, patrols and a dog, lorries, C-47s, windows (SmeAmbient.cs)
 
@@ -175,8 +173,15 @@ namespace StansGame.EditorTools
             mission.nightGarrison = garrison.gameObject; mission.townDefenders = defenders04.gameObject; mission.krauseBattalion = krause.gameObject;
             mission.krauseTargets = new[] { square, hallMark, southRoad };
             mission.counterAttacks = new[] { waveSouth.gameObject, waveNorth.gameObject };
-            foreach (var ai in waveSouth.GetComponentsInChildren<SoldierAI>(true)) ai.advanceTarget = square;
-            foreach (var ai in waveNorth.GetComponentsInChildren<SoldierAI>(true)) ai.advanceTarget = square;
+            Transform Objective(string id) { var g = plan.Find(id); var t = g != null && !string.IsNullOrEmpty(g.objective) ? root.Find(g.objective) : null; return t ? t : square; }
+            foreach (var ai in waveSouth.GetComponentsInChildren<SoldierAI>(true)) ai.advanceTarget = Objective("counter-south");
+            foreach (var ai in waveNorth.GetComponentsInChildren<SoldierAI>(true)) ai.advanceTarget = Objective("counter-north");
+            // the two commanders, above the men's own AI (BattleCommander; how they fight is on the battle sheet)
+            foreach (bool att in new[] { false, true })
+            {
+                var bc = new GameObject(att ? "Commander (attacker)" : "Commander (defender)").AddComponent<BattleCommander>();
+                bc.transform.SetParent(root); bc.plan = plan; bc.attacker = att;
+            }
             SmeNetworking(mission, mk2, canopy, garrison, defenders04, krause, waveSouth, waveNorth);   // co-op (STANS_NET)
 
             if (smeRaw != null) SmeGroundEverything(root);
@@ -186,6 +191,7 @@ namespace StansGame.EditorTools
             if (!list.Exists(s => s.path == path)) list.Add(new EditorBuildSettingsScene(path, true));   // after Pegasus Bridge
             EditorBuildSettings.scenes = list.ToArray();
             Debug.Log("Stan's Game: Sainte-Mère-Église level built at " + path);
+            BattleValidator.Validate(false);   // anyone inside a wall, without a weapon, a patrol through a house...
         }
 
         // ---------------------------------------------------------------- ground
@@ -670,6 +676,28 @@ namespace StansGame.EditorTools
             return hall.transform;
         }
 
+        /// <summary>A particle material for the fire, saved as an asset so that its shader goes into the build
+        /// (made at run time it was missing there: Joan's printscreen 11, red squares instead of flames).</summary>
+        static Material FireMat(string tex, bool additive)
+        {
+            string path = $"{Root}/Textures/Generated/{tex}.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (!m) { m = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit")) { name = tex }; AssetDatabase.CreateAsset(m, path); }
+            m.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{Root}/Textures/Generated/{tex}.png"));
+            m.SetColor("_BaseColor", Color.white);
+            m.SetFloat("_Surface", 1f); m.SetFloat("_Blend", additive ? 2f : 0f); m.SetFloat("_ZWrite", 0f);
+            m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            m.SetFloat("_DstBlend", (float)(additive ? UnityEngine.Rendering.BlendMode.One : UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha));
+            m.SetFloat("_SrcBlendAlpha", (float)UnityEngine.Rendering.BlendMode.One);
+            m.SetFloat("_DstBlendAlpha", (float)(additive ? UnityEngine.Rendering.BlendMode.One : UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha));
+            m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            if (additive) m.EnableKeyword("_BLENDMODE_ADD"); else m.DisableKeyword("_BLENDMODE_ADD");
+            m.SetOverrideTag("RenderType", "Transparent");
+            m.renderQueue = 3000;
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
         static void SmeFire(Transform town)
         {
             var burnt = Mat("SME_Wall_Scorched", new Color(0.20f, 0.17f, 0.14f));
@@ -677,6 +705,8 @@ namespace StansGame.EditorTools
             SmeFoundation(h, new Vector3(10f, 7f, 9f), burnt);
             var fire = new GameObject("Fire").AddComponent<HouseFire>();
             fire.intensity = 22f; fire.range = 90f;
+            fire.size = new Vector3(10f, 7f, 9f);
+            fire.flameMat = FireMat("FireFlame", true); fire.emberMat = FireMat("FireEmber", true); fire.smokeMat = FireMat("FireSmoke", false);
             fire.transform.SetParent(h.transform); fire.transform.position = SmeFireHouse + Vector3.up * 3f;
             // the barn behind it, where the fire started
             var barn = House("Pommier barn", town, SmeFireHouse + new Vector3(0f, 0f, -13f), new Vector3(12f, 5f, 7f), burnt, Mat("SME_Roof_Burning", new Color(0.12f, 0.08f, 0.06f)), 0f);
@@ -971,20 +1001,10 @@ namespace StansGame.EditorTools
 
         // ---------------------------------------------------------------- people
 
-        static void SmeNightGarrison(Transform g)
+        static void SmeNightGarrison(Transform g, BattlePlan plan)
         {
-            // guards over the bucket chain and around the square: awake, the shooting has started already
-            var spots = new (string n, Vector3 p, float yaw)[]
-            {
-                ("Sentry by the fire 1", new Vector3(-22f, 0f, -55f), 0f), ("Sentry by the fire 2", new Vector3(-40f, 0f, -54f), 30f),
-                ("Sentry by the pump", SmePump + new Vector3(4f, 0f, 4f), 200f), ("Sentry at the church door", new Vector3(-30f, 0f, 0f), 270f),
-                ("Sentry, square NE", new Vector3(25f, 0f, 14f), 180f), ("Sentry, square E", new Vector3(30f, 0f, -20f), 250f),
-                ("Sentry MG42 by the town hall", SmeTownHall + new Vector3(-12f, 0f, -4f), 270f), ("Sentry MP40 NCO", new Vector3(-10f, 0f, -40f), 0f),
-                ("Sentry, rue General de Gaulle", new Vector3(SmeN13X + 3f, 0f, -150f), 180f), ("Sentry, square W", new Vector3(-84f, 0f, -5f), 90f),
-                // the officer of the garrison, out at the town hall with an MP40 while the bucket chain works
-                ("Leutnant MP40, town hall", SmeTownHall + new Vector3(-9f, 0f, 3f), 250f),
-            };
-            foreach (var (n, p, yaw) in spots) SmeGerman(g, n, p, yaw, SoldierAI.Mode.HoldPosition, true);
+            // guards over the bucket chain and around the square (from the battle sheet)
+            SpawnGermans(plan, "night-garrison", g);
             Sandbags(g, SmeTownHall + new Vector3(-14f, 0f, -4f), 270f);
             // the townspeople of the bucket chain (no weapons, not targets)
             var coat = Mat("SME_Civilian_Coat", new Color(0.25f, 0.23f, 0.22f));
@@ -1025,28 +1045,11 @@ namespace StansGame.EditorTools
             return true;
         }
 
-        static void SmeDefenders04(Transform g)
+        static void SmeDefenders04(Transform g, BattlePlan plan)
         {
-            // at 04:00 most of the garrison had pulled out; a few posts were still held
-            var spots = new (string n, Vector3 p, float yaw)[]
-            {
-                ("MG42 at the town hall", SmeTownHall + new Vector3(-12f, 0f, -4f), 270f), ("Rifleman at the town hall", SmeTownHall + new Vector3(-10f, 0f, 8f), 270f),
-                ("Rifleman behind the churchyard wall", new Vector3(-4f, 0f, -12.5f), 180f), ("MP40 by the church", new Vector3(20f, 0f, -12.5f), 180f),
-                ("Rifleman at the pump", SmePump + new Vector3(2f, 0f, -2f), 270f), ("Rifleman, rue General de Gaulle", new Vector3(SmeN13X + 3f, 0f, -140f), 180f),
-                ("Rifleman, square W", new Vector3(-84f, 0f, -15f), 90f),
-            };
-            foreach (var (n, p, yaw) in spots) SmeGerman(g, n, p, yaw, SoldierAI.Mode.HoldPosition, true);
+            // at 04:00 most of the garrison had pulled out; a few posts were still held (from the battle sheet)
+            SpawnGermans(plan, "defenders-04", g);
             Sandbags(g, SmeTownHall + new Vector3(-14f, 0f, -4f), 270f);
-        }
-
-        static void SmeCounterAttack(Transform g, Vector3 from, int count)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                var p = from + new Vector3((i % 3 - 1) * 4f + Random.Range(-1f, 1f), 0f, (i / 3) * -5f * Mathf.Sign(from.z));
-                string n = i == 0 ? "MG42 team" : i % 4 == 1 ? "MP40 NCO" : "Grenadier";
-                SmeGerman(g, $"{n} {i + 1}", p, from.z < 0f ? 0f : 180f, SoldierAI.Mode.Advance, true);
-            }
         }
 
         static void SmeGerman(Transform parent, string name, Vector3 pos, float yaw, SoldierAI.Mode mode, bool awake)
@@ -1061,18 +1064,19 @@ namespace StansGame.EditorTools
             if (mode == SoldierAI.Mode.Advance) { ai.patrolRadius = 0f; ai.combatRoam = 8f; }
         }
 
-        static void SmeKrause(Transform g, GameObject rifle, GameObject smg, GameObject carbine)
+        /// <summary>A German of a battle-sheet group: the group's orders, skill and smoke.</summary>
+        static Health SmeGerman(Transform parent, string name, Vector3 pos, float yaw, BattlePlan.Group g)
         {
-            for (int i = 0; i < 12; i++)
-            {
-                var prefab = i % 4 == 1 ? smg : i % 4 == 3 ? carbine : rifle;
-                var s = (GameObject)PrefabUtility.InstantiatePrefab(prefab, g);
-                s.name = i == 0 ? "Lt. Col. Edward Krause" : $"3/505 paratrooper {i}";
-                s.transform.position = SmeRally + new Vector3((i % 4) * 3f - 4.5f, 0f, (i / 4) * 3f + 4f);
-                s.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
-                var ai = s.GetComponent<SoldierAI>();
-                if (ai) { ai.mode = SoldierAI.Mode.HoldPosition; ai.skill = 0.6f; ai.combatRoam = 10f; }
-            }
+            var h = Soldier(name, parent, pos, yaw);
+            if (!h) return null;
+            if (!h.GetComponent<SoldierAI>()) SetupDefender(h, name.Contains("MG42"));
+            var ai = h.GetComponent<SoldierAI>();
+            if (!ai) return h;
+            ai.mode = g.mode; ai.sleepsUntilAlarm = !g.awake; ai.startAlert = g.awake;
+            ai.reactionTime = 2f; ai.skill = name.Contains("MG42") ? g.mgSkill : g.skill;
+            if (!name.Contains("MG42") && Random.value < g.smokeChance) { ai.smokeGrenade = smokeNb39; ai.smokeGrenades = 1; }
+            if (g.mode == SoldierAI.Mode.Advance) { ai.patrolRadius = 0f; ai.combatRoam = g.combatRoam >= 0f ? g.combatRoam : 8f; }
+            return h;
         }
 
         // ---------------------------------------------------------------- Americans
@@ -1224,6 +1228,7 @@ namespace StansGame.EditorTools
             kit.grenades = new List<Shell> { grenade, grenade };
             kit.smokes = new List<Shell> { smokeM8 };
             kit.dressings = 1;
+            go.AddComponent<VehicleEntry>();   // lorries and the Kübelwagen: E to drive or climb aboard
             go.AddComponent<Ragdoll>();
             if (AddUsBody(go)) { pc.animator = go.GetComponentInChildren<Animator>(); kit.weaponMount = MountWeapons(go, rifle, colt); }
             else UsBody(go.transform);

@@ -83,7 +83,7 @@ namespace StansGame
             if (far && big) At(far, pos, 0.6f, 0.9f, 2500f);
         }
 
-        public static void Footstep(Vector3 pos, float volume = 0.35f) { Load(); At(Pick(footsteps), pos, volume, 0.9f + (float)rng.NextDouble() * 0.2f, 30f); }
+        public static void Footstep(Vector3 pos, float volume = 0.35f) { Load(); At(Pick(footsteps), pos, volume * 0.22f, 0.9f + (float)rng.NextDouble() * 0.2f, 30f); }   // the recordings are normalised (+14 dB): keep the steps as soft as before
         public static void Reload(Vector3 pos) { Load(); At(reload, pos, 0.6f, 1f, 20f); }
         public static void Impact(Vector3 pos, bool person)
         {
@@ -98,6 +98,16 @@ namespace StansGame
         public static AudioClip GunClip(string weapon)
         {
             string w = (weapon ?? "").ToLowerInvariant();
+            // real recordings (Joan's downloads, cut by Claude) where we have them
+            AudioClip rec = null;
+            if (w.Contains("garand")) rec = Recorded("garand_shot");
+            else if (w.Contains("carbine")) rec = Recorded("carbine_shot");
+            else if (w.Contains("kar")) rec = Recorded("kar98_shot");                       // the shot and the bolt worked
+            else if (w.Contains("lee") || w.Contains("enfield")) rec = Recorded("enfield_shot");
+            else if (w.Contains("thompson")) rec = Recorded("thompson_shot");
+            else if (w.Contains("mg42") || w.Contains("mg 42") || w.Contains("mg")) rec = Recorded("mg42_shot");   // one round of the "buzz saw"
+            else if (w.Contains("bren")) rec = Recorded("bren_shot");
+            if (rec) return rec;
             if (w.Contains("mg")) return Synth("mg42", () => MakeShot(0.06f, 2600f, 0.35f, 120f));
             if (w.Contains("bren")) return Synth("bren", () => MakeShot(0.16f, 1800f, 0.55f, 95f));
             if (w.Contains("lee") || w.Contains("enfield") || w.Contains("kar") || w.Contains("rifle") || w.Contains("garand") || w.Contains("carbine"))
@@ -105,6 +115,18 @@ namespace StansGame
             if (w.Contains("piat") || w.Contains("bazooka")) return Synth("piat", MakePiat);
             if (w.Contains("tank") || w.Contains("kwk") || w.Contains("pak") || w.Contains("stuk")) return Synth("tankgun", () => MakeShot(1.3f, 900f, 1f, 45f));
             return Synth("smg", () => MakeShot(0.11f, 1500f, 0.5f, 110f));   // Sten, MP 40
+        }
+
+        /// <summary>The weapon's own reload recording, or null (then the old generic one).</summary>
+        public static AudioClip ReloadClip(string weapon)
+        {
+            string w = (weapon ?? "").ToLowerInvariant();
+            if (w.Contains("carbine")) return Recorded("carbine_reload");
+            if (w.Contains("mg")) return Recorded("mg42_reload");
+            if (w.Contains("bren")) return Recorded("bren_reload");
+            if (w.Contains("kar")) return Recorded("kar98_reload");
+            if (w.Contains("1911") || w.Contains("pistol") || w.Contains("colt")) return Recorded("pistol_reload");
+            return null;
         }
 
         public static AudioClip Synthesised(string what) => what == "crash" ? Synth("crash", MakeCrash) : Synth("explosion", MakeExplosion);
@@ -158,7 +180,8 @@ namespace StansGame
             var s = w.audioSource;
             s.spatialBlend = 1f; s.rolloffMode = AudioRolloffMode.Logarithmic; s.minDistance = 3f; s.maxDistance = 900f; s.playOnAwake = false; s.dopplerLevel = 0f;
             if (!w.fireClip) w.fireClip = GunClip(w.displayName);
-            if (!w.reloadClip) w.reloadClip = reload;
+            if (!w.reloadClip) { var own = ReloadClip(w.displayName); w.reloadClip = own ? own : reload; }
+            if (!w.lastRoundClip && (w.displayName ?? "").ToLowerInvariant().Contains("garand")) w.lastRoundClip = Recorded("garand_ping");   // the en-bloc clip flying out
         }
 
         static AudioClip Synth(string key, System.Func<AudioClip> make)

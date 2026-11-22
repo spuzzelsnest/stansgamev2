@@ -151,8 +151,11 @@ namespace StansGame
 
         bool menuOpen;
 
+        void OnDestroy() { SoldierAI.AtEase = false; }   // not into the next level
+
         void Update()
         {
+            SoldierAI.AtEase = CurrentPhase >= phases.Length - 1;   // liberated: the paratroopers stand down
             var keys = UnityEngine.InputSystem.Keyboard.current;
             if (!Net.Active && keys != null && keys.escapeKey.wasPressedThisFrame)
             {

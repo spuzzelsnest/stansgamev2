@@ -408,11 +408,10 @@ namespace StansGame
             }
             if (s.kind == Kind.Photo && photo)
             {
-                // the photograph, slowly pushed in on, as in a documentary
-                float zoom = 1f + 0.08f * Mathf.Clamp01(t / s.secs);
-                float h = (Screen.height - bar * 2f) * 0.94f * zoom, w = h * photo.width / Mathf.Max(1, photo.height);
-                if (w > Screen.width * 0.94f * zoom) { w = Screen.width * 0.94f * zoom; h = w * photo.height / photo.width; }
-                var r = new Rect((Screen.width - w) / 2f, (Screen.height - h) / 2f, w, h);
+                // the photograph, held still (a slow push-in jitters when drawn on whole pixels)
+                float h = (Screen.height - bar * 2f) * 0.94f, w = h * photo.width / Mathf.Max(1, photo.height);
+                if (w > Screen.width * 0.94f) { w = Screen.width * 0.94f; h = w * photo.height / photo.width; }
+                var r = new Rect(Mathf.Round((Screen.width - w) / 2f), Mathf.Round((Screen.height - h) / 2f), Mathf.Round(w), Mathf.Round(h));
                 GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(t / 0.8f));
                 GUI.DrawTexture(r, photo, ScaleMode.ScaleToFit);
                 GUI.color = Color.white;

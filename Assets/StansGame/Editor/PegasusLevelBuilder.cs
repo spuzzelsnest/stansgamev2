@@ -280,6 +280,7 @@ namespace StansGame.EditorTools
             PegasusAmbientLife(root, env, defences, actors);   // colour grade, patrols, traffic, windows (PegasusLevelBuilder.Ambient.cs)
             BuildCinematics(root, director, env);
             PegasusHistory(root);   // "The History" film from the main menu (PegasusLevelBuilder.History.cs)
+            AdoptBattle("PegasusBridge", root, Faction.British, PegasusCommanders);   // battle sheet + commanders (PegasusLevelBuilder.Battles.cs)
 
             string path = SceneDir + "/PegasusBridge.unity";
             EditorSceneManager.SaveScene(scene, path);
@@ -294,6 +295,7 @@ namespace StansGame.EditorTools
 #endif
             AddSceneToBuild(path);
             Debug.Log("Stan's Game: Pegasus Bridge level built at " + path);
+            BattleValidator.Validate(false);
         }
 
         // ---------------------------------------------------------------- helpers

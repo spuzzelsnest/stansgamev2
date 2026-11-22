@@ -3,7 +3,12 @@ guid: 4a737aabc5bd8294781993b61bfbb2bb
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ChurchHuberville
+    second: {fileID: 2100000, guid: b28996421c1b24c429736e303eec7ae8, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

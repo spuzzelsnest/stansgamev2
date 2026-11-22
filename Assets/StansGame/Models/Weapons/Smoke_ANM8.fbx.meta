@@ -3,7 +3,22 @@ guid: 3cd0137ec9356914a823464bf942aec2
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M8_Body
+    second: {fileID: 2100000, guid: 56ef20c8283a24b4183f5d10f4392292, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M8_Lever
+    second: {fileID: 2100000, guid: 460a9591deb295f4cb92fcc266380a86, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M8_Metal
+    second: {fileID: 2100000, guid: 9f3dbfc0016df784e8fa9d13bd3e91d8, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

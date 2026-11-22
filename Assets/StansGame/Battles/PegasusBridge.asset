@@ -1,0 +1,423 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2599ca87022ed3a4cb7311c4366b2b4d, type: 3}
+  m_Name: PegasusBridge
+  m_EditorClassIdentifier: Assembly-CSharp::StansGame.BattlePlan
+  level: PegasusBridge
+  notes: Written from the level as the builder placed it. Positions, facing and skill set here are applied on every rebuild.
+  attacker:
+    name: D Company, 2nd Ox and Bucks
+    faction: 0
+    notes: 
+    commander:
+      name: John Howard
+      rank: Major
+      unit: D Company, 2nd Oxfordshire and Buckinghamshire Light Infantry (glider-borne)
+      portrait: {fileID: 2800000, guid: 4b93378a8ab4f7041ae69a566aa08a43, type: 3}
+      bio: Led the six Horsa gliders of D Company, with sappers of the Royal Engineers, onto the bridges over the Caen Canal and the Orne just after midnight on 6 June, and held them until relieved.
+      reinforceBelow: 0.6
+      fallBackBelow: 0.3
+      maxSend: 3
+      bounding: 1
+      boundSeconds: 7
+      regroupBelow: 0.4
+      orderInterval: 3
+    groups:
+    - id: actors/7th-para-bn-reinforcements
+      name: 7th Para Bn reinforcements
+      task: 
+      arrival: 0
+      phase: 
+      mode: 1
+      awake: 1
+      skill: 0.6
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 7 Para objective
+      route: []
+      units:
+      - name: 7 Para officer
+        kind: 
+        position: {x: 260, y: -1.9941685, z: -6}
+        yaw: 0
+      - name: 7 Para 2
+        kind: 
+        position: {x: 262, y: -2.000808, z: -6}
+        yaw: 0
+      - name: 7 Para 3
+        kind: 
+        position: {x: 264, y: -2.0012157, z: -6}
+        yaw: 0
+      - name: 7 Para 4
+        kind: 
+        position: {x: 266, y: -1.9892714, z: -6}
+        yaw: 0
+      - name: 7 Para 5
+        kind: 
+        position: {x: 268, y: -1.9666703, z: -6}
+        yaw: 0
+      - name: 7 Para 6
+        kind: 
+        position: {x: 260, y: -1.8756664, z: -9}
+        yaw: 0
+      - name: 7 Para 7
+        kind: 
+        position: {x: 262, y: -1.8797243, z: -9}
+        yaw: 0
+      - name: 7 Para 8
+        kind: 
+        position: {x: 264, y: -1.8792527, z: -9}
+        yaw: 0
+      - name: 7 Para 9
+        kind: 
+        position: {x: 266, y: -1.8720801, z: -9}
+        yaw: 0
+      - name: 7 Para 10
+        kind: 
+        position: {x: 268, y: -1.8634083, z: -9}
+        yaw: 0
+  defender:
+    name: Bridge garrison, 736th Grenadier Regiment
+    faction: 1
+    notes: 
+    commander:
+      name: Hans Schmidt
+      rank: Major
+      unit: "Garrison of the B\xE9nouville and Ranville bridges, 736th Grenadier Regiment, 716th Infantry Division"
+      portrait: {fileID: 2800000, guid: cb680754b1bfaec47b7b4b162370c426, type: 3}
+      bio: Commanded the understrength company guarding the two bridges. He was away in Ranville when the gliders landed, and drove to the bridge afterwards, where he was wounded and taken prisoner.
+      reinforceBelow: 0.6
+      fallBackBelow: 0.3
+      maxSend: 3
+      bounding: 1
+      boundSeconds: 7
+      regroupBelow: 0.4
+      orderInterval: 3
+    groups:
+    - id: german-defences/mg-pillbox-(east-bank)
+      name: MG pillbox (east bank)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 0
+      skill: -1
+      mgSkill: 0.35
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: MG42 gunner (pillbox)
+        kind: MG42
+        position: {x: 31.8, y: 0.35408935, z: 14}
+        yaw: 270
+      - name: MG42 loader (pillbox)
+        kind: MG42
+        position: {x: 32.4, y: 0.369948, z: 15.3}
+        yaw: 250
+    - id: german-defences/anti-tank-gun-pit
+      name: Anti-tank gun pit
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 0
+      skill: 0.3
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: AT gun crew
+        kind: 
+        position: {x: 37.1, y: -0.9219923, z: -12.7}
+        yaw: 85
+    - id: german-defences/fire-trench-(east-bank,-1944-photos)
+      name: Fire trench (east bank, 1944 photos)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 0
+      skill: 0.3
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: Rifleman trench 1
+        kind: 
+        position: {x: 21.491405, y: -0.70444965, z: -11.621094}
+        yaw: 94.99999
+      - name: Rifleman trench 2
+        kind: 
+        position: {x: 20.124218, y: -0.74427795, z: -19.824219}
+        yaw: 107
+      - name: Rifleman trench 3
+        kind: 
+        position: {x: 18.75703, y: -0.75045776, z: -29.394531}
+        yaw: 119
+      - name: Rifleman trench 4
+        kind: 
+        position: {x: 14.655469, y: -0.646801, z: -37.597656}
+        yaw: 131
+    - id: german-defences/sentries-and-west-bank
+      name: Sentries and west bank
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.3
+      mgSkill: 0.35
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: Sentry on bridge
+        kind: 
+        position: {x: -4, y: 0.41999847, z: 1.6}
+        yaw: 90
+      - name: Sentry on bridge (east end)
+        kind: 
+        position: {x: 11.971638, y: 0.11, z: -0.45194983}
+        yaw: 270
+      - name: NCO with MP40 (west end)
+        kind: MP40
+        position: {x: -25, y: 0.08351421, z: 3}
+        yaw: 90
+      - name: "Rifleman by caf\xE9"
+        kind: 
+        position: {x: -31, y: 0.030698776, z: -3}
+        yaw: 90
+      - name: MG42 west trench
+        kind: MG42
+        position: {x: -31, y: 0.06583309, z: 12}
+        yaw: 90
+    - id: german-defences/orne-bridge-guard
+      name: Orne bridge guard
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.3
+      mgSkill: 0.35
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: Sentry on the Orne bridge (west end)
+        kind: 
+        position: {x: 548.6819, y: -1.9395037, z: 0.2723056}
+        yaw: 90
+      - name: MG42 at the Orne bridge (east end)
+        kind: MG42
+        position: {x: 653.6, y: -0.24103375, z: 5.000001}
+        yaw: 270
+      - name: Rifleman, Orne bridge trench 1
+        kind: 
+        position: {x: 653.6, y: -0.25183123, z: -5.999999}
+        yaw: 270
+      - name: Rifleman, Orne bridge trench 2
+        kind: 
+        position: {x: 653.1, y: -0.23918267, z: 8.000001}
+        yaw: 250
+      - name: NCO, Orne bridge
+        kind: 
+        position: {x: 653.6, y: -0.28413504, z: -1.9999996}
+        yaw: 270
+    - id: german-defences/patrols
+      name: Patrols
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.3
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route:
+      - {x: -22.5, y: -0.039539337, z: -60}
+      - {x: -22.5, y: 0.00091552734, z: 50}
+      - {x: -22.5, y: 0.08818436, z: 5}
+      - {x: -75, y: 0.23183823, z: 2.5}
+      - {x: -23.5, y: 0.08692074, z: -3}
+      units:
+      - name: Sentry patrol 1 (west bank)
+        kind: 
+        position: {x: -22.5, y: -0.039539337, z: -60}
+        yaw: 0
+      - name: Sentry patrol 2 (west bank)
+        kind: 
+        position: {x: -21.7, y: -0.2762766, z: -63}
+        yaw: 0
+      - name: Sentry patrol 3 (east bank)
+        kind: 
+        position: {x: 26.5, y: 0.06707287, z: -3}
+        yaw: 188.79741
+      - name: Sentry patrol 4 (east bank)
+        kind: 
+        position: {x: 26.168236, y: 0.07186699, z: 0.087058894}
+        yaw: 188.79741
+    - id: "actors/wave-1-(b\xE9nouville-road)"
+      name: "Wave 1 (B\xE9nouville road)"
+      task: 
+      arrival: 0
+      phase: 
+      mode: 1
+      awake: 1
+      skill: 0.4
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: objective
+      route: []
+      units:
+      - name: "Wave 1 (B\xE9nouville road): NCO with MP40"
+        kind: MP40
+        position: {x: -195.11095, y: 5.28353, z: -6.0030794}
+        yaw: 86.82017
+      - name: "Wave 1 (B\xE9nouville road): rifleman"
+        kind: 
+        position: {x: -194.87242, y: 5.2975264, z: -10.296459}
+        yaw: 86.82017
+      - name: "Wave 1 (B\xE9nouville road): rifleman"
+        kind: 
+        position: {x: -199.13806, y: 5.2967596, z: -5.625883}
+        yaw: 86.82017
+      - name: "Wave 1 (B\xE9nouville road): rifleman"
+        kind: 
+        position: {x: -198.83298, y: 5.2854404, z: -11.117415}
+        yaw: 86.82017
+      - name: "Wave 1 (B\xE9nouville road): rifleman"
+        kind: 
+        position: {x: -203.16519, y: 5.30363, z: -5.248687}
+        yaw: 86.82017
+      - name: "Wave 1 (B\xE9nouville road): rifleman"
+        kind: 
+        position: {x: -202.79355, y: 5.316451, z: -11.938372}
+        yaw: 86.82017
+    - id: actors/wave-2-(le-port,-west-bank)
+      name: Wave 2 (Le Port, west bank)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 1
+      awake: 1
+      skill: 0.4
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: objective
+      route: []
+      units:
+      - name: 'Wave 2 (Le Port, west bank): NCO with MP40'
+        kind: MP40
+        position: {x: -28.000038, y: -0.00045776367, z: 174.98758}
+        yaw: 180.35587
+      - name: 'Wave 2 (Le Port, west bank): rifleman'
+        kind: 
+        position: {x: -32.299957, y: -0.00045776367, z: 175.01428}
+        yaw: 180.35587
+      - name: 'Wave 2 (Le Port, west bank): rifleman'
+        kind: 
+        position: {x: -27.375206, y: -0.00045776367, z: 178.98378}
+        yaw: 180.35587
+      - name: 'Wave 2 (Le Port, west bank): rifleman'
+        kind: 
+        position: {x: -32.8751, y: -0.00045776367, z: 179.01793}
+        yaw: 180.35587
+      - name: 'Wave 2 (Le Port, west bank): rifleman'
+        kind: 
+        position: {x: -26.750374, y: -0.00045776367, z: 182.97997}
+        yaw: 180.35587
+      - name: 'Wave 2 (Le Port, west bank): rifleman'
+        kind: 
+        position: {x: -33.450245, y: -0.00045776367, z: 183.02159}
+        yaw: 180.35587
+    - id: actors/wave-3-(east-bank-road)
+      name: Wave 3 (east-bank road)
+      task: 
+      arrival: 0
+      phase: 
+      mode: 1
+      awake: 1
+      skill: 0.4
+      mgSkill: 0.4
+      smokeChance: 0
+      combatRoam: -1
+      objective: objective
+      route: []
+      units:
+      - name: 'Wave 3 (east-bank road): NCO with MP40'
+        kind: MP40
+        position: {x: 28.00018, y: -0.0011167526, z: -229.97322}
+        yaw: 0.7673083
+      - name: 'Wave 3 (east-bank road): MG42 gunner'
+        kind: MG42
+        position: {x: 32.299793, y: -0.039427757, z: -230.0308}
+        yaw: 0.7673083
+      - name: 'Wave 3 (east-bank road): MG42 loader'
+        kind: MG42
+        position: {x: 27.346668, y: -0.0004606247, z: -233.96481}
+        yaw: 0.7673083
+      - name: 'Wave 3 (east-bank road): rifleman'
+        kind: 
+        position: {x: 32.846172, y: -0.03864193, z: -234.03847}
+        yaw: 0.7673083
+      - name: 'Wave 3 (east-bank road): rifleman'
+        kind: 
+        position: {x: 26.693153, y: -0.00045776367, z: -237.95644}
+        yaw: 0.7673083
+      - name: 'Wave 3 (east-bank road): rifleman'
+        kind: 
+        position: {x: 33.39255, y: -0.034251213, z: -238.04616}
+        yaw: 0.7673083
+      - name: 'Wave 3 (east-bank road): rifleman'
+        kind: 
+        position: {x: 26.03964, y: -0.00045776367, z: -241.94803}
+        yaw: 0.7673083
+    - id: "actors/snipers-(village-and-ch\xE2teau-grounds)"
+      name: "Snipers (village and ch\xE2teau grounds)"
+      task: 
+      arrival: 0
+      phase: 
+      mode: 0
+      awake: 1
+      skill: 0.7
+      mgSkill: -1
+      smokeChance: 0
+      combatRoam: -1
+      objective: 
+      route: []
+      units:
+      - name: Sniper 1
+        kind: 
+        position: {x: -160, y: 5.354166, z: -22}
+        yaw: 70
+      - name: Sniper 2
+        kind: 
+        position: {x: -188, y: 2.5908985, z: 26}
+        yaw: 99.99999
+      - name: Sniper 3
+        kind: 
+        position: {x: -141, y: 5.7314367, z: -95}
+        yaw: 45.000004

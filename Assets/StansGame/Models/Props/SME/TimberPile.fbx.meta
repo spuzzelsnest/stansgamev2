@@ -3,7 +3,12 @@ guid: 211851b7e7e058643b1544fda93b3974
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: QuayTimber
+    second: {fileID: 2100000, guid: 9e5b37e0aeb5a0a4484ecf3687559d94, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

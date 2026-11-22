@@ -27,42 +27,16 @@ namespace StansGame.EditorTools
             SmeTraffic(actors);
             SmeC47Serials(air);
             var houses = town.Find("Houses");
-            if (houses) WindowLightsFor(houses, 1944, 0.32f, 0.35f, new Vector3(-30f, 0f, -20f), 24);
+            if (houses) WindowLightsFor(houses, 1944, 0.15f, 0.1f, new Vector3(-30f, 0f, -20f), 8);   // blackout: few, faint
         }
 
         static void SmePatrols(Transform garrison)
         {
             var g = Group("Patrols", garrison);
-            // up the N13 from the town hall to the street north of the square, along it to the east end, and back
-            var n13 = new[] { OnGround(SmeN13X + 3f, -80f), OnGround(SmeN13X + 3f, 18f), OnGround(-60f, 26f), OnGround(20f, 26f), OnGround(-60f, 26f), OnGround(SmeN13X + 3f, 18f) };
-            // round the church, outside the churchyard wall
-            var church = new[] { OnGround(-40f, -20f), OnGround(28f, -20f), OnGround(28f, 18f), OnGround(-40f, 18f) };
-            var lead = SmePatrol(g, "Sentry patrol 1 (N13)", "Sentry patrol 2 (N13)", n13);
+            var plan = smePlan ? smePlan : SmeBattlePlan();
+            var lead = SpawnPatrol(plan, "patrol-n13", g);       // up the N13 and along the street north of the square
             if (lead) GuardDogFor(lead.transform, g);
-            SmePatrol(g, "Sentry patrol 3 (church)", "Sentry patrol 4 (church)", church);
-        }
-
-        /// <summary>Two men of the garrison walking a round (awake: the town is up); the first one is returned.</summary>
-        static Health SmePatrol(Transform g, string lead, string second, Vector3[] route)
-        {
-            Vector3 dir = route[1] - route[0]; dir.y = 0f; dir.Normalize();
-            float yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
-            Health first = null;
-            for (int i = 0; i < 2; i++)
-            {
-                Vector3 p = route[0] - dir * (i * 3f) + Vector3.Cross(Vector3.up, dir) * (i * 0.8f);
-                p.y = GroundAt(p);
-                SmeGerman(g, i == 0 ? lead : second, p, yaw, SoldierAI.Mode.HoldPosition, true);
-                var h = g.Find(i == 0 ? lead : second)?.GetComponent<Health>();
-                if (i == 0) first = h;
-                var ai = h ? h.GetComponent<SoldierAI>() : null;
-                if (!ai) continue;
-                var r = new Vector3[route.Length];
-                for (int k = 0; k < route.Length; k++) r[k] = route[k] - dir * (i * 3f);
-                ai.patrolRoute = r; ai.patrolPause = 2.5f; ai.walkSpeed = 1.25f;
-                ai.startAlert = false; ai.sleepsUntilAlarm = false; ai.combatRoam = 10f;
-            }
-            return first;
+            SpawnPatrol(plan, "patrol-church", g);               // round the church, outside the churchyard wall
         }
 
         static void SmeTraffic(Transform actors)
@@ -101,6 +75,7 @@ namespace StansGame.EditorTools
                 new AmbientAircraft.Pass { from = new Vector3(-900f, 185f, -140f), to = new Vector3(900f, 185f, -200f) },
                 new AmbientAircraft.Pass { from = new Vector3(-900f, 150f, -10f), to = new Vector3(900f, 150f, -60f) },
             };
+            fly.volume = 0.45f;   // heard, not deafening
             fly.speed = 55f; fly.firstPassAt = 45f; fly.gap = new Vector2(60f, 120f);
             vic.transform.position = new Vector3(0f, -2000f, 0f);
             NetScenery(vic, false);

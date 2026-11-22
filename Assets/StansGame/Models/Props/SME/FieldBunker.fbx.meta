@@ -3,7 +3,17 @@ guid: 7c7a5306b0ce11840920a555a4c2aeb2
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Bunker_Concrete
+    second: {fileID: 2100000, guid: 2dff46a28c0a7524fb2cb09dae7c1621, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Bunker_Interior
+    second: {fileID: 2100000, guid: 6922accb3fb85f0459e97459ef0c9bd1, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

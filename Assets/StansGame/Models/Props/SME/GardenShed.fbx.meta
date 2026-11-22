@@ -3,7 +3,17 @@ guid: 1eb4a3ae95e966f4da7071370d0bb6bf
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Shed_Felt
+    second: {fileID: 2100000, guid: baba35d63c06d1f4895be25daf4587f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Shed_Wood
+    second: {fileID: 2100000, guid: 727157cdfb3488b4488a99b18a6939aa, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

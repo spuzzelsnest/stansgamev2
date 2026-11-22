@@ -3,7 +3,52 @@ guid: ec77e98185965b041bb2c8010ec5a7bf
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: hal_fin_paint_side
+    second: {fileID: 2100000, guid: 312308cac8d7a604cad8d49a5683dc88, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: hal_nac_in_paint_bottom
+    second: {fileID: 2100000, guid: 9a63d7b174daf954680666f791c61467, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: hal_nac_in_paint_side
+    second: {fileID: 2100000, guid: 79d5b2c05dac047498f0fcd21f441e3d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: hal_nac_in_paint_top
+    second: {fileID: 2100000, guid: d5bdd231e3c2222439d450dd41c1be99, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: hal_nac_out_paint_side
+    second: {fileID: 2100000, guid: 9faae7a53473a2149b8de259a452c82b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: hal_nac_out_paint_top
+    second: {fileID: 2100000, guid: 4d5acdd4c599ef040bf837e3909151ac, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: halifax_paint_bottom
+    second: {fileID: 2100000, guid: 77fd2d323e33a9540b74faa4b86e6e5e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: halifax_paint_side
+    second: {fileID: 2100000, guid: 530a97b8343e47c4d91520cb5a39d08d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: halifax_paint_top
+    second: {fileID: 2100000, guid: 8002751f8e6c00c49a08fbc7e2cf6c5c, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

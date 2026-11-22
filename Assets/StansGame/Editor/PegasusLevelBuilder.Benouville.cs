@@ -235,6 +235,8 @@ namespace StansGame.EditorTools
             var cam = Camera.main;
             if (cam) { cam.transform.position = new Vector3(60f, 25f, -60f); cam.transform.LookAt(new Vector3(-150f, 5f, -600f)); player.cam = cam; }
 
+            AdoptBattle("ChateauBenouville", root, Faction.German, BenouvilleCommanders);   // the Germans attack, A Company holds
+
             string path = SceneDir + "/ChateauBenouville.unity";
             EditorSceneManager.SaveScene(scene, path);
 #if STANS_NET
@@ -248,6 +250,7 @@ namespace StansGame.EditorTools
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (!list.Exists(s => s.path == path)) list.Add(new EditorBuildSettingsScene(path, true));
             EditorBuildSettings.scenes = list.ToArray();
+            BattleValidator.Validate(false);
             Debug.Log("Stan's Game: Château de Bénouville level built at " + path);
         }
 

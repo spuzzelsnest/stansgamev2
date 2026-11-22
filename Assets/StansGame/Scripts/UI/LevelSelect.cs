@@ -245,7 +245,7 @@ namespace StansGame
             if (!mapTex) { mapTex = Resources.Load<Texture2D>("Menu/NormandyMap"); glowBritish = Resources.Load<Texture2D>("Menu/SectorBritish"); glowAmerican = Resources.Load<Texture2D>("Menu/SectorAmerican"); franceTex = Resources.Load<Texture2D>("Menu/FranceLocator"); }
             // left: the title and the two sectors
             GUI.Label(R(36, 44, 320, 18), "STAN'S GAME", Style(12 * s, Gold, true));
-            GUI.Label(R(36, 66, 340, 120), "CHOOSE YOUR\nSECTOR", Style(46 * s, Ink, true));
+            GUI.Label(R(36, 66, 340, 120), "CHOOSE YOUR\nSECTOR", Style(36 * s, Ink, true));   // fits the left column, clear of the map
             GUI.Label(R(36, 186, 340, 20), "Normandy  ·  the night of 5–6 June 1944", Style(14 * s, Sub));
             Fill(R(36, 216, 64, 2), Gold);
             SectorCard(0, R(36, 240, 308, 104), Gold, "BRITISH SECTOR", "6th Airborne Division", "Pegasus Bridge  ·  Bénouville  ·  Ranville");

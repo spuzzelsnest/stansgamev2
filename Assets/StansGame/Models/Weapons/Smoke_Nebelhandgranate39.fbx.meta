@@ -3,7 +3,12 @@ guid: 2d9b7ad0d7a92504ca46b945f3c46858
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Nebelhandgranate39
+    second: {fileID: 2100000, guid: c744ab5d3d29007478d3df646a87a624, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

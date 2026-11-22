@@ -3,7 +3,17 @@ guid: 49f5738edcc997948a8fbac661a1ceea
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Pole_Metal
+    second: {fileID: 2100000, guid: 822a2fffa2cfe2947ae365a0a7a51276, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Pole_Wood
+    second: {fileID: 2100000, guid: 40bafdca97c58614ababada4e754d4c5, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

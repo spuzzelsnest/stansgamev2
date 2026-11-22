@@ -24,12 +24,14 @@ namespace StansGame
         bool flying, started;
         readonly System.Random rng = new System.Random(644);
 
+        [Range(0f, 1f)] public float volume = 0.9f;
+
         void Awake()
         {
             drone = gameObject.AddComponent<AudioSource>();
             drone.clip = Sfx.AircraftDrone; drone.loop = true; drone.spatialBlend = 1f;
             drone.minDistance = 120f; drone.maxDistance = 3500f; drone.rolloffMode = AudioRolloffMode.Linear;
-            drone.volume = 0.9f; drone.dopplerLevel = 0.6f; drone.pitch = 0.82f;   // four Hercules: deeper than a Dakota
+            drone.volume = volume; drone.dopplerLevel = 0.6f; drone.pitch = 0.82f;   // four Hercules: deeper than a Dakota
         }
 
         void Update()

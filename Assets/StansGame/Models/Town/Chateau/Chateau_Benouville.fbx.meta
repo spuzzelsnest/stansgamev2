@@ -3,7 +3,27 @@ guid: ad0d7bb9ec0aab24fabdaad044ea4e71
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Chateau_Door
+    second: {fileID: 2100000, guid: 441aa4ad7a14a4c4ba1a383aa9be79f9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Chateau_Glass
+    second: {fileID: 2100000, guid: 2354fc5a2234e56478334474beae67ef, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Chateau_Iron
+    second: {fileID: 2100000, guid: d030c6e09b7ef6043b47ca9032258a4a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Chateau_WindowFrame
+    second: {fileID: 2100000, guid: c6b84e2994030d94092173f1a5f19332, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

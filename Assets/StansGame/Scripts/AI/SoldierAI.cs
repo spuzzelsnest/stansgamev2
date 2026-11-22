@@ -82,6 +82,10 @@ namespace StansGame
         CharacterController cc;
         Health target;
         bool alert;
+        // read-only, for the battle overlay (F10) and the validator
+        public bool IsAlert => alert;
+        public bool IsAsleep => asleep;
+        public Health Target => target;
         float burstEnd, nextBurst, nextScan, vertical;
         Vector3 home;
         float targetSince;
@@ -230,6 +234,11 @@ namespace StansGame
                 if (Time.time > blindNextAim) { blindNextAim = Time.time + Random.Range(0.6f, 1.4f); blindAim = blindPoint + Random.insideUnitSphere * blindSpread; }
                 ShootAt(blindAim, to.magnitude, 1.6f);
             }
+            else if (AtEase && self && self.faction == Faction.British && !target)
+            {
+                // the battle is over: the men stand down - stroll about, stand and talk in twos and threes, sit down for a rest
+                move = EaseMove(ref wantStance);
+            }
             else if (mode == Mode.Advance && advanceTarget)
             {
                 // his own spot round the objective, not the same point as everyone else
@@ -325,9 +334,33 @@ namespace StansGame
         Vector3 knock;          // a push from a hit, fading out
 
         /// <summary>Unit direction to walk to reach dest (over the bridge if the canal is in the way).</summary>
+        readonly System.Collections.Generic.List<Vector3> route = new System.Collections.Generic.List<Vector3>();
+        Vector3 routeGoal; float routeAt; int routeIdx;
+
         Vector3 Toward(Vector3 dest)
         {
-            Vector3 w = Water.Waypoint(transform.position, dest) - transform.position; w.y = 0f;
+            // with the level's navigation baked: follow the way round the buildings, corner by corner
+            NavPaths.Ensure();
+            Vector3 aim = dest;
+            if (NavPaths.Ready)
+            {
+                if (Time.time > routeAt || (dest - routeGoal).sqrMagnitude > 9f)
+                {
+                    routeAt = Time.time + 1.2f + Random.value * 0.6f; routeGoal = dest; routeIdx = 1;
+                    if (!NavPaths.Route(transform.position, dest, route)) route.Clear();
+                }
+                if (route.Count > 1)
+                {
+                    while (routeIdx < route.Count - 1)
+                    {
+                        Vector3 c = route[routeIdx] - transform.position; c.y = 0f;
+                        if (c.magnitude > 1.2f) break;
+                        routeIdx++;
+                    }
+                    if (routeIdx < route.Count - 1) aim = route[routeIdx];   // the last corner is the goal itself
+                }
+            }
+            Vector3 w = Water.Waypoint(transform.position, aim) - transform.position; w.y = 0f;
             return w.sqrMagnitude > 0.0001f ? w.normalized : Vector3.zero;
         }
 
@@ -433,6 +466,43 @@ namespace StansGame
             int h = Seed * 7919;
             float a = (h & 1023) / 1023f * Mathf.PI * 2f, r = Mathf.Lerp(min, max, ((h >> 10) & 1023) / 1023f);
             return new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * r;
+        }
+
+        // ------------------------------------------------------------------ after the battle
+
+        /// <summary>Set by the mission when the fighting is over (Sainte-Mère-Église liberated): the Allied men stand down.</summary>
+        public static bool AtEase;
+        Vector3 easeHome, easeGoal; bool easeHomeSet; float easeNext; int easeMood;   // 0 stroll, 1 talk, 2 rest
+
+        Vector3 EaseMove(ref StanceKind stance)
+        {
+            if (!easeHomeSet) { easeHomeSet = true; easeHome = transform.position; }
+            if (Time.time > easeNext)
+            {
+                easeNext = Time.time + Random.Range(8f, 20f);
+                easeMood = Random.value < 0.4f ? 0 : Random.value < 0.6f ? 1 : 2;
+                if (easeMood == 0) { Vector2 r = Random.insideUnitCircle * 14f; easeGoal = easeHome + new Vector3(r.x, 0f, r.y); }
+                else if (easeMood == 1)
+                {
+                    // over to the nearest friend, to talk
+                    SoldierAI best = null; float bd = 25f;
+                    foreach (var o in All) { if (o == this || !o.self || o.self.IsDead || o.self.faction != self.faction) continue; float d = Vector3.Distance(o.transform.position, transform.position); if (d < bd) { bd = d; best = o; } }
+                    easeGoal = best ? best.transform.position + (transform.position - best.transform.position).normalized * 1.6f : transform.position;
+                }
+                else easeGoal = transform.position;
+            }
+            Vector3 to = easeGoal - transform.position; to.y = 0f;
+            if (to.magnitude > 1.2f) { var mv = Toward(easeGoal) * moveSpeed * 0.4f; Face(mv); stance = StanceKind.Stand; return mv; }
+            if (easeMood == 2) stance = StanceKind.Crouch;   // sitting down for a rest
+            else
+            {
+                stance = StanceKind.Stand;
+                // face whoever is nearest, as men do when they talk
+                SoldierAI near = null; float nd = 4f;
+                foreach (var o in All) { if (o == this || !o.self || o.self.IsDead || o.self.faction != self.faction) continue; float d = Vector3.Distance(o.transform.position, transform.position); if (d < nd) { nd = d; near = o; } }
+                if (near) { Vector3 f = near.transform.position - transform.position; f.y = 0f; if (f.sqrMagnitude > 0.01f) Face(f); }
+            }
+            return Vector3.zero;
         }
 
         float boundUntil, haltUntil;
