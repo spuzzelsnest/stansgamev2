@@ -128,7 +128,7 @@ bpy.ops.export_scene.fbx(filepath='/home/claude/civ/out/French_Civilian.fbx', us
     mesh_smooth_type='FACE', object_types={'ARMATURE','MESH'}, use_armature_deform_only=False, bake_anim=False, path_mode='STRIP')
 # bottle: 0.31 m (a 75 cl bottle), origin at the base
 bpy.ops.wm.read_factory_settings(use_empty=True)
-bpy.ops.import_scene.fbx(filepath='/mnt/user-data/uploads/stansGameV2/_downloads/bottle-of-champagne/source/A_BottleChampagne.fbx')
+bpy.ops.import_scene.fbx(filepath='/mnt/user-data/uploads/stansGameV2/_downloads/_Objects/bottle-of-champagne/source/A_BottleChampagne.fbx')
 o=[x for x in bpy.data.objects if x.type=='MESH'][0]
 for x in list(bpy.data.objects):
     if x!=o: bpy.data.objects.remove(x)

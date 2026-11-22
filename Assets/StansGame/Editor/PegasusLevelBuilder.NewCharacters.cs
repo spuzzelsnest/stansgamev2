@@ -23,7 +23,7 @@ namespace StansGame.EditorTools
             ("Nurse_Vintage", "Nurse (white uniform and cap)", Faction.British),   // (no civilian side in the game: they only need it for the ragdoll test)
         };
 
-        [MenuItem("Stan's Game/Import New Characters", priority = 7)]
+        [MenuItem("Stan's Game/Import New Characters", priority = 21)]
         public static void ImportNewCharacters()
         {
             string dir = PrefabDir + "/Characters";

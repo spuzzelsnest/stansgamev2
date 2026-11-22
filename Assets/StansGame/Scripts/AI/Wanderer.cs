@@ -16,10 +16,13 @@ namespace StansGame
         public float speed = 1.3f;
         [Tooltip("Civilians: hands down by the sides (needs the IK pass on the animator layer)")] public bool armsDown;
         public TextMesh label;
+        [Tooltip("AnimActions numbers it may do when it stops (smoke, talk, rest...); empty: just stand")] public int[] actions = new int[0];
+        [Range(0, 1)] public float actionChance = 0.6f;
 
         public static readonly System.Collections.Generic.List<Wanderer> All = new System.Collections.Generic.List<Wanderer>();
         Animator anim; CharacterController cc; Health health;
         Vector3 goal; float waitUntil; bool walking; Vector3 vel;
+        HandIK hands; int doing;
 
         void OnEnable() => All.Add(this);
         void OnDisable() => All.Remove(this);
@@ -29,6 +32,7 @@ namespace StansGame
             anim = GetComponentInChildren<Animator>();
             cc = GetComponent<CharacterController>();
             health = GetComponent<Health>();
+            hands = GetComponentInChildren<HandIK>();
             if (health) health.Died += (h, d) => { if (label) label.gameObject.SetActive(false); enabled = false; };
             speed *= Random.Range(0.85f, 1.15f);
             waitUntil = Time.time + Random.Range(0f, pause.y);
@@ -59,7 +63,7 @@ namespace StansGame
             {
                 var p = new Vector3(Random.Range(area.min.x, area.max.x), transform.position.y, Random.Range(area.min.z, area.max.z));
                 if ((p - transform.position).sqrMagnitude < 25f || Blocked(p) || !PathClear(transform.position, p)) continue;
-                goal = p; walking = true; return;
+                goal = p; walking = true; Act(0); return;
             }
             waitUntil = Time.time + 1f;
         }
@@ -71,7 +75,15 @@ namespace StansGame
             if (walking)
             {
                 Vector3 to = goal - transform.position; to.y = 0f;
-                if (to.magnitude < 0.6f) { walking = false; waitUntil = Time.time + Random.Range(pause.x, pause.y); }
+                if (to.magnitude < 0.6f)
+                {
+                    walking = false; waitUntil = Time.time + Random.Range(pause.x, pause.y);
+                    if (actions.Length > 0 && Random.value < actionChance)
+                    {
+                        Act(actions[Random.Range(0, actions.Length)]);
+                        waitUntil += AnimActions.OneShot(doing) ? 0f : Random.Range(6f, 14f);   // a smoke or a chat takes a while
+                    }
+                }
                 else
                 {
                     want = to.normalized * speed;
@@ -101,6 +113,15 @@ namespace StansGame
                     transform.position = new Vector3(transform.position.x, hit.point.y, transform.position.z);
             }
             if (anim) Locomotion.Set(anim, transform.InverseTransformDirection(vel), 0.15f, true);
+        }
+
+        /// <summary>Start an action (AnimActions), or 0 to stop; a rifleman's hands leave the rifle while he does it.</summary>
+        void Act(int a)
+        {
+            if (!anim || a == doing) return;
+            doing = a;
+            anim.SetInteger("Action", a);
+            if (hands) hands.enabled = a == 0 || a == AnimActions.Throw || a == AnimActions.Reload || a == AnimActions.Fire || a == AnimActions.KneelFire || a == AnimActions.Defend || a == AnimActions.Kneel;
         }
 
         void LateUpdate()

@@ -15,8 +15,47 @@ namespace StansGame.EditorTools
     {
         static readonly Collider[] hits = new Collider[32];
 
-        [MenuItem("Stan's Game/Debug/Validate Battle (open level)", priority = 205)]
+        [MenuItem("Stan's Game/Debug/Check: Validate Battle (open level)", priority = 202)]
         static void Menu() => Validate(true);
+
+        /// <summary>
+        /// Menu: Debug > Check: Run All Checks. Opens each level in turn and runs the battle check and the vehicle-front
+        /// photos on it, then the ragdoll and texture checks; reopens the level you had open. The summary goes to
+        /// Logs/all-checks.txt, the details to each check's own report in Logs/.
+        /// </summary>
+        [MenuItem("Stan's Game/Debug/Check: Run All Checks (all levels)", priority = 200)]
+        static void RunAll()
+        {
+            if (!UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            string back = UnityEngine.SceneManagement.SceneManager.GetActiveScene().path;
+            var sum = new System.Text.StringBuilder($"All checks - {System.DateTime.Now}\n\n");
+            string[] levels = { "PegasusBridge", "SainteMereEglise", "ChateauBenouville", "ProvingGround" };
+            try
+            {
+                for (int i = 0; i < levels.Length; i++)
+                {
+                    string path = $"Assets/StansGame/Scenes/{levels[i]}.unity";
+                    if (!System.IO.File.Exists(path)) { sum.AppendLine($"{levels[i]}: not built"); continue; }
+                    EditorUtility.DisplayProgressBar("Run all checks", levels[i], (float)i / (levels.Length + 1));
+                    UnityEditor.SceneManagement.EditorSceneManager.OpenScene(path, UnityEditor.SceneManagement.OpenSceneMode.Single);
+                    int problems = Validate(false);
+                    VehicleFronts.Check();
+                    sum.AppendLine($"{levels[i]}: battle check {(problems == 0 ? "OK" : problems + " problems")} (battle-check-{levels[i]}.txt); vehicle photos vehicle-fronts-{levels[i]}.png");
+                }
+                EditorUtility.DisplayProgressBar("Run all checks", "Ragdolls and textures", 0.9f);
+                AssetAudit.CheckRagdolls();
+                AssetAudit.CheckTextures();
+                sum.AppendLine("Ragdolls: ragdoll-check.txt; textures: texture-check.txt");
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+                if (!string.IsNullOrEmpty(back)) UnityEditor.SceneManagement.EditorSceneManager.OpenScene(back, UnityEditor.SceneManagement.OpenSceneMode.Single);
+            }
+            string logs = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Application.dataPath), "Logs");
+            System.IO.File.WriteAllText(System.IO.Path.Combine(logs, "all-checks.txt"), sum.ToString());
+            Debug.Log("Stan's Game: all checks done - Logs/all-checks.txt\n" + sum);
+        }
 
         public static int Validate(bool verbose)
         {
@@ -26,7 +65,7 @@ namespace StansGame.EditorTools
             var report = new System.Text.StringBuilder();
             void Problem(string what, Object ctx) { problems++; report.AppendLine("- " + what); Debug.LogWarning("Stan's Game - battle check: " + what, ctx); }
 
-            var all = Object.FindObjectsByType<SoldierAI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var all = Object.FindObjectsByType<SoldierAI>(FindObjectsInactive.Include);
             var placed = new List<(SoldierAI ai, Vector3 p)>();
             foreach (var ai in all)
             {
@@ -118,7 +157,7 @@ namespace StansGame.EditorTools
 
         /// <summary>Everyone standing inside a wall (or landing in a house) is moved to the nearest free spot within
         /// 8 m, and the new spot is written on the level's battle sheet so the next build keeps it. Then saves the scene.</summary>
-        [MenuItem("Stan's Game/Debug/Move Men Out of Walls (open level)", priority = 206)]
+        [MenuItem("Stan's Game/Debug/Check: Move Men Out of Walls (open level)", priority = 203)]
         static void MoveOutOfWalls()
         {
             Physics.SyncTransforms();
@@ -126,7 +165,7 @@ namespace StansGame.EditorTools
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
             var plan = AssetDatabase.LoadAssetAtPath<BattlePlan>($"Assets/StansGame/Battles/{scene.name}.asset");
             int moved = 0, stuck = 0;
-            foreach (var ai in Object.FindObjectsByType<SoldierAI>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var ai in Object.FindObjectsByType<SoldierAI>(FindObjectsInactive.Include))
             {
                 var t = ai.transform;
                 var chute = ai.GetComponent<ParachuteDrop>();

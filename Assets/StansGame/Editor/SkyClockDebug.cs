@@ -12,7 +12,9 @@ namespace StansGame.EditorTools
             if (SainteMereMission.Instance) { SainteMereMission.Instance.Minutes += hours * 60f; Debug.Log("Stan's Game: clock " + SainteMereMission.Instance.ClockText); }
             else if (MissionDirector.Instance) { MissionDirector.Instance.Minutes += hours * 60f; Debug.Log("Stan's Game: clock " + MissionDirector.Instance.ClockText); }
         }
-        [MenuItem("Stan's Game/Debug/Sky: clock +1 hour (play mode) %#k", priority = 60)] static void Plus1() => Jump(1f);
-        [MenuItem("Stan's Game/Debug/Sky: clock +3 hours (play mode)", priority = 61)] static void Plus3() => Jump(3f);
+        [MenuItem("Stan's Game/Debug/Play mode: Sky Clock +1 Hour %#k", true)] [MenuItem("Stan's Game/Debug/Play mode: Sky Clock +3 Hours", true)]
+        static bool PlayingOnly() => Application.isPlaying;
+        [MenuItem("Stan's Game/Debug/Play mode: Sky Clock +1 Hour %#k", priority = 104)] static void Plus1() => Jump(1f);
+        [MenuItem("Stan's Game/Debug/Play mode: Sky Clock +3 Hours", priority = 105)] static void Plus3() => Jump(3f);
     }
 }

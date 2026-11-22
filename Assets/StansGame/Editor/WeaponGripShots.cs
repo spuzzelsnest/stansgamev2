@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ namespace StansGame.EditorTools
     /// </summary>
     public static class WeaponGripShots
     {
-        [MenuItem("Stan's Game/Debug/Capture Weapon Grips", priority = 55)]
+        [MenuItem("Stan's Game/Debug/Screenshots: Capture Weapon Grips", priority = 301)]
         static void Capture()
         {
             string dir = Path.Combine(Path.GetDirectoryName(Application.dataPath), "_downloads", "previews");
@@ -34,6 +35,7 @@ namespace StansGame.EditorTools
             Material M(Color c) { var m = new Material(unlit); m.color = c; if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c); return m; }
             Material gridA = M(new Color(0.62f, 0.64f, 0.66f)), gridB = M(new Color(0.45f, 0.47f, 0.5f)), axis = M(new Color(0.2f, 0.2f, 0.2f));
             Material white = M(Color.white), red = M(new Color(0.9f, 0.1f, 0.1f)), blue = M(new Color(0.1f, 0.3f, 1f)), yellow = M(new Color(1f, 0.85f, 0f));
+            Material green = M(new Color(0.1f, 0.8f, 0.2f)), cyan = M(new Color(0f, 0.9f, 0.9f));
 
             GameObject Box(Transform parent, Vector3 pos, Vector3 size, Material m)
             {
@@ -68,9 +70,10 @@ namespace StansGame.EditorTools
                 var parked = new GameObject("parked"); parked.SetActive(false);
                 var go = Object.Instantiate(prefab, parked.transform);
                 var w = go.GetComponentInChildren<Weapon>(true);
-                if (!w) { w = go.AddComponent<Weapon>(); w.displayName = prefab.name.Substring(7); }   // the soldiers add it to their copy
+                if (!w) { w = go.AddComponent<Weapon>(); w.displayName = prefab.name.Substring(7); w.muzzle = go.transform.Find("Muzzle"); }   // the soldiers add it to their copy
                 else if (w.transform != go.transform) Debug.Log($"{prefab.name}: the Weapon sits on a child, {w.transform.localPosition} from the root");
                 w.Init();   // applies the hold (support point, magazine point, palm point) by name
+                MagazineSplitter.Apply(w);   // a loose magazine (Sten, MP 40) shows green
                 go.transform.SetParent(root.transform, false);
                 go.transform.localPosition = Vector3.zero; go.transform.localRotation = Quaternion.identity;
                 Object.DestroyImmediate(parked);
@@ -79,6 +82,8 @@ namespace StansGame.EditorTools
                 Dot(marks, w.handOffset, red);
                 Dot(marks, w.supportHand, blue);
                 Dot(marks, w.magazinePoint, yellow, 0.016f);
+                if (w.magazine) { Dot(marks, w.magazinePoint + w.magazinePull, yellow, 0.012f); foreach (var mr in w.magazine.GetComponentsInChildren<Renderer>()) mr.sharedMaterials = mr.sharedMaterials.Select(_ => green).ToArray(); }
+                if (w.cockingPoint != Vector3.zero) Dot(marks, w.cockingPoint, cyan, 0.016f);
                 if (w.muzzle) Dot(marks, go.transform.InverseTransformPoint(w.muzzle.position), axis, 0.02f);
                 foreach (var r in go.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 // the marks in front of the gun so they show

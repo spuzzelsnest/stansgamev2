@@ -58,7 +58,7 @@ namespace StansGame.EditorTools
             new Shot("06_benouville_side_from_west_end", new Vector3(-14f, 1.7f, 2f), new Vector3(-200f, 0f, -60f), 60f),
         };
 
-        [MenuItem("Stan's Game/Capture Preview Shots", priority = 20)]
+        [MenuItem("Stan's Game/Debug/Screenshots: Capture Preview Shots", priority = 302)]
         public static void Capture()
         {
             string dir = Path.Combine(Path.GetDirectoryName(Application.dataPath), "_downloads", "previews");
@@ -90,7 +90,7 @@ namespace StansGame.EditorTools
                     {
                         // positions relative to an object (in its own frame), e.g. a glider wherever it rests
                         GameObject target = null;
-                        foreach (var go in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                        foreach (var go in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include))
                             if (go.name.StartsWith(s.around)) { target = go.gameObject; break; }
                         if (!target) continue;
                         var tt = target.transform;

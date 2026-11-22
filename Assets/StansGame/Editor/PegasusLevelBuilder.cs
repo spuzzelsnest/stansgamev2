@@ -155,11 +155,42 @@ namespace StansGame.EditorTools
             return best;
         }
 
+        /// <summary>Set by Build Everything: the levels build one after another without asking each time.</summary>
+        internal static bool batchBuild;
+
+        /// <summary>Before a level build replaces the open scene: offer to save unsaved changes to it, then confirm.</summary>
+        static bool ConfirmBuild(string title, string message)
+        {
+            if (batchBuild) return true;
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return false;
+            return EditorUtility.DisplayDialog(title, message, "Build", "Cancel");
+        }
+
+        [MenuItem("Stan's Game/Build Everything (animations and all four levels)", priority = 6)]
+        public static void BuildEverything()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            if (!EditorUtility.DisplayDialog("Build everything",
+                "Rebuilds the animation sets, then Pegasus Bridge, Sainte-Mère-Église, the Château de Bénouville and the Proving Ground, one after another (overwriting their scenes). This takes a few minutes. Continue?", "Build all", "Cancel")) return;
+            var t0 = System.DateTime.Now;
+            batchBuild = true;
+            try
+            {
+                EditorUtility.DisplayProgressBar("Build everything", "Animation sets", 0.05f); EditorTools.AnimationSets.Build();
+                EditorUtility.DisplayProgressBar("Build everything", "Pegasus Bridge", 0.15f); Build();
+                EditorUtility.DisplayProgressBar("Build everything", "Sainte-Mère-Église", 0.4f); BuildSainteMere();
+                EditorUtility.DisplayProgressBar("Build everything", "Château de Bénouville", 0.65f); BuildBenouville();
+                EditorUtility.DisplayProgressBar("Build everything", "Proving Ground", 0.85f); BuildProvingGround();
+            }
+            finally { batchBuild = false; EditorUtility.ClearProgressBar(); }
+            Debug.Log($"Stan's Game: everything rebuilt in {(System.DateTime.Now - t0).TotalMinutes:0.0} min");
+        }
+
         [MenuItem("Stan's Game/Build Pegasus Bridge Level", priority = 1)]
         public static void Build()
         {
-            if (!EditorUtility.DisplayDialog("Build Pegasus Bridge level",
-                "Creates a new scene Assets/StansGame/Scenes/PegasusBridge.unity (overwrites it if it exists). Continue?", "Build", "Cancel"))
+            if (!ConfirmBuild("Build Pegasus Bridge level",
+                "Creates a new scene Assets/StansGame/Scenes/PegasusBridge.unity (overwrites it if it exists). Continue?"))
                 return;
 
             EnsureFolders();
@@ -292,7 +323,7 @@ namespace StansGame.EditorTools
             // network ids can only be worked out once prefabs and scene objects exist on disk: do it now and save again
             foreach (var p in new[] { "BritishSoldier", "BritishBrenGunner", "BritishRifleman", "BritishParaOfficer", "NetPlayer" }) RefreshPrefabNetworkId($"{PrefabDir}/{p}.prefab");
             int n = 0;
-            foreach (var no in Object.FindObjectsByType<NetworkObject>(FindObjectsInactive.Include, FindObjectsSortMode.None)) { RefreshNetworkId(no); n++; }
+            foreach (var no in Object.FindObjectsByType<NetworkObject>(FindObjectsInactive.Include)) { RefreshNetworkId(no); n++; }
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, path);
             Debug.Log($"Stan's Game: {n} networked objects in the level");
@@ -815,6 +846,10 @@ namespace StansGame.EditorTools
             return tex;
         }
 
+        /// <summary>The stone slipways out of the canal (off for now; a static field, not a constant, so the code
+        /// stays compiled without an "unreachable code" warning).</summary>
+        static readonly bool slipways = false;
+
         static GameObject WaterPlane(string name, Transform parent, Vector3 pos, Vector2 size, float yaw = 0f)
         {
             var water = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -842,7 +877,7 @@ namespace StansGame.EditorTools
             // concrete quays and the west pier/fixed span: PegasusLevelBuilder.Quays.cs
             BuildQuays(canal);
             var stone = Mat("Quay_Stone", new Color(0.45f, 0.43f, 0.40f));
-            if (false)
+            if (slipways)   // switched off: see the field
             {
 
             // stone slipways along both quays (next to the bridge and further up and down the canal), so a soldier who
@@ -1684,6 +1719,7 @@ namespace StansGame.EditorTools
             flash.transform.SetParent(muzzle, false); flash.type = LightType.Point; flash.range = 6f; flash.intensity = 3f; flash.color = new Color(1f, 0.75f, 0.4f);
             w.muzzleLight = flash;
             var src = wgo.AddComponent<AudioSource>(); src.spatialBlend = 1f; src.maxDistance = 400f; w.audioSource = src;
+            MagazineSplitter.Apply(w);   // Sten, MP 40: the magazine as its own part, so a reload can pull it out
             return w;
         }
 
@@ -2054,7 +2090,7 @@ namespace StansGame.EditorTools
             return group;
         }
 
-        enum Armour { PanzerIV, HotchkissPak40, StuG }
+        enum Armour { PanzerIV, HotchkissPak40, StuG, Sherman, Cromwell, Stuart, Marder, Hetzer, Wirbelwind, M16 }
 
         /// <summary>A model from VehicleImporter as the visible body, scaled to its real length (FBX unit settings vary).</summary>
         static GameObject PlaceModel(string fbx, Transform parent, float realLength)
@@ -2117,6 +2153,187 @@ namespace StansGame.EditorTools
             return true;
         }
 
+        /// <summary>
+        /// The M4A3E8 Sherman "Easy Eight" (Models/Vehicles/ShermanM4A3E8.fbx, Models/Source~/sherman_e8_decimate.py + sherman_e8.py): hull, turret
+        /// on its ring and the 76 mm gun on its trunnions, cut apart from one generated mesh. A late-1944 Sherman: the
+        /// tanks at Sainte-Mère-Église and with the British in June were the earlier 75 mm M4s.
+        /// </summary>
+        static bool ShermanModel(Transform t, out Transform turret, out Transform gun, out Transform muzzle)
+        {
+            turret = gun = muzzle = null;
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>($"{VehicleImporter_Dir}/ShermanM4A3E8.fbx");
+            if (!asset) return false;
+            var m = (GameObject)PrefabUtility.InstantiatePrefab(asset, t);
+            PrefabUtility.UnpackPrefabInstance(m, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            m.name = "Model"; m.transform.localPosition = Vector3.zero; m.transform.localRotation = asset.transform.localRotation;
+            var paint = TexMat("Sherman_E8_OliveDrab", $"{VehicleImporter_Dir}/Textures/ShermanM4A3E8/Sherman.jpg", 0.25f);
+            foreach (var r in m.GetComponentsInChildren<Renderer>(true)) { var ms = r.sharedMaterials; for (int i = 0; i < ms.Length; i++) ms[i] = paint; r.sharedMaterials = ms; }
+            var tm = FindDeep(m.transform, "M4_Turret"); var gm = FindDeep(m.transform, "M4_Gun"); var mz = FindDeep(m.transform, "M4_Muzzle");
+            if (!tm || !gm || !mz) { Object.DestroyImmediate(m); return false; }
+            if (t.InverseTransformPoint(mz.position).z < 0f) m.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * m.transform.localRotation;
+            turret = new GameObject("Turret").transform; turret.SetParent(t, false); turret.position = tm.position;
+            gun = new GameObject("Gun").transform; gun.SetParent(turret, false); gun.position = gm.position;
+            muzzle = new GameObject("Muzzle").transform; muzzle.SetParent(gun, false); muzzle.position = mz.position;
+            tm.SetParent(turret, true); gm.SetParent(gun, true);
+            return true;
+        }
+
+        /// <summary>
+        /// Joan's tanks of 22 Nov (Models/Source~/convert_batch2.py): file, weight (kg), hit points, armour, side, gun
+        /// (shell name, calibre m, muzzle velocity m/s). Each model brings &lt;key&gt;_Hull, optionally &lt;key&gt;_Turret on its
+        /// ring and &lt;key&gt;_Gun on its trunnions, and &lt;key&gt;_Muzzle; its textures are in Textures/&lt;key&gt;/.
+        /// </summary>
+        static readonly Dictionary<Armour, (string key, float mass, float hp, float armour, bool allied, string shell, float cal, float mv)> ArmourSpecs =
+            new Dictionary<Armour, (string, float, float, float, bool, string, float, float)>
+        {
+            { Armour.Cromwell, ("Cromwell", 27900f, 340f, 64f, true, "QF75mm_HE", 0.075f, 620f) },          // Cromwell IV, QF 75 mm
+            { Armour.Stuart, ("StuartM5A1", 15400f, 220f, 38f, true, "M6_37mm_HE", 0.037f, 880f) },          // M5A1 Stuart, 37 mm M6
+            { Armour.Marder, ("MarderIIIM", 10500f, 170f, 15f, false, "Pak40_HE", 0.075f, 790f) },           // Marder III Ausf. M, 7.5 cm PaK 40
+            { Armour.Hetzer, ("Hetzer", 15750f, 300f, 60f, false, "Pak39_HE", 0.075f, 750f) },               // Jagdpanzer 38(t), 7.5 cm PaK 39
+            // Joan's downloads of 22 Nov, batch 3 (Models/Source~/convert_batch3.py)
+            { Armour.Wirbelwind, ("Wirbelwind", 22000f, 280f, 50f, false, "Flak38_20mm", 0.02f, 900f) },    // Flakpanzer IV Wirbelwind, 2 cm Flakvierling 38
+            { Armour.M16, ("M16Halftrack", 9100f, 150f, 8f, true, "M2_50cal", 0.0127f, 890f) },              // M16 MGMC, M45 Quadmount (4 x .50 Browning M2HB)
+        };
+
+        /// <summary>
+        /// How each vehicle really drove and shot (published figures, rounded): road speed and reverse (m/s), how hard it
+        /// picks up speed (power to weight), how fast it turns on its tracks, the turret or mount traverse (deg/s, and the
+        /// limit each way for a casemate or open mount: 0 = all round), elevation limits, the time between rounds (a crew
+        /// loading by hand, or the cyclic rate of an automatic), the shell's muzzle velocity, and for the automatic mounts
+        /// the barrels, the rounds before the magazines or belts are changed and how long that takes.
+        /// </summary>
+        static readonly Dictionary<Armour, (float fwd, float rev, float acc, float turn, float trav, float limit, float minEl, float maxEl, float reload, float mv, bool auto, int mag, float magReload)> TrueSpecs =
+            new Dictionary<Armour, (float, float, float, float, float, float, float, float, float, float, bool, int, float)>
+        {
+            // Panzer IV Ausf. H: 38 km/h, 300 hp for 25 t; electric traverse ~14 deg/s; KwK 40 L/48 -8/+20, ~6 rounds a minute aimed
+            { Armour.PanzerIV, (10.5f, 2.8f, 2.2f, 28f, 14f, 0f, -8f, 20f, 7f, 790f, false, 0, 0f) },
+            // StuG III Ausf. G: 40 km/h; the StuK 40 in the casemate turns 10 deg each way by handwheel; -6/+20
+            { Armour.StuG, (11.1f, 2.8f, 2.2f, 26f, 4f, 10f, -6f, 20f, 7f, 790f, false, 0, 0f) },
+            // Hotchkiss H39 with the PaK 40 (Becker): 36 km/h, 30 deg each way; the counter-attack slows it to 28 km/h itself
+            { Armour.HotchkissPak40, (10.0f, 2.5f, 2.0f, 24f, 8f, 30f, -5f, 22f, 8f, 790f, false, 0, 0f) },
+            // M4A3E8: 48 km/h, 500 hp Ford GAA for 33 t; hydraulic traverse ~24 deg/s; 76 mm M1A2 -10/+25, gyrostabilised
+            { Armour.Sherman, (13.3f, 3.5f, 2.6f, 30f, 24f, 0f, -10f, 25f, 5f, 792f, false, 0, 0f) },
+            // Cromwell IV: 64 km/h on the Meteor (600 hp, 28 t), the fastest tank of the campaign; QF 75 mm -12.5/+20
+            { Armour.Cromwell, (17.8f, 3.5f, 3.6f, 34f, 22f, 0f, -12.5f, 20f, 5f, 620f, false, 0, 0f) },
+            // M5A1 Stuart: 58 km/h on two Cadillacs (15.4 t); quick hydraulic traverse; 37 mm M6 -12/+45, ~20 rounds a minute
+            { Armour.Stuart, (16.1f, 4f, 4f, 40f, 36f, 0f, -12f, 45f, 3f, 884f, false, 0, 0f) },
+            // Marder III Ausf. M: 42 km/h; the PaK 40/3 turns 21 deg each way, -5/+13
+            { Armour.Marder, (11.7f, 3f, 2.6f, 32f, 6f, 21f, -5f, 13f, 7f, 790f, false, 0, 0f) },
+            // Jagdpanzer 38(t): 42 km/h; the PaK 39 has 5 deg left, 11 right (8 each way here), -6/+12
+            { Armour.Hetzer, (11.7f, 3f, 2.0f, 30f, 3f, 8f, -6f, 12f, 8f, 750f, false, 0, 0f) },
+            // Wirbelwind: 38 km/h (Pz IV chassis); the Flakvierling 38 -10/+90, four 2 cm guns, ~800 rounds a minute practical,
+            // 20-round magazines (80 a load), each change ~6 s
+            { Armour.Wirbelwind, (10.5f, 2.8f, 2.2f, 28f, 30f, 0f, -10f, 90f, 0.075f, 900f, true, 80, 6f) },
+            // M16 MGMC: 72 km/h half-track (White 160AX, 9 t); the M45 Maxson mount, electric, 60 deg/s, -10/+90;
+            // four .50 M2HB, ~2,000 rounds a minute together, 200-round chests per gun
+            { Armour.M16, (20f, 5f, 3.2f, 26f, 60f, 0f, -10f, 90f, 0.03f, 890f, true, 800, 10f) },
+        };
+
+        /// <summary>The barrels of a quad mount around its centre line, from the main muzzle (convert_batch3.py measures them).</summary>
+        static readonly Dictionary<Armour, Vector3[]> QuadBarrels = new Dictionary<Armour, Vector3[]>
+        {
+            { Armour.Wirbelwind, new[] { new Vector3(-0.34f, 0.15f, 0f), new Vector3(0.34f, -0.15f, 0f), new Vector3(0.34f, 0.15f, 0f), new Vector3(-0.34f, -0.15f, 0f) } },
+            { Armour.M16, new[] { new Vector3(-0.52f, 0.12f, 0f), new Vector3(0.66f, -0.12f, 0f), new Vector3(0.52f, 0.12f, 0f), new Vector3(-0.66f, -0.12f, 0f) } },
+        };
+
+        /// <summary>
+        /// A muzzle flash, hidden: a long bright core down the bore line and the side blast of the muzzle brake (two flat
+        /// petals across it), with a short orange light. Sized by the calibre: about 0.5 m for the 2 cm guns, 1.8 m for a 7.5 cm.
+        /// </summary>
+        static GameObject MuzzleFlash(Transform at, float calibre)
+        {
+            float s = Mathf.Max(0.4f, calibre * 24f);
+            var f = new GameObject("Muzzle flash"); f.transform.SetParent(at, false);
+            var core = Mat("MuzzleFlash_Core", new Color(1f, 0.86f, 0.55f), 0f);
+            core.EnableKeyword("_EMISSION"); core.SetColor("_EmissionColor", new Color(1f, 0.78f, 0.4f) * 14f); EditorUtility.SetDirty(core);
+            var outer = Mat("MuzzleFlash_Outer", new Color(1f, 0.55f, 0.2f), 0f);
+            outer.EnableKeyword("_EMISSION"); outer.SetColor("_EmissionColor", new Color(1f, 0.5f, 0.15f) * 6f); EditorUtility.SetDirty(outer);
+            Prim(PrimitiveType.Sphere, "Flash core", f.transform, new Vector3(0f, 0f, s * 0.4f), Vector3.zero, new Vector3(s * 0.32f, s * 0.32f, s * 0.9f), core);
+            Prim(PrimitiveType.Sphere, "Flash side blast", f.transform, new Vector3(0f, 0f, s * 0.12f), Vector3.zero, new Vector3(s * 0.95f, s * 0.16f, s * 0.28f), outer);
+            Prim(PrimitiveType.Sphere, "Flash side blast", f.transform, new Vector3(0f, 0f, s * 0.12f), new Vector3(0f, 0f, 90f), new Vector3(s * 0.95f, s * 0.16f, s * 0.28f), outer);
+            foreach (var r in f.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var l = new GameObject("Flash light").AddComponent<Light>(); l.transform.SetParent(f.transform, false);
+            l.transform.localPosition = new Vector3(0f, 0f, s * 0.4f);
+            l.type = LightType.Point; l.range = s * 9f; l.intensity = 5f; l.color = new Color(1f, 0.65f, 0.3f); l.shadows = LightShadows.None;
+            f.SetActive(false);
+            return f;
+        }
+
+        /// <summary>A tracer for the automatic mounts: a small glowing streak, no light of its own, gone after 3 s.</summary>
+        static Shell BuildTracerPrefab(string name, float calibre, float direct, float blast, float blastRadius)
+        {
+            string path = $"{PrefabDir}/{name}.prefab";
+            var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            go.name = name;
+            Object.DestroyImmediate(go.GetComponent<Collider>());
+            var col = go.AddComponent<SphereCollider>(); col.radius = 0.5f;
+            go.transform.localScale = new Vector3(calibre * 2f, calibre * 2f, calibre * 2f);
+            var streak = GameObject.CreatePrimitive(PrimitiveType.Cylinder); Object.DestroyImmediate(streak.GetComponent<Collider>());
+            streak.transform.SetParent(go.transform, false); streak.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            streak.transform.localScale = new Vector3(1f, 30f, 1f); streak.transform.localPosition = new Vector3(0f, 0f, -30f);
+            var m = Mat(name.Contains("50cal") ? "Tracer_Red" : "Tracer_Orange", name.Contains("50cal") ? new Color(1f, 0.25f, 0.15f) : new Color(1f, 0.6f, 0.2f), 0.2f);
+            m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", (name.Contains("50cal") ? new Color(1f, 0.25f, 0.15f) : new Color(1f, 0.6f, 0.2f)) * 6f);
+            go.GetComponent<Renderer>().sharedMaterial = m; streak.GetComponent<Renderer>().sharedMaterial = m;
+            EditorUtility.SetDirty(m);
+            var rb = go.AddComponent<Rigidbody>(); rb.mass = calibre > 0.015f ? 0.12f : 0.045f;
+            var s = go.AddComponent<Shell>();
+            s.directDamage = direct; s.blastDamage = blast; s.blastRadius = blastRadius; s.blastForce = 20f; s.small = true; s.maxLifetime = 3f;
+            s.displayName = name;
+            var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
+            Object.DestroyImmediate(go);
+            return prefab.GetComponent<Shell>();
+        }
+
+        static bool ModelArmour(Transform t, string key, out Transform turret, out Transform gun, out Transform muzzle)
+        {
+            turret = gun = muzzle = null;
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>($"{VehicleImporter_Dir}/{key}.fbx");
+            if (!asset) return false;
+            var m = (GameObject)PrefabUtility.InstantiatePrefab(asset, t);
+            PrefabUtility.UnpackPrefabInstance(m, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            m.name = "Model"; m.transform.localPosition = Vector3.zero; m.transform.localRotation = asset.transform.localRotation;
+            foreach (var r in m.GetComponentsInChildren<Renderer>(true))
+            {
+                var ms = r.sharedMaterials;
+                for (int i = 0; i < ms.Length; i++)
+                {
+                    string mn = ms[i] ? ms[i].name : "";
+                    string tex = $"{VehicleImporter_Dir}/Textures/{key}/{mn}.jpg";
+                    if (AssetDatabase.LoadAssetAtPath<Texture2D>(tex)) ms[i] = TexMat($"{key}_{mn}", tex, 0.25f, 0.2f);
+                }
+                r.sharedMaterials = ms;
+            }
+            var tm = FindDeep(m.transform, key + "_Turret"); var gm = FindDeep(m.transform, key + "_Gun"); var mz = FindDeep(m.transform, key + "_Muzzle");
+            if (!mz) { Object.DestroyImmediate(m); return false; }
+            if (t.InverseTransformPoint(mz.position).z < 0f) m.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * m.transform.localRotation;
+            // a casemate gun (no turret): the mount is a point behind the muzzle, as on the StuG
+            turret = new GameObject("Turret").transform; turret.SetParent(t, false);
+            turret.position = tm ? tm.position : gm ? gm.position : mz.position - t.forward * 2.2f;
+            gun = new GameObject("Gun").transform; gun.SetParent(turret, false); gun.position = gm ? gm.position : turret.position;
+            muzzle = new GameObject("Muzzle").transform; muzzle.SetParent(gun, false); muzzle.position = mz.position;
+            if (tm) tm.SetParent(turret, true);
+            if (gm) gm.SetParent(gun, true);
+            return true;
+        }
+
+        /// <summary>The box round a model in the vehicle's own space (from its meshes).</summary>
+        static Bounds LocalBounds(Transform t, GameObject model)
+        {
+            bool any = false; var b = new Bounds();
+            foreach (var mf in model.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (!mf.sharedMesh) continue;
+                var mb = mf.sharedMesh.bounds;
+                for (int c = 0; c < 8; c++)
+                {
+                    var corner = mb.center + Vector3.Scale(mb.extents, new Vector3((c & 1) == 0 ? -1 : 1, (c & 2) == 0 ? -1 : 1, (c & 4) == 0 ? -1 : 1));
+                    var p = t.InverseTransformPoint(mf.transform.TransformPoint(corner));
+                    if (!any) { b = new Bounds(p, Vector3.zero); any = true; } else b.Encapsulate(p);
+                }
+            }
+            return b;
+        }
+
         static GameObject BuildArmour(string name, Transform parent, Vector3 pos, float yaw, Armour kind)
         {
             var t = new GameObject(name); t.transform.SetParent(parent);
@@ -2160,6 +2377,20 @@ namespace StansGame.EditorTools
                 if (!model) Prim(PrimitiveType.Cylinder, "Barrel", gun, new Vector3(0f, 0f, 1.3f), new Vector3(90f, 0f, 0f), new Vector3(0.13f, 1.3f, 0.13f), dark);
                 muzzle = new GameObject("Muzzle").transform; muzzle.SetParent(gun, false); muzzle.localPosition = new Vector3(0f, 0f, 2.1f);
             }
+            else if (ArmourSpecs.TryGetValue(kind, out var spec) && ModelArmour(t.transform, spec.key, out turret, out gun, out muzzle))
+            {
+                mass = spec.mass; maxHp = spec.hp; armour = spec.armour;
+                var lb = LocalBounds(t.transform, t.transform.Find("Model").gameObject);
+                var hullCol = t.AddComponent<BoxCollider>(); hullCol.center = new Vector3(lb.center.x, lb.min.y + lb.size.y * 0.35f, lb.center.z);
+                hullCol.size = new Vector3(lb.size.x * 0.95f, lb.size.y * 0.7f, lb.size.z * 0.85f);
+            }
+            else if (kind == Armour.Sherman && ShermanModel(t.transform, out turret, out gun, out muzzle))
+            {
+                // M4A3E8: 6.3 m hull (7.5 m with the gun), 3.0 m wide, 2.9 m tall; 76 mm M1A2, 33 tonnes
+                mass = 33000f; maxHp = 380f; armour = 64f;
+                var hullCol = t.AddComponent<BoxCollider>(); hullCol.center = new Vector3(0f, 1.0f, 0f); hullCol.size = new Vector3(3.0f, 2.0f, 5.6f);
+                var turCol = turret.gameObject.AddComponent<BoxCollider>(); turCol.center = new Vector3(0f, 0.55f, -0.2f); turCol.size = new Vector3(2.0f, 1.0f, 2.6f);
+            }
             else if (PanzerIvModel(t.transform, out turret, out gun, out muzzle))
             {
                 // the camouflaged Panzer IV Ausf. H (Models/Vehicles/PanzerIV_Camo.fbx, Models/Source~/panzer_iv_camo.py)
@@ -2180,11 +2411,44 @@ namespace StansGame.EditorTools
             }
             var rb = t.AddComponent<Rigidbody>(); rb.mass = mass; rb.linearDamping = 0.2f; rb.angularDamping = 2f;
             var tc = t.AddComponent<TankController>();
-            if (kind != Armour.PanzerIV) AddTrackBelts(t);   // link-by-link tracks: a running belt over them
+            if (kind == Armour.HotchkissPak40 || kind == Armour.StuG) AddTrackBelts(t);   // the others have their tracks modelled   // link-by-link tracks: a running belt over them
             AddTrackScroll(t);   // the tracks run with the hull (PegasusLevelBuilder.Drivable.cs)
             tc.turret = turret; tc.gun = gun; tc.muzzle = muzzle;
-            tc.shellPrefab = BuildShellPrefab("KwK40_HE", 0.075f, 300f, 150f, 6f, 740f);
-            var hp = t.AddComponent<Health>(); hp.faction = Faction.German; hp.maxHealth = maxHp; hp.armour = armour;
+            bool hasSpec = ArmourSpecs.TryGetValue(kind, out var sp);
+            tc.shellPrefab = kind == Armour.Wirbelwind ? BuildTracerPrefab("Flak38_20mm", 0.02f, 45f, 20f, 1.5f)
+                           : kind == Armour.M16 ? BuildTracerPrefab("M2_50cal", 0.0127f, 35f, 0f, 0.1f)
+                           : kind == Armour.Sherman ? BuildShellPrefab("M1_76mm_HE", 0.076f, 300f, 150f, 6f, 790f)
+                           : hasSpec ? BuildShellPrefab(sp.shell, sp.cal, 300f, sp.cal > 0.05f ? 150f : 90f, sp.cal > 0.05f ? 6f : 4f, sp.mv)
+                           : BuildShellPrefab("KwK40_HE", 0.075f, 300f, 150f, 6f, 740f);
+            bool allied = kind == Armour.Sherman || (hasSpec && sp.allied);
+            if (TrueSpecs.TryGetValue(kind, out var ts))
+            {
+                tc.maxForwardSpeed = ts.fwd; tc.maxReverseSpeed = ts.rev; tc.acceleration = ts.acc; tc.turnRate = ts.turn;
+                tc.traverseSpeed = ts.trav; tc.maxTraverse = ts.limit; tc.minElevation = ts.minEl; tc.maxElevation = ts.maxEl;
+                tc.elevateSpeed = ts.auto ? 25f : 6f; tc.reloadTime = ts.reload; tc.shellSpeed = ts.mv;
+                tc.automatic = ts.auto; tc.magazineSize = ts.mag; tc.magazineReload = ts.magReload;
+                if (ts.auto) tc.recoil = 30f;
+            }
+            if (QuadBarrels.TryGetValue(kind, out var qb) && muzzle)
+            {
+                var ms = new Transform[qb.Length];
+                for (int i = 0; i < qb.Length; i++)
+                {
+                    ms[i] = new GameObject($"Muzzle {i + 1}").transform; ms[i].SetParent(gun ? gun : muzzle.parent, false);
+                    ms[i].position = muzzle.position + muzzle.rotation * qb[i];
+                    ms[i].rotation = muzzle.rotation;
+                }
+                tc.muzzles = ms;
+            }
+            // a flash at each barrel, shown for a moment as the round goes (TankController.Flash)
+            {
+                float cal = kind == Armour.Sherman ? 0.076f : hasSpec ? sp.cal : 0.075f;
+                var at = tc.muzzles != null && tc.muzzles.Length > 0 ? tc.muzzles : new[] { muzzle };
+                var fl = new GameObject[at.Length];
+                for (int i = 0; i < at.Length; i++) if (at[i]) fl[i] = MuzzleFlash(at[i], cal);
+                tc.flashes = fl;
+            }
+            var hp = t.AddComponent<Health>(); hp.faction = allied ? Faction.British : Faction.German; hp.maxHealth = maxHp; hp.armour = armour;
             var fire = new GameObject("Burning").AddComponent<Light>(); fire.transform.SetParent(t.transform, false);
             fire.type = LightType.Point; fire.range = 18f; fire.intensity = 0f; fire.color = new Color(1f, 0.5f, 0.2f);
             t.AddComponent<BurnOnDeath>().fireLight = fire;

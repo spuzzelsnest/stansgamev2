@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1269224900861504822
+--- !u!1 &2319543903656100285
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,9 +8,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5649304350023275963}
-  - component: {fileID: 6031023090809888901}
-  - component: {fileID: 650334961953760360}
+  - component: {fileID: 3133234616742714119}
+  - component: {fileID: 3946791675626641299}
+  - component: {fileID: 2557211932442929331}
   m_Layer: 0
   m_Name: Kar98k
   m_TagString: Untagged
@@ -18,13 +18,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5649304350023275963
+--- !u!4 &3133234616742714119
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1269224900861504822}
+  m_GameObject: {fileID: 2319543903656100285}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.25, y: 1.35, z: 0.35}
@@ -34,13 +34,13 @@ Transform:
   - {fileID: 9134400183649845500}
   m_Father: {fileID: 7530478042270680201}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6031023090809888901
+--- !u!114 &3946791675626641299
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1269224900861504822}
+  m_GameObject: {fileID: 2319543903656100285}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe72d92ef94b9ed47a16f3e304ab2e7e, type: 3}
@@ -61,7 +61,7 @@ MonoBehaviour:
   muzzle: {fileID: 2714383481210659956}
   muzzleFlash: {fileID: 0}
   muzzleLight: {fileID: 8448071709493710499}
-  audioSource: {fileID: 650334961953760360}
+  audioSource: {fileID: 2557211932442929331}
   fireClip: {fileID: 0}
   reloadClip: {fileID: 0}
   emptyClip: {fileID: 0}
@@ -74,15 +74,18 @@ MonoBehaviour:
   supportHand: {x: 0, y: -0.03, z: 0.22}
   magazinePoint: {x: 0, y: -0.12, z: 0.06}
   handOffset: {x: 0, y: 0, z: 0}
+  magazine: {fileID: 0}
+  magazinePull: {x: 0, y: -0.2, z: 0}
+  cockingPoint: {x: 0, y: 0, z: 0}
   projectile: {fileID: 0}
   projectileSpeed: 77
---- !u!82 &650334961953760360
+--- !u!82 &2557211932442929331
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1269224900861504822}
+  m_GameObject: {fileID: 2319543903656100285}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
@@ -501,7 +504,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5649304350023275963}
+  - {fileID: 3133234616742714119}
   - {fileID: 9142230306502691357}
   - {fileID: 2433444497173962894}
   - {fileID: 4181053304559673202}
@@ -563,7 +566,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StansGame.SoldierAI
   mode: 0
   advanceTarget: {fileID: 0}
-  weapon: {fileID: 6031023090809888901}
+  weapon: {fileID: 3946791675626641299}
   viewRange: 70
   nightViewRange: 35
   fieldOfView: 140
@@ -786,7 +789,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 5649304350023275963}
+    m_TransformParent: {fileID: 3133234616742714119}
     m_Modifications:
     - target: {fileID: 804354935465477852, guid: cb97d8598f30ac54d9a6c92af053bef7, type: 3}
       propertyPath: m_Name

@@ -32,7 +32,7 @@ namespace StansGame
 
         class Row { public string side, name, id; public bool attacker; public int men, alive, alert, asleep, stuck; public string mode; }
         readonly List<Row> rows = new List<Row>();
-        GUIStyle small, head, tag;
+        GUIStyle small, head, tagStyle;
 
         void Update()
         {
@@ -46,7 +46,7 @@ namespace StansGame
             if (Time.unscaledTime >= nextScan)
             {
                 nextScan = Time.unscaledTime + 1f;
-                ais = FindObjectsByType<SoldierAI>(FindObjectsSortMode.None);
+                ais = FindObjectsByType<SoldierAI>();
                 Tally();
             }
         }
@@ -104,7 +104,7 @@ namespace StansGame
             {
                 small = new GUIStyle(GUI.skin.label) { fontSize = 12 }; small.normal.textColor = Color.white;
                 head = new GUIStyle(small) { fontStyle = FontStyle.Bold, fontSize = 13 };
-                tag = new GUIStyle(small) { fontSize = 11, alignment = TextAnchor.LowerCenter };
+                tagStyle = new GUIStyle(small) { fontSize = 11, alignment = TextAnchor.LowerCenter };
             }
             GUI.depth = -50;
 
@@ -154,8 +154,8 @@ namespace StansGame
                 watch.TryGetValue(ai, out var wt);
                 string doing = ai.Target ? "fighting " + ai.Target.name : ai.IsAsleep ? "asleep" : ai.Searching ? "searching" : ai.IsAlert ? "alert" : ai.patrolRoute != null && ai.patrolRoute.Length > 1 ? "on patrol" : "at ease";
                 string text = $"{(bu ? bu.group : ai.name)}\n{ai.mode} · {doing}{(wt != null && wt.stuck ? " · STUCK" : "")}";
-                tag.normal.textColor = wt != null && wt.stuck ? new Color(1f, 0.35f, 0.3f) : (bu ? bu.attacker : hp && hp.faction != Faction.German) ? new Color(0.6f, 0.85f, 1f) : new Color(1f, 0.85f, 0.55f);
-                GUI.Label(new Rect(sp.x - 110f, Screen.height - sp.y - 34f, 220f, 34f), text, tag);
+                tagStyle.normal.textColor = wt != null && wt.stuck ? new Color(1f, 0.35f, 0.3f) : (bu ? bu.attacker : hp && hp.faction != Faction.German) ? new Color(0.6f, 0.85f, 1f) : new Color(1f, 0.85f, 0.55f);
+                GUI.Label(new Rect(sp.x - 110f, Screen.height - sp.y - 34f, 220f, 34f), text, tagStyle);
             }
         }
     }

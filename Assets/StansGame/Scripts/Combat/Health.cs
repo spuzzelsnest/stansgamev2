@@ -55,7 +55,20 @@ namespace StansGame
         {
             if (regenPerSecond > 0f && !IsDead && Current < maxHealth && Time.time - lastDamage > regenDelay)
                 Current = Mathf.Min(maxHealth, Current + regenPerSecond * Time.deltaTime);
+            // badly hurt (under 40%): the animator's "Injured" gait - limping walk and run, clutching the wound when still
+            if (injuredHash == 0)
+            {
+                injuredHash = -1;
+                anim = GetComponentInChildren<Animator>();
+                if (anim) foreach (var p in anim.parameters) if (p.name == "Injured") injuredHash = p.nameHash;
+            }
+            if (injuredHash != -1 && anim)
+            {
+                bool hurt = !IsDead && Current < maxHealth * 0.4f;
+                if (anim.GetBool(injuredHash) != hurt) anim.SetBool(injuredHash, hurt);
+            }
         }
+        Animator anim; int injuredHash;
 
         /// <summary>Multiplayer: the host's hit points for this object (clients only display them).</summary>
         public void ApplyRemoteState(float current)

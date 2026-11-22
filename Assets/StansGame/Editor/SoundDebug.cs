@@ -12,13 +12,14 @@ namespace StansGame.EditorTools
     /// </summary>
     public static class SoundDebug
     {
-        [MenuItem("Stan's Game/Debug/List Playing Sounds")]
+        [MenuItem("Stan's Game/Debug/Play mode: List Playing Sounds", true)] static bool PlayingOnly() => Application.isPlaying;
+        [MenuItem("Stan's Game/Debug/Play mode: List Playing Sounds", priority = 106)]
         static void List()
         {
             if (!Application.isPlaying) { Debug.Log("Stan's Game: press Play first - this lists the sounds playing in the game."); return; }
             var listener = Object.FindAnyObjectByType<AudioListener>();
             Vector3 ear = listener ? listener.transform.position : Vector3.zero;
-            var rows = Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None)
+            var rows = Object.FindObjectsByType<AudioSource>()
                 .Where(a => a.isPlaying)
                 .Select(a =>
                 {
@@ -33,13 +34,13 @@ namespace StansGame.EditorTools
             Debug.Log(sb.ToString());
         }
 
-        [MenuItem("Stan's Game/Debug/List Pink Materials")]
+        [MenuItem("Stan's Game/Debug/Check: List Pink Materials (open level)", priority = 207)]
         static void Pink()
         {
             var sb = new StringBuilder("Stan's Game: materials that draw pink (shader missing or not URP):\n");
             var seen = new System.Collections.Generic.HashSet<Material>();
             int n = 0;
-            foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include))
                 foreach (var m in r.sharedMaterials)
                 {
                     if (!m || seen.Contains(m)) continue;

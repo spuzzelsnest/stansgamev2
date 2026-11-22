@@ -172,7 +172,7 @@ namespace StansGame
         static int CountPlayers()
         {
             int n = 0;
-            foreach (var sc in FindObjectsByType<SoldierController>(FindObjectsSortMode.None)) if (sc) n++;
+            foreach (var sc in FindObjectsByType<SoldierController>()) if (sc) n++;
             return Mathf.Max(1, n);
         }
 
@@ -242,7 +242,7 @@ namespace StansGame
 
         static bool AnyPlayerWithin(Vector3 pos, float radius)
         {
-            foreach (var sc in FindObjectsByType<SoldierController>(FindObjectsSortMode.None))
+            foreach (var sc in FindObjectsByType<SoldierController>())
             {
                 var h = sc.GetComponent<Health>();
                 if (h && h.IsDead) continue;
@@ -276,7 +276,7 @@ namespace StansGame
         {
             Vector3 b = Vector3.zero;
             var men = new List<SoldierAI>();
-            foreach (var ai in FindObjectsByType<SoldierAI>(FindObjectsSortMode.None))
+            foreach (var ai in FindObjectsByType<SoldierAI>())
             {
                 var h = ai.GetComponent<Health>();
                 if (!h || h.IsDead || h.faction != Faction.British) continue;

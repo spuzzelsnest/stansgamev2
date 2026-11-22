@@ -8,13 +8,13 @@ namespace StansGame.EditorTools
     /// <summary>Writes every part of the bridge model with its bounds and the ground under it to _downloads/previews/bridge_parts.txt.</summary>
     public static class BridgeInspector
     {
-        [MenuItem("Stan's Game/Debug/List Bridge Parts", priority = 50)]
+        [MenuItem("Stan's Game/Debug/Check: List Bridge Parts (open level)", priority = 208)]
         public static void ListParts()
         {
             var root = GameObject.Find("Bridge");
             var sb = new StringBuilder();
             Physics.SyncTransforms();
-            foreach (var r in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+            foreach (var r in Object.FindObjectsByType<MeshRenderer>())
             {
                 var b = r.bounds;
                 if (Mathf.Abs(b.center.x) > 45f || Mathf.Abs(b.center.z) > 30f) continue;

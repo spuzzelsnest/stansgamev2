@@ -43,7 +43,7 @@ namespace StansGame
         static void Bake()
         {
             // the area: round the soldiers and where they're headed, plus a margin; not the whole map
-            var ais = Object.FindObjectsByType<SoldierAI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var ais = Object.FindObjectsByType<SoldierAI>(FindObjectsInactive.Include);
             if (ais.Length == 0) return;
             var b = new Bounds(ais[0].transform.position, Vector3.one);
             foreach (var a in ais) { b.Encapsulate(a.transform.position); if (a.advanceTarget) b.Encapsulate(a.advanceTarget.position); }

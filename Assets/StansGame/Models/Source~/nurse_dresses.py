@@ -4,7 +4,7 @@
 import numpy as np
 from PIL import Image
 from scipy.ndimage import gaussian_filter
-T = '/mnt/user-data/uploads/stansGameV2/_downloads/nurse/textures/'
+T = '/mnt/user-data/uploads/stansGameV2/_downloads/_Characters/nurse/textures/'
 src = Image.open(T + 'nurse_body_anya_vmtr_c.png').convert('RGBA').resize((2048, 2048), Image.LANCZOS)
 a = np.array(src).astype(np.float32) / 255; rgb = a[..., :3]; alpha = a[..., 3:]
 mx = rgb.max(-1); mn = rgb.min(-1); sat = (mx - mn) / np.maximum(mx, 1e-4)

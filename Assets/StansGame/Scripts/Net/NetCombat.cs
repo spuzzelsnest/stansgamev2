@@ -63,7 +63,7 @@ namespace StansGame
             ShotRpc(from, to, NetworkManager.LocalClientId);
         }
 
-        [Rpc(SendTo.Everyone, RequireOwnership = false)]
+        [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
         void ShotRpc(Vector3 from, Vector3 to, ulong origin)
         {
             if (origin == NetworkManager.LocalClientId) return;   // the shooter already drew it
@@ -83,7 +83,7 @@ namespace StansGame
             else ProjectileFromClientRpc(index, from, velocity, sid, has, NetworkManager.LocalClientId);
         }
 
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void ProjectileFromClientRpc(int index, Vector3 from, Vector3 velocity, ulong shooterId, bool hasShooter, ulong origin)
         {
             // the host flies the real bomb (it does the damage) ...

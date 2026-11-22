@@ -45,8 +45,8 @@ namespace StansGame.EditorTools
         [MenuItem("Stan's Game/Build Château de Bénouville Level", priority = 3)]
         public static void BuildBenouville()
         {
-            if (!EditorUtility.DisplayDialog("Build Château de Bénouville level",
-                "Creates a new scene Assets/StansGame/Scenes/ChateauBenouville.unity (overwrites it if it exists). Continue?", "Build", "Cancel"))
+            if (!ConfirmBuild("Build Château de Bénouville level",
+                "Creates a new scene Assets/StansGame/Scenes/ChateauBenouville.unity (overwrites it if it exists). Continue?"))
                 return;
             EnsureFolders();
             PropTextureFixer.Fix();
@@ -242,7 +242,7 @@ namespace StansGame.EditorTools
 #if STANS_NET
             // network ids can only be worked out once the scene is on disk: do it now and save again
             int nets = 0;
-            foreach (var no in Object.FindObjectsByType<NetworkObject>(FindObjectsInactive.Include, FindObjectsSortMode.None)) { RefreshNetworkId(no); nets++; }
+            foreach (var no in Object.FindObjectsByType<NetworkObject>(FindObjectsInactive.Include)) { RefreshNetworkId(no); nets++; }
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, path);
             Debug.Log($"Stan's Game: Château de Bénouville co-op - {nets} networked objects");

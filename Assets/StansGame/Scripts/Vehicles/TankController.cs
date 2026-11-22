@@ -36,6 +36,17 @@ namespace StansGame
         public Shell shellPrefab;
         public float shellSpeed = 740f;
         public float reloadTime = 6f;
+        [Tooltip("Automatic weapons (the 2 cm Flakvierling, the M45 quad .50): fires while the button is held, reloadTime being the time between rounds.")]
+        public bool automatic;
+        [Tooltip("Rounds before a magazine or belt change (0 = no magazine, one round per reload).")]
+        public int magazineSize;
+        public float magazineReload = 6f;
+        [Tooltip("The barrels fired in turn (quad mounts); empty = the muzzle.")]
+        public Transform[] muzzles;
+        [Tooltip("Kick on the hull per round (N s); below 0 = from the shell speed, as for a tank gun.")]
+        public float recoil = -1f;
+        [Tooltip("Muzzle flashes, hidden until a round goes: one per barrel (as muzzles), or one at the muzzle.")]
+        public GameObject[] flashes;
         public AudioSource gunAudio;
         public AudioClip fireClip;
         [Tooltip("Resources/Audio clip names for this vehicle (empty: the default sounds).")]
@@ -115,7 +126,9 @@ namespace StansGame
 
         Rigidbody rb;
         SoldierController driver;
-        float throttle, aimYaw, aimPitch, nextShot;
+        float throttle, aimYaw, aimPitch, nextShot, cycle = 1f;
+        int barrel, roundsFired, lastFlash = -1;
+        float flashOff;
         Camera cam;
 
         void Awake()
@@ -155,6 +168,11 @@ namespace StansGame
 
         void Update()
         {
+            if (lastFlash >= 0 && Time.time > flashOff)
+            {
+                if (flashes != null && lastFlash < flashes.Length && flashes[lastFlash]) flashes[lastFlash].SetActive(false);
+                lastFlash = -1;
+            }
             if (!driver) return;
             var kb = Keyboard.current; var mouse = Mouse.current;
             if (kb == null || mouse == null) return;
@@ -165,7 +183,7 @@ namespace StansGame
             aimYaw += look.x;
             aimPitch = Mathf.Clamp(aimPitch - look.y, -maxElevation, -minElevation);
 
-            if (GameInput.MouseActive && mouse.leftButton.wasPressedThisFrame) FireMainGun();
+            if (GameInput.MouseActive && (automatic ? mouse.leftButton.isPressed : mouse.leftButton.wasPressedThisFrame)) FireMainGun();
         }
 
         void FixedUpdate()
@@ -253,17 +271,41 @@ namespace StansGame
         void FireMainGun()
         {
             if (Time.time < nextShot || !muzzle || !shellPrefab) return;
-            nextShot = Time.time + reloadTime;
-            var shell = Instantiate(shellPrefab, muzzle.position, muzzle.rotation);
-            Vector3 vel = muzzle.forward * shellSpeed + rb.linearVelocity;
+            int bi = muzzles != null && muzzles.Length > 0 ? barrel % muzzles.Length : 0;
+            var mz = muzzles != null && muzzles.Length > 0 && muzzles[bi] ? muzzles[bi] : muzzle;
+            barrel++;
+            Flash(bi);
+            bool change = magazineSize > 0 && ++roundsFired >= magazineSize;
+            if (change) roundsFired = 0;
+            cycle = change ? magazineReload : reloadTime;
+            nextShot = Time.time + cycle;
+            var shell = Instantiate(shellPrefab, mz.position, mz.rotation);
+            // small arms and cannon scatter a little round the line of the bore
+            Vector3 dir = automatic ? Quaternion.Euler(Random.Range(-0.25f, 0.25f), Random.Range(-0.25f, 0.25f), 0f) * mz.forward : mz.forward;
+            Vector3 vel = dir * shellSpeed + rb.linearVelocity;
             shell.Launch(vel, gameObject);
-            NetHooks.ProjectileLaunched?.Invoke(shellPrefab, muzzle.position, vel, gameObject);
-            rb.AddForceAtPosition(-muzzle.forward * shellSpeed * 40f, muzzle.position, ForceMode.Impulse);
+            NetHooks.ProjectileLaunched?.Invoke(shellPrefab, mz.position, vel, gameObject);
+            rb.AddForceAtPosition(-mz.forward * (recoil >= 0f ? recoil : shellSpeed * 40f), mz.position, ForceMode.Impulse);
             if (muzzleBlast) muzzleBlast.Play();
-            if (gunAudio && fireClip) gunAudio.PlayOneShot(fireClip);
-            if (reloadClip && gunAudio) StartCoroutine(Reload(Mathf.Min(2.2f, reloadTime * 0.4f)));
+            if (gunAudio && fireClip) gunAudio.PlayOneShot(fireClip, automatic ? 0.6f : 1f);
+            if (reloadClip && gunAudio && (!automatic || change)) StartCoroutine(Reload(Mathf.Min(2.2f, cycle * 0.4f)));
             NoiseEvents.Report(transform.position, 400f, gameObject);
             aiKick = 1f;
+        }
+
+        /// <summary>Shows the flash at this barrel for a moment (a different twist and size each round).</summary>
+        void Flash(int i)
+        {
+            if (flashes == null || flashes.Length == 0) return;
+            if (i >= flashes.Length) i = 0;
+            if (lastFlash >= 0 && lastFlash < flashes.Length && flashes[lastFlash]) flashes[lastFlash].SetActive(false);
+            var f = flashes[i];
+            if (!f) return;
+            f.transform.localRotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
+            f.transform.localScale = Vector3.one * Random.Range(0.8f, 1.2f);
+            f.SetActive(true);
+            lastFlash = i;
+            flashOff = Time.time + (automatic ? 0.03f : 0.08f);
         }
 
         System.Collections.IEnumerator Reload(float after)
@@ -341,6 +383,6 @@ namespace StansGame
             return new Vector3(p.x, best, p.z);
         }
 
-        public float ReloadProgress => Mathf.Clamp01(1f - (nextShot - Time.time) / reloadTime);
+        public float ReloadProgress => Mathf.Clamp01(1f - (nextShot - Time.time) / Mathf.Max(0.01f, cycle));
     }
 }

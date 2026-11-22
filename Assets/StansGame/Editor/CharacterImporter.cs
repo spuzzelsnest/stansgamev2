@@ -59,7 +59,7 @@ namespace StansGame.EditorTools
             { "file10Material", "german_pouches_detail_d" }, { "file12Material", "german_canten_d" }, { "file13Material", "german_knife_d" },
         };
 
-        [MenuItem("Stan's Game/Import Characters & Weapons", priority = 10)]
+        [MenuItem("Stan's Game/Import Characters and Weapons", priority = 20)]
         public static void ImportAll()
         {
             try
@@ -71,7 +71,7 @@ namespace StansGame.EditorTools
 
                 EditorUtility.DisplayProgressBar("Stan's Game", "Configuring Hero animations", 0.3f);
                 var heroAvatar = SetupHeroAnimations();
-                var controller = BuildAnimatorController();
+                var controller = StansGame.EditorTools.AnimationSets.SoldierController();   // the Mixamo set, rebuilt in place (was: a new Soldier.controller from the old Hero clips, which broke every link to it)
 
                 EditorUtility.DisplayProgressBar("Stan's Game", "Configuring weapons", 0.5f);
                 var sten = BuildWeaponPrefab("Sten", $"{ModelDir}/Weapons/Sten.fbx", 0.762f, StenMaterials());
@@ -209,78 +209,6 @@ namespace StansGame.EditorTools
             return AssetDatabase.LoadAllAssetsAtPath(p).OfType<AnimationClip>().FirstOrDefault(c => !c.name.StartsWith("__preview"));
         }
 
-        static RuntimeAnimatorController BuildAnimatorController()
-        {
-            // standing still: the steady aiming pose (the old "IdleAim" clip fiddles with the gun and looks like reloading)
-            var idle = Clip("AimStraight") ?? Clip("IdleAim") ?? Clip("Idle");
-            if (!idle) return null;
-            string path = $"{AnimDir}/Soldier.controller";
-            AssetDatabase.DeleteAsset(path);
-            var ac = AnimatorController.CreateAnimatorControllerAtPath(path);
-            foreach (var p in new[] { "Speed", "MoveX", "MoveZ" }) ac.AddParameter(p, AnimatorControllerParameterType.Float);
-            foreach (var p in new[] { "Aiming", "Crouch", "Prone", "Swim", "Grounded" }) ac.AddParameter(p, AnimatorControllerParameterType.Bool);
-
-            var state = ac.CreateBlendTreeInController("Locomotion", out BlendTree tree);
-            tree.blendType = BlendTreeType.FreeformDirectional2D;
-            tree.blendParameter = "MoveX"; tree.blendParameterY = "MoveZ";
-            void Add(string clip, float x, float z) { var c = Clip(clip); if (c) tree.AddChild(c, new Vector2(x, z)); }
-            tree.AddChild(idle, Vector2.zero);
-            Add("WalkForward", 0f, 2.2f);
-            Add("RunForward", 0f, 4.2f);
-            Add("WalkBackward", 0f, -2.0f);
-            Add("RunBackward", 0f, -3.5f);
-            Add("WalkStrafeLeft", -2.0f, 0f);
-            Add("RunStrafeLeft", -3.5f, 0f);
-            Add("WalkStrafeRight", 2.0f, 0f);
-            Add("RunStrafeRight", 3.5f, 0f);
-            ac.layers[0].stateMachine.defaultState = state;
-            // crouching and lying prone (clips made from bent humanoid poses, see StanceClips)
-            var stance = StansGame.EditorTools.StanceClips.Build(AssetDatabase.LoadAssetAtPath<GameObject>($"{ModelDir}/GermanSoldier/GermanSoldier.fbx"), idle);
-            var sm = ac.layers[0].stateMachine;
-            AnimatorState StanceState(string name, AnimationClip still, AnimationClip move, float speed)
-            {
-                var st = ac.CreateBlendTreeInController(name, out BlendTree bt);
-                bt.blendType = BlendTreeType.FreeformDirectional2D;
-                bt.blendParameter = "MoveX"; bt.blendParameterY = "MoveZ";
-                bt.AddChild(still, Vector2.zero);
-                bt.AddChild(move, new Vector2(0f, speed));
-                bt.AddChild(move, new Vector2(0f, -speed));
-                bt.AddChild(move, new Vector2(-speed, 0f));
-                bt.AddChild(move, new Vector2(speed, 0f));
-                var ch = bt.children; ch[2].timeScale = -1f; bt.children = ch;   // backwards: the same steps played in reverse
-                return st;
-            }
-            if (stance.Count >= 4)
-            {
-                var crouch = StanceState("Crouch", stance["CrouchIdle"], stance["CrouchWalk"], 1.4f);
-                var prone = StanceState("Prone", stance["ProneIdle"], stance["ProneCrawl"], 0.7f);
-                void Any(AnimatorState to, params (AnimatorConditionMode m, string p)[] conds)
-                {
-                    var t = sm.AddAnyStateTransition(to);
-                    t.canTransitionToSelf = false; t.hasExitTime = false; t.duration = to == prone ? 0.45f : 0.25f;
-                    foreach (var c in conds) t.AddCondition(c.m, 0f, c.p);
-                }
-                Any(prone, (AnimatorConditionMode.If, "Prone"), (AnimatorConditionMode.IfNot, "Swim"));
-                Any(crouch, (AnimatorConditionMode.If, "Crouch"), (AnimatorConditionMode.IfNot, "Prone"), (AnimatorConditionMode.IfNot, "Swim"));
-                Any(state, (AnimatorConditionMode.IfNot, "Crouch"), (AnimatorConditionMode.IfNot, "Prone"), (AnimatorConditionMode.IfNot, "Swim"));
-                // in the water: treading water when still, the front crawl when moving (by speed)
-                if (stance.TryGetValue("TreadWater", out var tread) && stance.TryGetValue("SwimCrawl", out var crawl))
-                {
-                    var swim = ac.CreateBlendTreeInController("Swim", out BlendTree st);
-                    st.blendType = BlendTreeType.Simple1D; st.blendParameter = "Speed";
-                    st.AddChild(tread, 0f); st.AddChild(crawl, 1.0f);
-                    var t = sm.AddAnyStateTransition(swim);
-                    t.canTransitionToSelf = false; t.hasExitTime = false; t.duration = 0.4f;
-                    t.AddCondition(AnimatorConditionMode.If, 0f, "Swim");
-                }
-            }
-
-            // IK pass on: HandIK puts both hands on whatever weapon the soldier carries
-            var layers = ac.layers; layers[0].iKPass = true; ac.layers = layers;
-            EditorUtility.SetDirty(ac);
-            return ac;
-        }
-
         // ------------------------------------------------------------ materials
 
         static Material LitMat(string name, Texture2D albedo, Texture2D normal = null, Texture2D metalSmooth = null, float smooth = 0.3f)
@@ -358,9 +286,10 @@ namespace StansGame.EditorTools
                 var bb = WorldBounds(inst);
                 Vector3 dir = marker.position - bb.center; dir.y = 0f;
                 float ang = Vector3.SignedAngle(dir, Vector3.forward, Vector3.up);
+                ang = Mathf.Round(ang / 90f) * 90f;   // square turns only: a side magazine (Sten) pulls the centre off the barrel's line
                 inst.transform.RotateAround(bb.center, Vector3.up, ang);
                 bb = WorldBounds(inst);
-                Vector3 gripM = new Vector3(bb.center.x, bb.center.y - bb.extents.y * 0.2f, bb.min.z + bb.size.z * 0.35f);
+                Vector3 gripM = new Vector3(marker.position.x, bb.center.y - bb.extents.y * 0.2f, bb.min.z + bb.size.z * 0.35f);   // on the barrel's line
                 inst.transform.position -= gripM;
                 var mzM = new GameObject("Muzzle").transform;
                 mzM.SetParent(root.transform, false);

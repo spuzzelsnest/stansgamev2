@@ -43,6 +43,13 @@ namespace StansGame
         public Vector3 magazinePoint = new Vector3(0f, -0.12f, 0.06f);
         [Tooltip("The middle of the grip the right palm closes round, in the gun's own space (metres from the model's pivot).")]
         public Vector3 handOffset = Vector3.zero;
+        [Header("Reloading with a loose magazine (Sten, MP 40)")]
+        [Tooltip("The magazine as its own part (cut from the model by the level builder); none = the hand just goes to the magazine.")]
+        public Transform magazine;
+        [Tooltip("Which way, and how far, the magazine comes out (gun space).")]
+        public Vector3 magazinePull = new Vector3(0f, -0.2f, 0f);
+        [Tooltip("The cocking handle the left hand pulls back at the end of a reload (gun space); zero = none.")]
+        public Vector3 cockingPoint = Vector3.zero;
         [Header("Projectile weapons (PIAT)")]
         public Shell projectile;
         public float projectileSpeed = 77f;
@@ -53,6 +60,63 @@ namespace StansGame
 
         float nextShot;
         float reloadDone;
+        /// <summary>How far through the reload (0 to 1), 0 when not reloading.</summary>
+        public float ReloadProgress => IsReloading && reloadTime > 0f ? Mathf.Clamp01(1f - (reloadDone - Time.time) / reloadTime) : 0f;
+
+        // ------------------------------------------------------------------ the loose magazine during a reload
+        // The reload in steps (fractions of the reload time); HandIK moves the left hand along the same steps.
+        public const float MagGrab = 0.12f, MagOut = 0.28f, MagPouch = 0.48f, MagFresh = 0.56f, MagBack = 0.72f, MagIn = 0.82f, CockAt = 0.86f, CockBack = 0.92f;
+        Vector3 magRestPos; Quaternion magRestRot; bool magRest, magDropped;
+
+        /// <summary>
+        /// Puts the magazine where the left hand has it: <paramref name="hand"/> is the hand's point in gun space; the
+        /// magazine keeps the same offset from it as when seated. Called by HandIK each frame of a reload.
+        /// </summary>
+        public void HoldMagazine(Vector3 hand)
+        {
+            if (!magazine) return;
+            KeepMagRest();
+            float p = ReloadProgress;
+            var r = magazine.GetComponent<Renderer>();
+            bool carried = (p >= MagGrab && p < MagOut) || (p >= MagFresh && p < MagIn);
+            if (p >= MagOut && !magDropped) { magDropped = true; DropMagazine(); }
+            if (r) r.enabled = !(p >= MagOut && p < MagFresh);
+            Vector3 seat = magazine.parent.TransformPoint(magRestPos);
+            magazine.rotation = magazine.parent.rotation * magRestRot;
+            magazine.position = carried ? seat + transform.TransformVector(hand - magazinePoint) : seat;
+        }
+
+        void KeepMagRest()
+        {
+            if (magRest || !magazine) return;
+            magRest = true; magRestPos = magazine.localPosition; magRestRot = magazine.localRotation;
+        }
+
+        void SeatMagazine()
+        {
+            if (!magazine) return;
+            KeepMagRest();
+            magazine.localPosition = magRestPos; magazine.localRotation = magRestRot;
+            var r = magazine.GetComponent<Renderer>(); if (r) r.enabled = true;
+            magDropped = false;
+        }
+
+        /// <summary>The empty magazine falls to the ground (a copy, gone after a while).</summary>
+        void DropMagazine()
+        {
+            if (!magazine || !magazine.gameObject.activeInHierarchy) return;
+            var copy = Instantiate(magazine.gameObject, magazine.position, magazine.rotation);
+            copy.name = "Empty magazine";
+            copy.transform.localScale = magazine.lossyScale;
+            var mf = copy.GetComponent<MeshFilter>();
+            var box = copy.AddComponent<BoxCollider>();
+            if (mf && mf.sharedMesh) { box.center = mf.sharedMesh.bounds.center; box.size = Vector3.Max(mf.sharedMesh.bounds.size, Vector3.one * 0.01f); }
+            var rb = copy.AddComponent<Rigidbody>();
+            rb.mass = 0.3f;
+            rb.linearVelocity = transform.TransformDirection(magazinePull.normalized) * 1.2f;
+            rb.angularVelocity = Random.insideUnitSphere * 4f;
+            Destroy(copy, 20f);
+        }
         float lightOff;
 
         /// <summary>
@@ -68,13 +132,20 @@ namespace StansGame
             //   palm    - the middle of the grip the right hand closes round (pistol grip, or the wrist of the stock)
             //   support - the middle of what rests in the left palm (barrel, forestock, sleeve, jacket; a pistol: the right fist)
             //   mag     - where the left hand goes while reloading
+            // the cocking handle: on the barrel's line, to one side (+1 right, -1 left), this far ahead of the palm
+            void Cock(float side, float ahead)
+            {
+                Vector3 bore = muzzle ? transform.InverseTransformPoint(muzzle.position) : new Vector3(0f, 0.08f, 0f);
+                cockingPoint = new Vector3(bore.x + side * 0.035f, bore.y, handOffset.z + ahead);
+            }
             void Hold(HoldStyle h, Vector3 palm, Vector3 support, Vector3 mag)
             {
                 hold = h; handOffset = palm; supportHand = support; magazinePoint = mag;
             }
             if (n.Contains("sten"))
             {   Set(32, 7, 2.6f);                                            // 8 magazines in the airborne webbing
-                Hold(HoldStyle.SMG, new Vector3(0f, 0.055f, 0.03f), new Vector3(0f, 0.09f, 0.30f), new Vector3(-0.09f, 0.09f, 0.2f)); }   // right hand round the trigger housing, the barrel sleeve in the left palm (never the side magazine)
+                Hold(HoldStyle.SMG, new Vector3(0f, 0.055f, 0.03f), new Vector3(0f, 0.09f, 0.30f), new Vector3(-0.09f, 0.09f, 0.2f));
+                magazinePull = new Vector3(-0.2f, 0f, 0f); Cock(+1f, 0.02f); }   // the magazine slides out to the left; the cocking handle is in the slot on the right   // right hand round the trigger housing, the barrel sleeve in the left palm (never the side magazine)
             else if (n.Contains("bren"))
             {   Set(28, 8, 3.2f);                                            // 30-round magazine, loaded with 28 to stop jams
                 Hold(HoldStyle.Heavy, new Vector3(0f, 0.03f, -0.07f), new Vector3(0f, 0.10f, 0.36f), new Vector3(0f, 0.2f, 0.05f)); }  // the pistol grip; from the hip, the gas cylinder under the barrel in the left palm; magazine on top
@@ -86,7 +157,8 @@ namespace StansGame
                 Hold(HoldStyle.Rifle, new Vector3(0f, 0.015f, -0.04f), new Vector3(0f, 0.075f, 0.30f), new Vector3(0f, 0.09f, 0.02f)); }
             else if (n.Contains("mp40") || n.Contains("mp 40"))
             {   Set(32, 5, 2.6f);                                            // 6 magazines in the two pouches
-                Hold(HoldStyle.SMG, new Vector3(0f, 0.06f, -0.04f), new Vector3(0f, 0.11f, 0.33f), new Vector3(0f, -0.12f, 0.27f)); } // the raked pistol grip; the barrel in the left palm, ahead of the magazine
+                Hold(HoldStyle.SMG, new Vector3(0f, 0.06f, -0.04f), new Vector3(0f, 0.11f, 0.33f), new Vector3(0f, -0.12f, 0.27f));
+                magazinePull = new Vector3(0f, -0.2f, 0.02f); Cock(-1f, 0.12f); }   // the magazine drops out underneath; the bolt handle is on the left // the raked pistol grip; the barrel in the left palm, ahead of the magazine
             else if (n.Contains("mg42") || n.Contains("mg 42"))
             {   Set(50, 4, 6.5f);                                            // 50-round drum; the team carried the 250-round belts
                 Hold(HoldStyle.Heavy, new Vector3(0f, -0.05f, -0.01f), new Vector3(0f, 0.07f, 0.35f), new Vector3(-0.09f, 0f, 0.05f)); } // the pistol grip; from the hip on the move, the jacket on the left palm; drum on the left
@@ -117,6 +189,8 @@ namespace StansGame
 
         void Awake() => Init();
 
+        void OnDisable() => SeatMagazine();   // put away mid-reload: the magazine goes back in
+
         bool initialised;
 
         /// <summary>Sets up the magazine and pouches; safe to call more than once (a holstered weapon is inactive, so its Awake has not run yet).</summary>
@@ -142,6 +216,7 @@ namespace StansGame
                 int take = Mathf.Min(need, SpareRounds);
                 Ammo += take; SpareRounds -= take;
                 IsReloading = false;
+                SeatMagazine();
             }
             if (muzzleLight && muzzleLight.enabled && Time.time > lightOff) muzzleLight.enabled = false;
         }
@@ -242,6 +317,7 @@ namespace StansGame
             if (IsReloading || Ammo == magazineSize || SpareRounds <= 0) return;
             IsReloading = true;
             reloadDone = Time.time + reloadTime;
+            SeatMagazine();
             if (reloadClip && audioSource) audioSource.PlayOneShot(reloadClip);
         }
 
@@ -256,7 +332,7 @@ namespace StansGame
             return take;
         }
 
-        public void SetAmmo(int loaded, int spare) { Init(); Ammo = Mathf.Clamp(loaded, 0, magazineSize); SpareRounds = Mathf.Max(0, spare); IsReloading = false; }
+        public void SetAmmo(int loaded, int spare) { Init(); Ammo = Mathf.Clamp(loaded, 0, magazineSize); SpareRounds = Mathf.Max(0, spare); IsReloading = false; SeatMagazine(); }
     }
 
     /// <summary>Gunfire is loud: lets AI hear shots within a radius.</summary>

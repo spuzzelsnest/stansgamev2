@@ -17,6 +17,13 @@ namespace StansGame.EditorTools
     {
         static readonly string[] Folders = { "Assets/StansGame/Models" };
 
+        /// <summary>Models that came without textures inside them, and the download folder (under _downloads) holding
+        /// their texture maps (Joan's printscreen 22: the white Thompson).</summary>
+        static readonly Dictionary<string, string> DownloadTextures = new Dictionary<string, string>
+        {
+            { "Thompson", "submachine-gun-thompson/textures" },
+        };
+
         [MenuItem("Stan's Game/Tools/Extract Embedded Prop Textures", priority = 70)]
         static void Menu() => Debug.Log($"Stan's Game: textures given to the materials of {Fix()} models");
 
@@ -55,6 +62,21 @@ namespace StansGame.EditorTools
                     if (!imp.ExtractTextures(dir)) continue;
                     AssetDatabase.Refresh();
                 }
+                // models whose FBX carries no textures at all: copy them in from the download they came with
+                if (AssetDatabase.FindAssets("t:Texture2D", new[] { dir }).Length == 0 && DownloadTextures.TryGetValue(Path.GetFileNameWithoutExtension(path), out var dl))
+                {
+                    string src = Path.Combine(Path.GetDirectoryName(Application.dataPath), "_downloads", dl);
+                    if (Directory.Exists(src))
+                    {
+                        foreach (var f in Directory.GetFiles(src))
+                        {
+                            string fn = Path.GetFileName(f).ToLowerInvariant();
+                            if (fn.Contains("albedo") || fn.Contains("basecolor") || fn.Contains("diffuse") || fn.Contains("normal"))
+                                File.Copy(f, Path.Combine(dir, Path.GetFileName(f)), true);
+                        }
+                        AssetDatabase.Refresh();
+                    }
+                }
                 var texs = new List<Texture2D>();
                 foreach (var g in AssetDatabase.FindAssets("t:Texture2D", new[] { dir })) { var t = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(g)); if (t) texs.Add(t); }
                 if (texs.Count == 0) continue;
@@ -92,6 +114,56 @@ namespace StansGame.EditorTools
                 if (changed) { AssetDatabase.SaveAssets(); AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate); n++; }
             }
             RepairPrefabs();
+            n += FixByPart();
+            return n;
+        }
+
+        /// <summary>
+        /// Models whose material names don't match their texture names, so the search above can't pair them: give the
+        /// parts of the prefab their maps directly (prefab, part name, colour map, normal map). The Thompson's two
+        /// parts are called LOW (lower receiver, stock) and UP (upper receiver, barrel) - printscreen 22.
+        /// </summary>
+        static readonly (string prefab, string part, string colour, string normal)[] PartMaps =
+        {
+            ("Assets/StansGame/Prefabs/Weapon_Thompson.prefab", "LOW", "Assets/StansGame/Models/Weapons/Textures/Thompson/tommy_LOW_a.png", "Assets/StansGame/Models/Weapons/Textures/Thompson/tommy_LOW_n.png"),
+            ("Assets/StansGame/Prefabs/Weapon_Thompson.prefab", "UP", "Assets/StansGame/Models/Weapons/Textures/Thompson/tommy_UP_a.png", "Assets/StansGame/Models/Weapons/Textures/Thompson/tommy_UP_n.png"),
+        };
+
+        static int FixByPart()
+        {
+            int n = 0;
+            foreach (var group in System.Linq.Enumerable.GroupBy(PartMaps, m => m.prefab))
+            {
+                if (!File.Exists(group.Key)) continue;
+                var root = PrefabUtility.LoadPrefabContents(group.Key);
+                bool changed = false;
+                foreach (var pm in group)
+                {
+                    var colour = AssetDatabase.LoadAssetAtPath<Texture2D>(pm.colour);
+                    if (!colour) continue;
+                    var normal = AssetDatabase.LoadAssetAtPath<Texture2D>(pm.normal);
+                    string matPath = Path.GetDirectoryName(pm.colour).Replace('\\', '/') + $"/{Path.GetFileNameWithoutExtension(group.Key)}_{pm.part}.mat";
+                    var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+                    if (!mat) { mat = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(mat, matPath); }
+                    mat.SetTexture("_BaseMap", colour); mat.mainTexture = colour; mat.SetColor("_BaseColor", Color.white);
+                    mat.SetFloat("_Smoothness", 0.35f); mat.SetFloat("_Metallic", 0.4f);
+                    if (normal)
+                    {
+                        if (AssetImporter.GetAtPath(pm.normal) is TextureImporter ti && ti.textureType != TextureImporterType.NormalMap) { ti.textureType = TextureImporterType.NormalMap; ti.SaveAndReimport(); }
+                        mat.SetTexture("_BumpMap", normal); mat.EnableKeyword("_NORMALMAP");
+                    }
+                    EditorUtility.SetDirty(mat);
+                    foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+                    {
+                        if (r.name != pm.part) continue;
+                        var mats = r.sharedMaterials;
+                        for (int i = 0; i < mats.Length; i++) if (mats[i] != mat) { mats[i] = mat; changed = true; }
+                        r.sharedMaterials = mats;
+                    }
+                }
+                if (changed) { PrefabUtility.SaveAsPrefabAsset(root, group.Key); n++; }
+                PrefabUtility.UnloadPrefabContents(root);
+            }
             return n;
         }
 

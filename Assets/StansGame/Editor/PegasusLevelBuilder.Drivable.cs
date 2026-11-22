@@ -43,6 +43,7 @@ namespace StansGame.EditorTools
             lamp.color = new Color(0.78f, 0.82f, 1f); lamp.shadows = LightShadows.None; lamp.enabled = false;
             var tc = go.AddComponent<TruckController>();
             tc.displayName = "Opel Blitz";
+            tc.maxForwardSpeed = 21f; tc.maxReverseSpeed = 3.5f; tc.acceleration = 2.2f;   // 3.6-36S: 73 hp for 3.3 t empty, ~75 km/h
             tc.wheels = wheels.ToArray(); tc.wheelRadius = 0.44f; tc.lamps = new[] { lamp };
             if (wheels.Count == 0) Debug.LogWarning($"Stan's Game: {name} has no Wheel_ parts - it drives, but its wheels won't turn");
             NetScenery(go, false);

@@ -39,6 +39,11 @@ namespace StansGame
         public List<Health> crew = new List<Health>();
         public float aiRange = 500f;
         public float mouseSensitivity = 0.08f;
+        [Header("Machine gun on a tripod (instead of a shell)")]
+        [Tooltip("Set for a mounted machine gun (Vickers, Browning .30): holding the left button fires it like a hand-held gun, endless belts")]
+        public Weapon gun;
+        [Tooltip("The gunner's view, behind and above the traverse (third person)")]
+        public Vector3 eyeOffset = new Vector3(-0.55f, 1.35f, -2.4f);
 
         public bool Manned => gunner != null;
         public float ReloadProgress => Mathf.Clamp01(1f - (nextShot - Time.time) / reloadTime);
@@ -108,7 +113,8 @@ namespace StansGame
                     Vector2 look = mouse.delta.ReadValue() * mouseSensitivity * zoom;
                     aimYaw = Mathf.Clamp(aimYaw + look.x, -traverseLimit, traverseLimit);
                     aimPitch = Mathf.Clamp(aimPitch + look.y, minElevation, maxElevation);
-                    if (mouse.leftButton.wasPressedThisFrame) Fire();
+                    if (gun) { if (mouse.leftButton.isPressed) FireGun(); }
+                    else if (mouse.leftButton.wasPressedThisFrame) Fire();
                 }
             }
             else AiCrew();
@@ -128,13 +134,26 @@ namespace StansGame
             bool sightView = Mouse.current != null && Mouse.current.rightButton.isPressed;
             Quaternion look = elevate.rotation;
             Vector3 eye = sightView && sight ? sight.position
-                        : (traverse ? traverse.position : transform.position) + (traverse ? traverse : transform).rotation * new Vector3(-0.55f, 1.35f, -2.4f);
+                        : (traverse ? traverse.position : transform.position) + (traverse ? traverse : transform).rotation * eyeOffset;
             cam.transform.SetPositionAndRotation(eye, sightView ? look : Quaternion.Euler(look.eulerAngles.x + 6f, look.eulerAngles.y, 0f));
             cam.nearClipPlane = 0.05f;
             cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, sightView ? 18f : 55f, Time.deltaTime * 10f);
         }
 
         // ------------------------------------------------------------------ firing
+
+        /// <summary>The mounted machine gun: one round (its own rate of fire, tracer, sound), the belt never runs out.</summary>
+        public bool FireGun()
+        {
+            if (!gun || !muzzle || !gunner) return false;
+            gun.Init();
+            if (gun.Ammo <= 0) { gun.SetAmmo(gun.magazineSize, 9999); return false; }   // a fresh belt
+            Vector3 dir = elevate ? elevate.forward : muzzle.forward;
+            if (!gun.Fire(new Ray(muzzle.position, dir), true, gunner.gameObject, 0.6f)) return false;
+            recoil = recoilLength;
+            NoiseEvents.Report(transform.position, 300f, gameObject);
+            return true;
+        }
 
         public bool Fire()
         {
@@ -230,7 +249,7 @@ namespace StansGame
                 aiTarget = null;
                 var mine = CrewFaction();
                 float best = aiRange;
-                foreach (var tank in FindObjectsByType<TankController>(FindObjectsSortMode.None))
+                foreach (var tank in FindObjectsByType<TankController>(FindObjectsInactive.Exclude))
                 {
                     var h = tank.GetComponent<Health>();
                     if (!h || h.IsDead || (mine.HasValue && h.faction == mine.Value)) continue;

@@ -56,7 +56,7 @@ namespace StansGame
         public void SendHorn() => HornRpc();
 
         /// <summary>The driver pressed H: the host checks it is him and has every machine sound the horn.</summary>
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void HornRpc(RpcParams rpcParams = default)
         {
             if (driver.Value == rpcParams.Receive.SenderClientId) HornAllRpc();
@@ -65,16 +65,16 @@ namespace StansGame
         [Rpc(SendTo.Everyone)]
         void HornAllRpc() { if (truck) truck.PlayHorn(); }
 
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void EnterRpc(RpcParams rpcParams = default) => ServerClaim(rpcParams.Receive.SenderClientId);
 
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void ExitRpc(RpcParams rpcParams = default)
         {
             if (driver.Value == rpcParams.Receive.SenderClientId) ServerRelease();
         }
 
-        [Rpc(SendTo.Server, RequireOwnership = false, Delivery = RpcDelivery.Unreliable)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone, Delivery = RpcDelivery.Unreliable)]
         void InputRpc(float throttle, float steerIn, bool handbrake, RpcParams rpcParams = default)
         {
             if (driver.Value == rpcParams.Receive.SenderClientId && truck) truck.ServerRemoteInput(throttle, steerIn, handbrake);

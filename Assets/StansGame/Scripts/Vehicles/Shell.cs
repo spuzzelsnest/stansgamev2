@@ -22,6 +22,8 @@ namespace StansGame
         public GameObject pickupVisual;
         [Tooltip("Multiplayer copy shown on other machines: explodes but does no damage (the host's copy does).")]
         public bool visualOnly;
+        [Tooltip("Small-calibre rounds (20 mm, .50 cal): a spark and a thud where they strike, not a shell burst.")]
+        public bool small;
 
         [Header("Smoke grenades")]
         [Tooltip("A smoke grenade: when the fuse burns down it makes a smoke screen instead of a bang.")]
@@ -80,8 +82,8 @@ namespace StansGame
                 Destroy(gameObject);
                 return;
             }
-            Sfx.Explosion(p, fuse <= 0f);
-            Flash(p);
+            if (small) Sfx.Impact(p, false);
+            else { Sfx.Explosion(p, fuse <= 0f); Flash(p); }
             if (visualOnly)
             {
                 if (explosionPrefab) Destroy(Instantiate(explosionPrefab, p, Quaternion.identity), 8f);
@@ -107,7 +109,7 @@ namespace StansGame
                     col.attachedRigidbody.AddExplosionForce(blastForce, p, blastRadius, 0.5f, ForceMode.Impulse);
             }
             if (explosionPrefab) Destroy(Instantiate(explosionPrefab, p, Quaternion.identity), 8f);
-            NoiseEvents.Report(p, 300f, owner);
+            NoiseEvents.Report(p, small ? 80f : 300f, owner);
             Destroy(gameObject);
         }
 

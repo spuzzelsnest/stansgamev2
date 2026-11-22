@@ -22,7 +22,7 @@ MonoBehaviour:
       name: Edward C. Krause
       rank: Lieutenant Colonel
       unit: 3rd Battalion, 505th Parachute Infantry Regiment, 82nd Airborne
-      portrait: {fileID: 0}
+      portrait: {fileID: 2800000, guid: 8605cfecbd47be140a760f06c5857df6, type: 3}
       bio: "Commanded the 3rd Battalion of the 505th. Gathered his scattered men west of the town in the dark and took Sainte-M\xE8re-\xC9glise before dawn on 6 June; the American flag went up at the town hall, making it one of the first towns freed in Normandy."
       reinforceBelow: 0.6
       fallBackBelow: 0.3
@@ -156,7 +156,7 @@ MonoBehaviour:
       name: 
       rank: 
       unit: "German garrison, Sainte-M\xE8re-\xC9glise"
-      portrait: {fileID: 0}
+      portrait: {fileID: 2800000, guid: 5f224d8cb2ec2b24c847ed4a8eacf71b, type: 3}
       bio: (Name, portrait and story to come.)
       reinforceBelow: 0.6
       fallBackBelow: 0.3

@@ -107,6 +107,7 @@ MonoBehaviour:
   fuse: 4.5
   pickupVisual: {fileID: 7300506810330669020, guid: e166a0d829cf95c4b96840303b6f911d, type: 3}
   visualOnly: 0
+  small: 0
   smoke: 0
   smokeMaterial: {fileID: 0}
   smokeColour: {r: 0.78, g: 0.78, b: 0.76, a: 0.6}

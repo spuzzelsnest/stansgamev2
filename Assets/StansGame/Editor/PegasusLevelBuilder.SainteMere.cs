@@ -1105,6 +1105,7 @@ namespace StansGame.EditorTools
         /// </summary>
         static bool AddUsBody(GameObject root)
         {
+            if (AddUsHdBody(root)) return true;   // the main American character since 22 Nov (Protagonists.cs)
             if (!AddBritishBody(root)) return false;
             var model = root.transform.Find("Model");
             var anim = model ? model.GetComponent<Animator>() : null;

@@ -17,12 +17,12 @@ namespace StansGame.EditorTools
     {
         const int W = 480, H = 270, Cols = 3;
 
-        [MenuItem("Stan's Game/Debug/Check Vehicle Fronts")]
+        [MenuItem("Stan's Game/Debug/Check: Vehicle Fronts (open level)", priority = 206)]
         public static void Check()
         {
             var roots = new List<Transform>();
-            foreach (var t in Object.FindObjectsByType<TruckController>(FindObjectsInactive.Include, FindObjectsSortMode.None)) roots.Add(t.transform);
-            foreach (var t in Object.FindObjectsByType<TankController>(FindObjectsInactive.Include, FindObjectsSortMode.None)) roots.Add(t.transform);
+            foreach (var t in Object.FindObjectsByType<TruckController>(FindObjectsInactive.Include)) roots.Add(t.transform);
+            foreach (var t in Object.FindObjectsByType<TankController>(FindObjectsInactive.Include)) roots.Add(t.transform);
             // one of each model is enough
             var seen = new HashSet<string>(); var pick = new List<Transform>();
             foreach (var r in roots)
@@ -82,8 +82,8 @@ namespace StansGame.EditorTools
                 sheet.Apply();
                 string logs = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Application.dataPath), "Logs");
                 Directory.CreateDirectory(logs);
-                File.WriteAllBytes(System.IO.Path.Combine(logs, "vehicle-fronts.png"), sheet.EncodeToPNG());
-                File.WriteAllText(System.IO.Path.Combine(logs, "vehicle-fronts.txt"), report.ToString());
+                File.WriteAllBytes(System.IO.Path.Combine(logs, $"vehicle-fronts-{UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}.png"), sheet.EncodeToPNG());
+                File.WriteAllText(System.IO.Path.Combine(logs, $"vehicle-fronts-{UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}.txt"), report.ToString());
                 Debug.Log($"Stan's Game: {pick.Count} vehicles photographed - Logs/vehicle-fronts.png (numbered left to right, top to bottom) and vehicle-fronts.txt");
             }
             finally

@@ -32,7 +32,7 @@ namespace StansGame
             lines.Clear();
             var listener = FindAnyObjectByType<AudioListener>();
             Vector3 ear = listener ? listener.transform.position : Vector3.zero;
-            var playing = FindObjectsByType<AudioSource>(FindObjectsSortMode.None).Where(a => a.isPlaying).Select(a =>
+            var playing = FindObjectsByType<AudioSource>().Where(a => a.isPlaying).Select(a =>
             {
                 float d = Vector3.Distance(a.transform.position, ear);
                 float att = a.spatialBlend < 0.01f ? 1f : Mathf.Lerp(1f, d <= a.minDistance ? 1f : d >= a.maxDistance ? 0f : a.minDistance / d, a.spatialBlend);

@@ -15,11 +15,11 @@ namespace StansGame.EditorTools
     {
         public const string Dir = "Assets/StansGame/Models/Vehicles";
 
-        [MenuItem("Stan's Game/Import Vehicles", priority = 2)]
+        [MenuItem("Stan's Game/Import Vehicles", priority = 22)]
         public static void Import()
         {
             string project = Path.GetDirectoryName(Application.dataPath);
-            string h35Src = Path.Combine(project, "_downloads", "hotchkiss-h35", "textures");
+            string h35Src = CharacterImporter.Dl("hotchkiss-h35", "textures");   // wherever it is sorted (_Vehicles)
             string h35Dst = Path.Combine(project, Dir, "H35");
             Directory.CreateDirectory(h35Dst);
             if (Directory.Exists(h35Src))

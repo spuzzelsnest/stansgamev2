@@ -13,7 +13,11 @@ namespace StansGame.EditorTools
     /// </summary>
     public static class HandPoseShots
     {
-        [MenuItem("Stan's Game/Debug/Skip Ahead (play mode)", priority = 51)]
+        [MenuItem("Stan's Game/Debug/Play mode: Skip Ahead", true)] [MenuItem("Stan's Game/Debug/Play mode: Capture Hand Poses %#h", true)]
+        [MenuItem("Stan's Game/Debug/Play mode: Raise or Lower Bridge", true)] [MenuItem("Stan's Game/Debug/Play mode: Go to the Bridge Controls", true)]
+        static bool PlayingOnly() => Application.isPlaying;   // greyed out until the game runs
+
+        [MenuItem("Stan's Game/Debug/Play mode: Skip Ahead", priority = 100)]
         static void SkipAhead()
         {
             if (Application.isPlaying && BenouvilleMission.Instance)
@@ -27,7 +31,7 @@ namespace StansGame.EditorTools
             Debug.Log($"Stan's Game: mission phase {MissionDirector.Instance.CurrentPhase}");
         }
 
-        [MenuItem("Stan's Game/Debug/Raise or Lower Bridge (play mode)", priority = 53)]
+        [MenuItem("Stan's Game/Debug/Play mode: Raise or Lower Bridge", priority = 102)]
         static void ToggleBridge()
         {
             var lift = BridgeLift.Instance;
@@ -36,12 +40,12 @@ namespace StansGame.EditorTools
             Debug.Log($"Stan's Game: bridge going {(lift.Raised ? "up" : "down")}");
         }
 
-        [MenuItem("Stan's Game/Debug/Go to the Bridge Controls (play mode)", priority = 54)]
+        [MenuItem("Stan's Game/Debug/Play mode: Go to the Bridge Controls", priority = 103)]
         static void GoToControls()
         {
             var lift = BridgeLift.Instance;
             if (!Application.isPlaying || !lift || !lift.panel) { Debug.LogWarning("Stan's Game: start the game first"); return; }
-            foreach (var sc in Object.FindObjectsByType<SoldierController>(FindObjectsSortMode.None))
+            foreach (var sc in Object.FindObjectsByType<SoldierController>())
             {
                 if (!sc.enabled) continue;
                 var cc = sc.GetComponent<CharacterController>();
@@ -57,12 +61,12 @@ namespace StansGame.EditorTools
 
         // Ctrl+Shift+H: works from the Game view too, so the mouse never has to leave the game (moving it to the menu
         // turns the player's view)
-        [MenuItem("Stan's Game/Debug/Capture Hand Poses %#h", priority = 52)]
+        [MenuItem("Stan's Game/Debug/Play mode: Capture Hand Poses %#h", priority = 101)]
         static void Capture()
         {
             if (!Application.isPlaying) { Debug.LogWarning("Stan's Game: start the game first (hand poses only exist in play mode)"); return; }
             // soldiers off screen don't run their animation (or the hand IK): wake them all for a few frames first
-            var animators = Object.FindObjectsByType<Animator>(FindObjectsSortMode.None);
+            var animators = Object.FindObjectsByType<Animator>();
             var modes = animators.Select(a => a.cullingMode).ToArray();
             foreach (var a in animators) a.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             int until = Time.frameCount + 10;   // ten game frames, so every soldier has run his hand IK
@@ -84,7 +88,7 @@ namespace StansGame.EditorTools
             Directory.CreateDirectory(dir);
             var report = new System.Text.StringBuilder();
 
-            var holders = Object.FindObjectsByType<WeaponHolder>(FindObjectsSortMode.None)
+            var holders = Object.FindObjectsByType<WeaponHolder>()
                 .Where(h => h.isActiveAndEnabled && h.Body && h.Body.GetComponentInChildren<Animator>() && (h.Active || h.Body.GetComponent<SoldierController>())).ToList();
             var player = Object.FindAnyObjectByType<SoldierController>();
             Vector3 from = player ? player.transform.position : Vector3.zero;

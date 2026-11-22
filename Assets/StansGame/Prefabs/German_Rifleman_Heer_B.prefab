@@ -74,6 +74,9 @@ MonoBehaviour:
   supportHand: {x: 0, y: -0.03, z: 0.22}
   magazinePoint: {x: 0, y: -0.12, z: 0.06}
   handOffset: {x: 0, y: 0, z: 0}
+  magazine: {fileID: 0}
+  magazinePull: {x: 0, y: -0.2, z: 0}
+  cockingPoint: {x: 0, y: 0, z: 0}
   projectile: {fileID: 0}
   projectileSpeed: 77
 --- !u!82 &6972558929940359438
@@ -491,6 +494,14 @@ MonoBehaviour:
       NameHash: 862969536
       Synchronize: 1
       ParameterType: 4
+    - name: Injured
+      NameHash: -196986847
+      Synchronize: 1
+      ParameterType: 4
+    - name: Action
+      NameHash: 1080068516
+      Synchronize: 1
+      ParameterType: 3
   AnimatorParametersExpanded: 0
 --- !u!1 &9099328919421076438
 GameObject:

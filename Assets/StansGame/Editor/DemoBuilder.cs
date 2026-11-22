@@ -14,7 +14,7 @@ namespace StansGame.EditorTools
     {
         const string Scene = "Assets/StansGame/Scenes/PegasusBridge.unity";
         // further chapters, chosen from the start menu after Play alone / Host (NetSession.Maps)
-        static readonly string[] MoreScenes = { "Assets/StansGame/Scenes/SainteMereEglise.unity", "Assets/StansGame/Scenes/ChateauBenouville.unity" };
+        static readonly string[] MoreScenes = { "Assets/StansGame/Scenes/SainteMereEglise.unity", "Assets/StansGame/Scenes/ChateauBenouville.unity", "Assets/StansGame/Scenes/ProvingGround.unity" };
 
         [MenuItem("Stan's Game/Build Windows Demo", priority = 40)]
         public static void BuildDemo()

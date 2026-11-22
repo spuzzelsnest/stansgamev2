@@ -41,7 +41,7 @@ namespace StansGame
                 TruckOnE();
                 return;
             }
-            foreach (var t in FindObjectsByType<TankController>(FindObjectsSortMode.None))
+            foreach (var t in FindObjectsByType<TankController>())
             {
                 if (t.HasDriver) continue;
                 var h = t.GetComponent<Health>();

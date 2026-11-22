@@ -60,7 +60,7 @@ namespace StansGame
 
         void Start()
         {
-            foreach (var bu in FindObjectsByType<BattleUnit>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var bu in FindObjectsByType<BattleUnit>(FindObjectsInactive.Include))
             {
                 if (bu.attacker != attacker) continue;
                 var ai = bu.GetComponent<SoldierAI>(); if (!ai) continue;

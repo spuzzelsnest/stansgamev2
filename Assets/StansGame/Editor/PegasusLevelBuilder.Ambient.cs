@@ -192,6 +192,7 @@ namespace StansGame.EditorTools
             // and the players can take it: walk up, E, drive it in third person (front wheels steer)
             var tc = go.AddComponent<TruckController>();
             tc.displayName = "Opel Blitz";
+            tc.maxForwardSpeed = 21f; tc.maxReverseSpeed = 3.5f; tc.acceleration = 2.2f;   // 3.6-36S: ~75 km/h
             tc.wheels = av.wheels; tc.wheelRadius = av.wheelRadius; tc.lamps = av.lamps;
             NetScenery(go, false);
 #if STANS_NET

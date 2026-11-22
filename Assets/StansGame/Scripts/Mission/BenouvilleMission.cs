@@ -136,7 +136,7 @@ namespace StansGame
 
         static System.Collections.Generic.IEnumerable<SoldierController> Players()
         {
-            foreach (var sc in FindObjectsByType<SoldierController>(FindObjectsSortMode.None))
+            foreach (var sc in FindObjectsByType<SoldierController>())
             {
                 var h = sc.GetComponent<Health>();
                 if (h && h.IsDead) continue;

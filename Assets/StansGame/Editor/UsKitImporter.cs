@@ -22,7 +22,7 @@ namespace StansGame.EditorTools
         const string VehicleDir = "Assets/StansGame/Models/Vehicles";
         const string PrefabDir = "Assets/StansGame/Prefabs";
 
-        [MenuItem("Stan's Game/Import US Kit", priority = 3)]
+        [MenuItem("Stan's Game/Import US Kit", priority = 23)]
         public static void Import()
         {
             foreach (var p in new[] { $"{WeaponDir}/Garand.fbx", $"{WeaponDir}/Carbine.fbx", $"{WeaponDir}/Bazooka.fbx", $"{WeaponDir}/MkIIGrenade.fbx",

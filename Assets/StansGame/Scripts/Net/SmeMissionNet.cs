@@ -28,7 +28,7 @@ namespace StansGame
 
         public override void OnNetworkDespawn() => SainteMereMission.ReachedOnHost = null;
 
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void ReachedRpc(int what) { if (m) m.ServerReached(what); }
 
         void Update()

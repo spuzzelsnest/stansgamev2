@@ -17,7 +17,7 @@ namespace StansGame.EditorTools
         const string Define = "STANS_NET";
         static AddAndRemoveRequest request;
 
-        [MenuItem("Stan's Game/Install Multiplayer Packages", priority = 30)]
+        [MenuItem("Stan's Game/Setup/Install Multiplayer Packages", priority = 110)]
         public static void Install()
         {
             if (request != null && !request.IsCompleted) { Debug.Log("Stan's Game: package install already running..."); return; }
@@ -59,10 +59,10 @@ namespace StansGame.EditorTools
             };
         }
 
-        [MenuItem("Stan's Game/Switch Multiplayer Code On", priority = 31)]
+        [MenuItem("Stan's Game/Setup/Switch Multiplayer Code On", priority = 111)]
         public static void On() { SessionState.SetBool("stans.netoff", false); SetDefine(true); }
 
-        [MenuItem("Stan's Game/Switch Multiplayer Code Off", priority = 32)]
+        [MenuItem("Stan's Game/Setup/Switch Multiplayer Code Off", priority = 112)]
         public static void Off() { SessionState.SetBool("stans.netoff", true); SetDefine(false); }
 
         static void SetDefine(bool on)

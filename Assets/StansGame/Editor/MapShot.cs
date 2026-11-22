@@ -11,7 +11,7 @@ namespace StansGame.EditorTools
     /// </summary>
     public static class MapShot
     {
-        [MenuItem("Stan's Game/Debug/Map Shot %#&m", priority = 220)]
+        [MenuItem("Stan's Game/Debug/Screenshots: Map Shot %#&m", priority = 300)]
         public static void Shoot()
         {
             string dir = Path.Combine(Path.GetDirectoryName(Application.dataPath), "_downloads", "previews");

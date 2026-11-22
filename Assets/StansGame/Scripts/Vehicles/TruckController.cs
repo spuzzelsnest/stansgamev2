@@ -70,6 +70,8 @@ namespace StansGame
         [Tooltip("Lorry: driver and mate in the cab, eight on the benches in the back. Car (Kübelwagen): two in front, two behind.")]
         public SeatLayout layout = SeatLayout.Lorry;
         public enum SeatLayout { Lorry, Car }
+        [Tooltip("Car layout: how far behind the front axle the front and the back seats are (m). Kübelwagen 0.95 / 1.85; the Willys jeep's seats sit further back.")]
+        public float frontSeatBack = 0.95f, rearSeatBack = 1.85f;
 
         [Header("Camera")]
         public float cameraDistance = 9.5f;
@@ -185,7 +187,7 @@ namespace StansGame
         {
             if (layout == SeatLayout.Car)
             {
-                float fz = frontZ - 0.95f, rz = frontZ - 1.85f;
+                float fz = frontZ - frontSeatBack, rz = frontZ - rearSeatBack;
                 seats = new[] { new Vector3(-0.33f, 0.68f, fz), new Vector3(0.33f, 0.68f, fz), new Vector3(-0.33f, 0.74f, rz), new Vector3(0.33f, 0.74f, rz) };   // hips on the cushions
                 cabSeats = 0;   // an open car: everyone keeps his rifle
                 return;
@@ -200,7 +202,8 @@ namespace StansGame
         }
 
         const float SitDrop = 0.55f;   // the kneeling pose's hips are this far above its feet
-        Vector3 SeatRoot(int i) => transform.TransformPoint(seats[i]) + Vector3.down * SitDrop;
+        const float SeatDrop = 0.42f;  // the sitting poses' hips (feet on the floor, thighs level)
+        Vector3 SeatRoot(int i, bool seated = false) => transform.TransformPoint(seats[i]) + Vector3.down * (seated ? SeatDrop : SitDrop);
         Quaternion SeatFacing(int i)
         {
             // the cab and the car face forward; on the benches they face each other across the bed
@@ -229,14 +232,31 @@ namespace StansGame
             bool cab = seat < cabSeats;
             foreach (var r in s.GetComponentsInChildren<Renderer>(true)) r.enabled = !(cab && r.GetComponentInParent<Weapon>());
             if (!s.TryGetComponent(out Stance st)) { st = s.gameObject.AddComponent<Stance>(); st.animator = s.animator; }
-            st.Set(StanceKind.Crouch);
-            if (s.animator) Locomotion.Set(s.animator, Vector3.zero, 0f, false);
-            s.transform.SetPositionAndRotation(SeatRoot(seat), SeatFacing(seat));
+            // sitting: the driver at the wheel (Mixamo "Driving"), the others sitting (Animations: Build Animation Sets);
+            // an old animator without the seated actions kneels as before
+            bool seated = HasAction(s.animator);
+            st.Set(seated ? StanceKind.Stand : StanceKind.Crouch);
+            if (s.animator)
+            {
+                Locomotion.Set(s.animator, Vector3.zero, 0f, false);
+                if (seated) s.animator.SetInteger("Action", seat == 0 && localDriver == s ? AnimActions.Driving : AnimActions.Seated);
+            }
+            var hands = s.GetComponentInChildren<HandIK>(); if (hands) hands.enabled = !seated;   // hands on the wheel or in the lap, not on the rifle
+            s.transform.SetPositionAndRotation(SeatRoot(seat, seated), SeatFacing(seat));
+        }
+
+        static bool HasAction(Animator a)
+        {
+            if (!a || !a.runtimeAnimatorController) return false;
+            foreach (var p in a.parameters) if (p.name == "Action") return true;
+            return false;
         }
 
         static void StandUp(SoldierController s)
         {
             if (s.TryGetComponent(out Stance st)) st.Set(StanceKind.Stand);
+            if (HasAction(s.animator)) s.animator.SetInteger("Action", 0);
+            var hands = s.GetComponentInChildren<HandIK>(); if (hands) hands.enabled = true;
         }
 
         /// <summary>Climb in as a passenger.</summary>
@@ -566,7 +586,7 @@ namespace StansGame
         {
             if (seats == null) MakeSeats();
             int i = localDriver ? 0 : riderSeat;
-            Occupant.transform.SetPositionAndRotation(SeatRoot(i), SeatFacing(i));
+            Occupant.transform.SetPositionAndRotation(SeatRoot(i, HasAction(Occupant.animator)), SeatFacing(i));
             if (Occupant.animator) Locomotion.Set(Occupant.animator, Vector3.zero, 0.1f, false);
         }
 

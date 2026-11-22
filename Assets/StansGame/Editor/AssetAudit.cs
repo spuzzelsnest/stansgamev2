@@ -29,8 +29,8 @@ namespace StansGame.EditorTools
 
         // ------------------------------------------------------------------ ragdolls
 
-        [MenuItem("Stan's Game/Debug/Check Ragdolls (all characters)", priority = 220)]
-        static void CheckRagdolls()
+        [MenuItem("Stan's Game/Debug/Check: Ragdolls (all characters)", priority = 204)]
+        internal static void CheckRagdolls()
         {
             var sb = new StringBuilder();
             int problems = 0;
@@ -50,7 +50,7 @@ namespace StansGame.EditorTools
             sb.AppendLine().AppendLine("== Characters placed in the levels (not from a prefab above) ==");
             ForEachLevel(level =>
             {
-                foreach (var h in Object.FindObjectsByType<Health>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                foreach (var h in Object.FindObjectsByType<Health>(FindObjectsInactive.Include))
                 {
                     if (!(h.GetComponent<SoldierAI>() || h.GetComponent<SoldierController>())) continue;
                     var src = PrefabUtility.GetCorrespondingObjectFromSource(h.gameObject);
@@ -61,7 +61,7 @@ namespace StansGame.EditorTools
                     problems += CheckOne(h.gameObject, $"{level}: {h.name}", sb, placeholders, level);
                 }
                 // townspeople, nurses and other people without a rig (not soldiers)
-                foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include))
                 {
                     string n = t.name;
                     if (!(n.StartsWith("Townsperson") || n.Contains("civilian") || n.Contains("Civilian") || n.StartsWith("Nurse") || n.StartsWith("Villager"))) continue;
@@ -158,13 +158,13 @@ namespace StansGame.EditorTools
 
         class MatUse { public Material m; public int count; public float area; public string example; public HashSet<string> levels = new HashSet<string>(); }
 
-        [MenuItem("Stan's Game/Debug/Check Textures (objects in the levels)", priority = 221)]
-        static void CheckTextures()
+        [MenuItem("Stan's Game/Debug/Check: Textures (objects in the levels)", priority = 205)]
+        internal static void CheckTextures()
         {
             var uses = new Dictionary<Material, MatUse>();
             ForEachLevel(level =>
             {
-                foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include))
                 {
                     if (r is ParticleSystemRenderer || r is TrailRenderer || r is LineRenderer) continue;
                     var b = r.bounds; float area = Mathf.Max(b.size.x * b.size.y, b.size.x * b.size.z, b.size.y * b.size.z);

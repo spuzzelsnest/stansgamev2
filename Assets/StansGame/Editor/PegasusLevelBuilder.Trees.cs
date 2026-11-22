@@ -155,7 +155,6 @@ namespace StansGame.EditorTools
         static Mesh ShrubMesh()
         {
             if (shrubMesh) return shrubMesh;
-            string path = GenMeshDir + "/Shrub.asset";
             var rnd = new System.Random(606);
             float R() => (float)rnd.NextDouble();
             var v = new System.Collections.Generic.List<Vector3>(); var n = new System.Collections.Generic.List<Vector3>();

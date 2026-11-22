@@ -209,7 +209,7 @@ namespace StansGame
         static C47Flight NearestAircraft()
         {
             C47Flight best = null; float bd = float.MaxValue;
-            foreach (var c in FindObjectsByType<C47Flight>(FindObjectsSortMode.None))
+            foreach (var c in FindObjectsByType<C47Flight>())
             {
                 if (!c.Flying) continue;
                 float d = c.transform.position.sqrMagnitude;

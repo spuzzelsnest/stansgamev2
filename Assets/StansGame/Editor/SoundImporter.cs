@@ -12,7 +12,7 @@ namespace StansGame.EditorTools
         static readonly string[] Voice = { "hit01", "hit02", "hit03", "hit04", "hit05", "hit06", "hit07", "hit08", "hit09", "hit10", "hit11", "hit12" };
         static readonly string[] Boom = { "FarExplosionA", "FarExplosionB", "NearExplosionA", "NearExplosionB" };
 
-        [MenuItem("Stan's Game/Import v1 Sounds", priority = 3)]
+        [MenuItem("Stan's Game/Setup/Import v1 Sounds", priority = 100)]
         public static void Import()
         {
             string v1 = Path.GetFullPath(Path.Combine(Application.dataPath, "../../stansgame/Assets"));

@@ -13,6 +13,9 @@ namespace StansGame.EditorTools
     ///   German_Heer_B   the same kit, an older man with a moustache
     ///   German_Heer_C   rifleman with his Zeltbahn (camouflage shelter-quarter) over the blouse and a net on the helmet
     ///   German_Officer  Leutnant in field-grey with the peaked cap (Schirmmütze)
+    ///   German_Panzergren  a Panzergrenadier (Joan's CC0 download, already skinned to a Mixamo skeleton): M42 helmet with
+    ///                   a wire scrim and leaves, ammunition pouches - the 21st Panzer Division's 192nd Panzergrenadier
+    ///                   Regiment counter-attacked the bridges on 6 June. Its own textures (PzGren_*), Models/Source~/panzergren.py.
     /// All four share one texture (German_Normandy_BaseColor.jpg). The greatcoat figure of the pack is left out
     /// (its long skirt does not run well). Every German built through Soldier() gets one of these bodies, picked from
     /// his name so a rebuild gives the same faces in the same places; the older single-body prefabs are the fallback.
@@ -20,7 +23,7 @@ namespace StansGame.EditorTools
     public static partial class PegasusLevelBuilder
     {
         const string GermanDir = Root + "/Models/German";
-        static readonly string[] GermanRiflemen = { "German_Heer_A", "German_Heer_B", "German_Heer_C" };
+        static readonly string[] GermanRiflemen = { "German_Heer_A", "German_Heer_B", "German_Heer_C", "German_Panzergren" };
         static readonly HashSet<string> germanPrefabsBuilt = new HashSet<string>();
 
         static GameObject GermanBodyModel(string file)
@@ -77,7 +80,22 @@ namespace StansGame.EditorTools
             var rs = inst.GetComponentsInChildren<Renderer>();
             if (rs.Length == 0) { Object.DestroyImmediate(inst); return false; }
             var mat = TexMat("German_Normandy", $"{GermanDir}/German_Normandy_BaseColor.jpg", 0.18f);
-            foreach (var r in rs) { var ms = r.sharedMaterials; for (int i = 0; i < ms.Length; i++) ms[i] = mat; r.sharedMaterials = ms; }
+            foreach (var r in rs)
+            {
+                var ms = r.sharedMaterials;
+                for (int i = 0; i < ms.Length; i++)
+                {
+                    // the Panzergrenadier brings his own sheets (materials aren't imported, so by part and slot:
+                    // body; pouches; helmet = steel, wire scrim, leaves - the leaves cut out)
+                    string mn = file != "German_Panzergren" ? "" : r.name == "main" ? "PzGren_Body" : r.name == "ammopouches" ? "PzGren_Pouches"
+                              : r.name == "helmet" ? (i == 0 ? "PzGren_Helmet" : i == 1 ? "PzGren_Wire" : "PzGren_Leaves") : "PzGren_Body";
+                    if (mn.Length > 0)
+                        ms[i] = mn == "PzGren_Leaves" ? TexMat(mn, $"{GermanDir}/{mn}.png", Color.white, 0.1f, true)
+                                                     : TexMat(mn, $"{GermanDir}/{mn}.jpg", mn == "PzGren_Helmet" ? 0.3f : 0.18f);
+                    else ms[i] = mat;
+                }
+                r.sharedMaterials = ms;
+            }
             // 1.80 m to the top of the M40 helmet (or the officer's cap): a man of about 1.73 m
             Bounds b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds);
             if (b.size.y > 0.1f) inst.transform.localScale *= 1.80f / b.size.y;

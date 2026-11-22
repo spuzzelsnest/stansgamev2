@@ -17,7 +17,7 @@ namespace StansGame.EditorTools
         static void SmeAmbientLife(Transform root, Transform town, Transform garrison, Transform actors, Transform air)
         {
             ColourGrade(root, "SainteMereGrade");   // the same grade as Pegasus Bridge (all levels match)
-            foreach (var cam in Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var cam in Object.FindObjectsByType<Camera>(FindObjectsInactive.Include))
             {
                 var data = cam.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
                 if (!data) data = cam.gameObject.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();

@@ -83,14 +83,14 @@ namespace StansGame
 
         static Vector3 Find(string part, Vector3 fallback)
         {
-            foreach (var t in FindObjectsByType<Transform>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            foreach (var t in FindObjectsByType<Transform>(FindObjectsInactive.Exclude))
                 if (t.name.Contains(part)) return t.position;
             return fallback;
         }
 
         static GliderApproach Glider(int chalk)
         {
-            foreach (var g in FindObjectsByType<GliderApproach>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var g in FindObjectsByType<GliderApproach>(FindObjectsInactive.Include))
                 if (g.name.Contains($"chalk {chalk}")) return g;
             return null;
         }
@@ -261,7 +261,7 @@ namespace StansGame
 
         static GameObject Car(string name)
         {
-            foreach (var t in FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var t in FindObjectsByType<Transform>(FindObjectsInactive.Include))
                 if (t.name == name) return t.gameObject;
             return null;
         }
@@ -377,7 +377,7 @@ namespace StansGame
             RenderSettings.fogDensity = baseFog * 0.25f;
             var a = RenderSettings.ambientLight;
             RenderSettings.ambientLight = new Color(Mathf.Max(a.r, 0.32f), Mathf.Max(a.g, 0.34f), Mathf.Max(a.b, 0.42f));
-            foreach (var sky in FindObjectsByType<NightSky>(FindObjectsSortMode.None))
+            foreach (var sky in FindObjectsByType<NightSky>())
                 if (sky.moon && sky.moon.enabled) sky.moon.intensity = Mathf.Max(sky.moon.intensity * 3f, 1.2f);
             if (s.cam == null) return;
             var cam = Camera.main;

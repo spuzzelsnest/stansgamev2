@@ -39,7 +39,7 @@ namespace StansGame
         public override void OnNetworkDespawn() { NetHooks.RequestSignal = null; NetHooks.RequestBridge = null; }
 
         /// <summary>A client's player worked the bridge controller: the host decides (it won't lift with men on it).</summary>
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void BridgeRpc(bool up)
         {
             var lift = BridgeLift.Instance;
@@ -47,7 +47,7 @@ namespace StansGame
         }
 
         /// <summary>A client's player sent "Ham and Jam": count it on the host.</summary>
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void SignalRpc() { if (md) md.ReportSignal(); }
 
         void Update()

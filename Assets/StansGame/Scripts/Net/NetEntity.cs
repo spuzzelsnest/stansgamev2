@@ -75,11 +75,11 @@ namespace StansGame
         }
 
         /// <summary>A client bandaged himself: the host restores the hit points.</summary>
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         public void HealRpc(float amount) { if (health) health.Heal(amount); }
 
         /// <summary>A client hit this object: the host applies the damage.</summary>
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         public void HitRpc(float amount, Vector3 point, Vector3 direction, float force, ulong shooterId, bool hasShooter)
         {
             if (!health) return;

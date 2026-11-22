@@ -204,9 +204,12 @@ namespace StansGame
             float rMin = reachR * scale * minReach, lMin = reachL * scale * minReach * 0.8f;
 
             bool reloading = w.IsReloading;
-            Vector3 target = reloading ? w.magazinePoint : w.supportHand;
-            leftLocal = haveLeft ? Vector3.Lerp(leftLocal, target, 1f - Mathf.Exp(-9f * Time.deltaTime)) : target;
+            bool leftFree = false;   // off the gun (taking a fresh magazine from the pouch): the gun is not fitted to it
+            Vector3 target = reloading ? (w.magazine ? ReloadPoint(w, gripB, rotB, out leftFree) : w.magazinePoint) : w.supportHand;
+            float follow = reloading && w.magazine ? 22f : 9f;
+            leftLocal = haveLeft ? Vector3.Lerp(leftLocal, target, 1f - Mathf.Exp(-follow * Time.deltaTime)) : target;
             haveLeft = true;
+            if (reloading) w.HoldMagazine(leftLocal);
 
             RightGrip(style, out var rf, out var rp, out float rr);
             LeftGrip(style, reloading, out var lf, out var lp, out float lr);
@@ -237,7 +240,8 @@ namespace StansGame
                 if (dr.magnitude > rMax) moved += -dr.normalized * (dr.magnitude - rMax);
                 else if (dr.magnitude < rMin) moved += dr.normalized * (rMin - dr.magnitude);
                 bool slid = false;
-                if (dl.magnitude > lMax)
+                if (leftFree) { }
+                else if (dl.magnitude > lMax)
                 {
                     if (canSlide && sz > szMin + 0.002f) { sz = Mathf.Max(szMin, sz - (dl.magnitude - lMax) * 1.3f); slid = true; }
                     else moved += -dl.normalized * (dl.magnitude - lMax);
@@ -262,7 +266,30 @@ namespace StansGame
                 if (moved.sqrMagnitude < 1e-8f && !slid && !torso) break;
                 gripB += moved * (i < 15 ? 0.9f : 1f);
             }
+            if (leftFree) lWristB = Reachable(lWristB, lShB, reachL * scale);
             solved = true;
+        }
+
+        /// <summary>
+        /// The left hand's point (gun space) during a reload with a loose magazine: to the magazine, pull it out (it
+        /// drops), down to the pouch on the left hip, back with a fresh one, push it home, then pull the cocking handle
+        /// and back onto the gun. The steps are Weapon.MagGrab..CockBack.
+        /// </summary>
+        Vector3 ReloadPoint(Weapon w, Vector3 gripB, Quaternion rotB, out bool free)
+        {
+            float p = w.ReloadProgress;
+            Vector3 mag = w.magazinePoint, outP = mag + w.magazinePull, sup = w.supportHand;
+            // the pouch: in front of the left hip, in body space, then into the gun's space
+            Vector3 pouchB = new Vector3(lShB.x + 0.06f, lShB.y - 0.5f, lShB.z + 0.16f);
+            Vector3 pouch = Quaternion.Inverse(rotB) * (pouchB - gripB);
+            bool cock = w.cockingPoint != Vector3.zero;
+            Vector3 c0 = cock ? w.cockingPoint : mag, c1 = cock ? w.cockingPoint + new Vector3(0f, 0f, -0.07f) : mag;
+            free = p > Weapon.MagOut + 0.02f && p < Weapon.MagBack - 0.04f;
+            float[] t = { 0f, Weapon.MagGrab, Weapon.MagOut, Weapon.MagPouch, Weapon.MagFresh, Weapon.MagBack, Weapon.MagIn, Weapon.CockAt, Weapon.CockBack, 1f };
+            Vector3[] at = { sup, mag, outP, pouch, pouch, outP, mag, c0, c1, sup };
+            for (int i = 1; i < t.Length; i++)
+                if (p <= t[i]) return Vector3.Lerp(at[i - 1], at[i], Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(t[i - 1], t[i], p)));
+            return sup;
         }
 
         static readonly System.Collections.Generic.Dictionary<Weapon, float> stocks = new System.Collections.Generic.Dictionary<Weapon, float>();

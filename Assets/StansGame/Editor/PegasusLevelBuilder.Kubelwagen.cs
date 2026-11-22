@@ -70,7 +70,7 @@ namespace StansGame.EditorTools
             var tc = go.AddComponent<TruckController>();
             tc.displayName = "Kübelwagen"; tc.engineSound = "car_engine";
             tc.wheels = wheels.ToArray(); tc.wheelRadius = 0.34f;
-            tc.maxForwardSpeed = 22f; tc.acceleration = 4.2f; tc.maxSteer = 36f; tc.stepHeight = 0.4f;
+            tc.maxForwardSpeed = 22f; tc.maxReverseSpeed = 4f; tc.acceleration = 3.0f; tc.maxSteer = 36f; tc.stepHeight = 0.4f;   // Typ 82: 25 hp, 80 km/h
             tc.cameraDistance = 7f; tc.cameraHeight = 2f;
             tc.layout = TruckController.SeatLayout.Car;   // four seats: driver, front passenger, two behind
             if (networked)
