@@ -19,7 +19,7 @@ namespace StansGame.EditorTools
         {
             if (!AssetDatabase.IsValidFolder(BritishDir)) AssetDatabase.CreateFolder(Root + "/Models", "British");
             string path = $"{BritishDir}/{file}.fbx";
-            string src = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "_downloads", "British para", downloadName));
+            string src = CharacterImporter.Dl("British para", downloadName);   // _downloads or _downloads/_Characters
             string abs = Path.GetFullPath(Path.Combine(Application.dataPath, "..", path));
             if (!File.Exists(abs) && File.Exists(src)) { File.Copy(src, abs); AssetDatabase.ImportAsset(path); }
             var mi = AssetImporter.GetAtPath(path) as ModelImporter;

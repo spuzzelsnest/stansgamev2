@@ -45,6 +45,7 @@ namespace StansGame
 
         void Awake()
         {
+            grenades.RemoveAll(g => !g); smokes.RemoveAll(g => !g);   // a level built without its grenade prefabs leaves empty slots
             soldier = GetComponent<SoldierController>();
             health = GetComponent<Health>();
             if (primary) primary.Init();

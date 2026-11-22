@@ -332,6 +332,14 @@ namespace StansGame
             else HostOnline();
         }
 
+        /// <summary>The training field (Scenes/ProvingGround.unity): alone, no network, no mission.</summary>
+        void OpenProvingGround()
+        {
+            if (!Application.CanStreamedLevelBeLoaded("ProvingGround")) { status = "The Proving Ground isn't built yet (Stan's Game > Build Proving Ground)"; return; }
+            SceneManager.LoadScene("ProvingGround");
+            Destroy(nm.gameObject);
+        }
+
         void StartMenu()
         {
             Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
@@ -344,7 +352,7 @@ namespace StansGame
             var title = new GUIStyle(GUI.skin.label) { fontSize = 30, alignment = TextAnchor.MiddleCenter, richText = true };
             var head = new GUIStyle(GUI.skin.label) { fontSize = 16, richText = true };
             GUI.Box(new Rect(0, 0, Screen.width, Screen.height), GUIContent.none);
-            GUILayout.BeginArea(new Rect(Screen.width / 2 - 230, Screen.height / 2 - 250, 460, 520));
+            GUILayout.BeginArea(new Rect(Screen.width / 2 - 230, Screen.height / 2 - 285, 460, 590));
             GUILayout.Label("<b>STAN'S GAME</b>", title);
             GUILayout.Label("<i>Normandy - 6 June 1944</i>", new GUIStyle(title) { fontSize = 16 });
             GUILayout.Space(14);
@@ -371,6 +379,9 @@ namespace StansGame
             codeText = GUILayout.TextField(codeText, 12, GUILayout.Height(26));
             if (GUILayout.Button("Join online", GUILayout.Width(90), GUILayout.Height(26))) JoinOnline();
             GUILayout.EndHorizontal();
+
+            GUILayout.Space(16);
+            if (GUILayout.Button("Proving Ground  (try the guns, vehicles and characters)", GUILayout.Height(32))) OpenProvingGround();
 
             GUI.enabled = true;
             GUILayout.Space(10);

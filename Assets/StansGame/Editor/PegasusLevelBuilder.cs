@@ -139,8 +139,12 @@ namespace StansGame.EditorTools
             }
         }
 
+        /// <summary>Set while building a level on flat ground with no terrain (the Proving Ground).</summary>
+        static bool flatGround;
+
         static float GroundAt(Vector3 p)
         {
+            if (flatGround || !terrainRef && smeRaw == null) return 0f;
             if (smeRaw != null) return SmeY(p.x, p.z);   // Sainte-Mere-Eglise: straight from the height file
             // read the heightmap directly: Terrain.SampleHeight returns 0 on a terrain created in the same editor call
             var td = terrainRef.terrainData; var tp = terrainRef.transform.position;
@@ -2059,6 +2063,9 @@ namespace StansGame.EditorTools
             if (!asset) return null;
             var m = (GameObject)PrefabUtility.InstantiatePrefab(asset, parent);
             m.name = "Model"; m.transform.localPosition = Vector3.zero; m.transform.localRotation = Quaternion.identity;
+            // measure it square to its parent: renderer bounds are world boxes, and a vehicle parked at 90 or 270
+            // degrees would swap length and width and get turned sideways
+            var parentRot = parent.rotation; parent.rotation = Quaternion.identity;
             var rs = m.GetComponentsInChildren<Renderer>();
             if (rs.Length > 0)
             {
@@ -2070,6 +2077,7 @@ namespace StansGame.EditorTools
                 var b2 = rs[0].bounds; foreach (var r in rs) b2.Encapsulate(r.bounds);
                 m.transform.position += Vector3.up * (parent.position.y - b2.min.y);
             }
+            parent.rotation = parentRot;
             foreach (var c in m.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);
             return m;
         }
@@ -2087,6 +2095,17 @@ namespace StansGame.EditorTools
             var m = (GameObject)PrefabUtility.InstantiatePrefab(asset, t);
             PrefabUtility.UnpackPrefabInstance(m, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
             m.name = "Model"; m.transform.localPosition = Vector3.zero; m.transform.localRotation = asset.transform.localRotation;
+            // the camouflage: the FBX's materials don't carry their textures, so link them here
+            string pzTex = $"{VehicleImporter_Dir}/Textures/PanzerIV_Camo";
+            var body = TexMat("PzIV_Body_Camo", $"{pzTex}/Body_D.png", 0.25f);
+            var chain = TexMat("PzIV_Tracks_Steel", $"{pzTex}/Chain_D.png", 0.35f, 0.4f);
+            foreach (var r in m.GetComponentsInChildren<Renderer>(true))
+            {
+                var ms = r.sharedMaterials;
+                for (int i = 0; i < ms.Length; i++)
+                    ms[i] = ms[i] && ms[i].name.ToLowerInvariant().Contains("track") ? chain : body;
+                r.sharedMaterials = ms;
+            }
             var tm = FindDeep(m.transform, "PzIV_Turret"); var gm = FindDeep(m.transform, "PzIV_Gun"); var mz = FindDeep(m.transform, "PzIV_Muzzle");
             if (!tm || !gm || !mz) { Object.DestroyImmediate(m); return false; }
             // the gun must point down +Z (the drive direction)

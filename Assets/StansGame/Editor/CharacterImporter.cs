@@ -26,6 +26,21 @@ namespace StansGame.EditorTools
 
         static string ProjectRoot => Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
         static string Downloads => Path.Combine(ProjectRoot, "_downloads");
+
+        /// <summary>A download by its own folder name, wherever Joan has sorted it: straight in _downloads, or in one of
+        /// her sorting folders (_Characters, _Sound, ...). Falls back to the old place if it is nowhere.</summary>
+        internal static string Dl(params string[] parts)
+        {
+            string rel = Path.Combine(parts), direct = Path.Combine(Downloads, rel);
+            if (File.Exists(direct) || Directory.Exists(direct)) return direct;
+            if (Directory.Exists(Downloads))
+                foreach (var sub in Directory.GetDirectories(Downloads, "_*"))
+                {
+                    string p = Path.Combine(sub, rel);
+                    if (File.Exists(p) || Directory.Exists(p)) return p;
+                }
+            return direct;
+        }
         static string OldHeroDir => Path.GetFullPath(Path.Combine(ProjectRoot, "..", "stansgame", "Assets", "Models", "Character Models", "Hero Artwork"));
 
         static readonly string[] HeroClips =
@@ -120,12 +135,12 @@ namespace StansGame.EditorTools
             }
 
             // 2. German soldier textures (PNG) downloaded by the user
-            CopyDir(Path.Combine(Downloads, "German soldier", "textures"), Abs($"{ModelDir}/GermanSoldier/Textures"), "*.png");
+            CopyDir(Dl("German soldier", "textures"), Abs($"{ModelDir}/GermanSoldier/Textures"), "*.png");
             // 3. weapon textures that stay in the user's downloads (models come pre-aligned in the packs)
-            CopyDir(Path.Combine(Downloads, "British sten-mk-ii", "textures"), Abs($"{ModelDir}/Sten/Textures"), "Sten_Gun_low_*.png");
+            CopyDir(Dl("British sten-mk-ii", "textures"), Abs($"{ModelDir}/Sten/Textures"), "Sten_Gun_low_*.png");
             foreach (var t in new[] { "A_albedo.jpg", "A_normal.png", "B_albedo.jpg", "B_normal.png" })
             {
-                string s = Path.Combine(Downloads, "German maschinengewehr-mg-42", "textures", t);
+                string s = Dl("German maschinengewehr-mg-42", "textures", t);
                 if (File.Exists(s)) { Directory.CreateDirectory(Abs($"{ModelDir}/Weapons/MG42Tex")); File.Copy(s, Abs($"{ModelDir}/Weapons/MG42Tex/{t}"), true); }
             }
             // 4. Hero animations from the original 2012 Stan's Game

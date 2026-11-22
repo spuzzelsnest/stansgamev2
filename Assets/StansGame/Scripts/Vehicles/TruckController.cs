@@ -186,7 +186,7 @@ namespace StansGame
             if (layout == SeatLayout.Car)
             {
                 float fz = frontZ - 0.95f, rz = frontZ - 1.85f;
-                seats = new[] { new Vector3(-0.33f, 0.55f, fz), new Vector3(0.33f, 0.55f, fz), new Vector3(-0.33f, 0.65f, rz), new Vector3(0.33f, 0.65f, rz) };
+                seats = new[] { new Vector3(-0.33f, 0.68f, fz), new Vector3(0.33f, 0.68f, fz), new Vector3(-0.33f, 0.74f, rz), new Vector3(0.33f, 0.74f, rz) };   // hips on the cushions
                 cabSeats = 0;   // an open car: everyone keeps his rifle
                 return;
             }

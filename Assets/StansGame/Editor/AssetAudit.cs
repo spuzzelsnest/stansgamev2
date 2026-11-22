@@ -130,8 +130,9 @@ namespace StansGame.EditorTools
                 if (!rb.isKinematic) issues.Add($"'{n}' is not kinematic while alive (it will flop while he walks)");
                 foreach (var c in rb.GetComponents<Collider>())
                 {
-                    if (c is CapsuleCollider cc && (cc.radius <= 0.001f || cc.height <= 0.001f || float.IsNaN(cc.height))) issues.Add($"'{n}': capsule collider of zero size");
-                    if (c is BoxCollider bc && (bc.size.x <= 0.001f || bc.size.y <= 0.001f || bc.size.z <= 0.001f)) issues.Add($"'{n}': box collider of zero size");
+                    float k = Mathf.Abs(c.transform.lossyScale.x);   // in metres: some rigs import with a 100x bone scale
+                    if (c is CapsuleCollider cc && (cc.radius * k <= 0.005f || cc.height * k <= 0.005f || float.IsNaN(cc.height))) issues.Add($"'{n}': capsule collider of zero size");
+                    if (c is BoxCollider bc && (bc.size.x * k <= 0.005f || bc.size.y * k <= 0.005f || bc.size.z * k <= 0.005f)) issues.Add($"'{n}': box collider of zero size");
                     if (c.isTrigger) issues.Add($"'{n}': its collider is a trigger (falls through the ground)");
                 }
                 var j = rb.GetComponent<CharacterJoint>();

@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/StansGame/Scenes/ChateauBenouville.unity
     guid: 57f8220c1ac19c34b8025d7a9ac9ef4f
+  - enabled: 1
+    path: Assets/StansGame/Scenes/ProvingGround.unity
+    guid: 1ac86d2367c7eba41ac24491a123bb37
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

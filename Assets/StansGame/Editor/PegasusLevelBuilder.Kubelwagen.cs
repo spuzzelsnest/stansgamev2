@@ -43,6 +43,30 @@ namespace StansGame.EditorTools
             var rb = go.AddComponent<Rigidbody>(); rb.isKinematic = true;
             var wheels = new System.Collections.Generic.List<Transform>();
             if (m) foreach (var t in m.GetComponentsInChildren<Transform>(true)) if (t.name.StartsWith("Wheel_")) wheels.Add(t);
+            // the bonnet (front wheels, Wheel_F*) must lead, down +Z: the way W drives and the front pair steers
+            float fz = 0f, rz = 0f; int nf = 0, nr = 0;
+            foreach (var w in wheels) { float z = go.transform.InverseTransformPoint(w.position).z; if (w.name.StartsWith("Wheel_F")) { fz += z; nf++; } else { rz += z; nr++; } }
+            if (nf > 0 && nr > 0 && fz / nf < rz / nr) m.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * m.transform.localRotation;
+            // the interior: the converted model lost its floor pan and seats (too thin for the polygon cut), so a
+            // plank floor, two front seats and the rear bench, where TruckController seats the driver and passengers
+            if (m && nf > 0)
+            {
+                float front = 0f; foreach (var w in wheels) if (w.name.StartsWith("Wheel_F")) front += go.transform.InverseTransformPoint(w.position).z / nf;
+                float sf = front - 0.95f, sr = front - 1.85f;   // the same seat rows as TruckController.MakeSeats (Car)
+                var inside = new GameObject("Interior").transform; inside.SetParent(go.transform, false);
+                var seatMat = Mat("Kw_Seat", new Color(0.20f, 0.17f, 0.12f), 0.2f);
+                var floorMat = Mat("Kw_Floor", new Color(0.22f, 0.19f, 0.13f), 0.1f);
+                Prim(PrimitiveType.Cube, "Floor", inside, new Vector3(0f, 0.36f, (sf + sr) * 0.5f + 0.15f), Vector3.zero, new Vector3(1.24f, 0.04f, 2.05f), floorMat);
+                foreach (float x in new[] { -0.33f, 0.33f })
+                {
+                    Prim(PrimitiveType.Cube, "Front seat", inside, new Vector3(x, 0.55f, sf), Vector3.zero, new Vector3(0.46f, 0.12f, 0.46f), seatMat);
+                    Prim(PrimitiveType.Cube, "Front seat back", inside, new Vector3(x, 0.84f, sf - 0.26f), new Vector3(-10f, 0f, 0f), new Vector3(0.46f, 0.5f, 0.08f), seatMat);
+                    Prim(PrimitiveType.Cube, "Front seat frame", inside, new Vector3(x, 0.44f, sf), Vector3.zero, new Vector3(0.36f, 0.12f, 0.36f), seatMat);
+                }
+                Prim(PrimitiveType.Cube, "Rear bench", inside, new Vector3(0f, 0.61f, sr), Vector3.zero, new Vector3(1.16f, 0.12f, 0.46f), seatMat);
+                Prim(PrimitiveType.Cube, "Rear bench back", inside, new Vector3(0f, 0.9f, sr - 0.26f), new Vector3(-10f, 0f, 0f), new Vector3(1.16f, 0.5f, 0.08f), seatMat);
+                Prim(PrimitiveType.Cube, "Rear bench base", inside, new Vector3(0f, 0.47f, sr), Vector3.zero, new Vector3(1.16f, 0.2f, 0.4f), seatMat);
+            }
             var tc = go.AddComponent<TruckController>();
             tc.displayName = "Kübelwagen"; tc.engineSound = "car_engine";
             tc.wheels = wheels.ToArray(); tc.wheelRadius = 0.34f;
