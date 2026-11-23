@@ -319,7 +319,13 @@ namespace StansGame
             var tex = portraits != null && side < portraits.Length ? portraits[side] : null;
             if (!tex) return 0f;
             float h = r.height - 4 * s, w = h * tex.width / tex.height;
-            GUI.DrawTexture(new Rect(r.xMax - w - 2 * s, r.y + 2 * s, w, h), tex, ScaleMode.ScaleAndCrop);
+            var pr = new Rect(r.xMax - w - 2 * s, r.y + 2 * s, w, h);
+            GUI.DrawTexture(pr, tex, ScaleMode.ScaleAndCrop);
+            // who you play, on a dark strip along the bottom of his picture
+            string[] who = { "YOU PLAY\nBritish para", "YOU PLAY\nUS paratrooper", "LATER\nGerman grenadier" };
+            var strip = new Rect(pr.x, pr.yMax - 26 * s, pr.width, 26 * s);
+            Fill(strip, new Color(0f, 0f, 0f, 0.65f));
+            GUI.Label(strip, who[Mathf.Clamp(side, 0, 2)], Style(9 * s, side == 2 ? DarkGrey : Ink, true, TextAnchor.MiddleCenter));
             return w;
         }
 

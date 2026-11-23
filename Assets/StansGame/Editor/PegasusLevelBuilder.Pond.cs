@@ -129,7 +129,13 @@ namespace StansGame.EditorTools
                     var b = new GameObject("Bush"); b.transform.SetParent(g); b.transform.position = Edge(deg, s);
                     AddSmallTree(b, 4, Random.Range(1.3f, 2.4f));
                 }
-                Label(g, "Pond - swimming practice", Edge(90f, 1.3f) + Vector3.up * 1.6f, 0.06f, new Color(1f, 0.92f, 0.7f), Quaternion.Euler(0f, 180f, 0f));
+                // a small painted board on a post at the shore you wade in from (the floating text was far too big)
+                var signAt = Edge(90f, 1.35f);
+                var sign = new GameObject("Sign: swimming practice").transform; sign.SetParent(g); sign.position = signAt;
+                var board = Mat("Pond_Sign_Board", new Color(0.82f, 0.78f, 0.66f), 0.1f);
+                Prim(PrimitiveType.Cube, "Post", sign, new Vector3(0f, 0.6f, 0f), Vector3.zero, new Vector3(0.08f, 1.2f, 0.08f), wood, true);
+                Prim(PrimitiveType.Cube, "Board", sign, new Vector3(0f, 1.15f, 0.05f), Vector3.zero, new Vector3(1.1f, 0.34f, 0.03f), board);   // on the village (north) side
+                FitLabel(sign, "SWIMMING PRACTICE", signAt + new Vector3(0f, 1.15f, 0.072f), 1.0f, 0.24f, new Color(0.12f, 0.1f, 0.08f), Quaternion.Euler(0f, 180f, 0f));
             }
             finally { flatGround = wasFlat; }
         }

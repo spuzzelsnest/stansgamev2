@@ -48,7 +48,14 @@ namespace StansGame.EditorTools
             // the turret number (30-35 cm digits, black with a white edge) on both sides of the turret Schuerzen
             ("Panzer IV", new[] { "Wirbelwind", "Flakpanzer" }, new[] { MkAt("Balkenkreuz", 'L', -0.1f, 1.3f, 0.55f), MkAt("Balkenkreuz", 'R', -0.1f, 1.3f, 0.55f),
                                       MkAt("Balkenkreuz", 'B', 0f, 1.25f, 0.45f), MkAt("Turret_421", 'L', 0.05f, 2.05f, 0.33f, 2.67f), MkAt("Turret_421", 'R', 0.05f, 2.05f, 0.33f, 2.67f) }),
-            ("Hotchkiss", null, new[] { Mk("Balkenkreuz_Outline", 'L', -0.2f, 0.45f, 0.42f), Mk("Balkenkreuz_Outline", 'R', -0.2f, 0.45f, 0.42f) }),
+            // the converted Hotchkiss (Marder I on H39): the cross on the sides of the open fighting compartment, not low on
+            // the track guards where it hung in the air (printscreen 41)
+            ("Hotchkiss", null, new[] { MkAt("Balkenkreuz_Outline", 'L', -0.15f, 1.5f, 0.42f), MkAt("Balkenkreuz_Outline", 'R', -0.15f, 1.5f, 0.42f) }),
+            // the other German armour carried the cross too: on the superstructure or the hull sides, and the stern
+            ("Hetzer", null, new[] { MkAt("Balkenkreuz", 'L', -0.05f, 1.25f, 0.45f), MkAt("Balkenkreuz", 'R', -0.05f, 1.25f, 0.45f), MkAt("Balkenkreuz", 'B', 0f, 1.1f, 0.4f) }),
+            ("Marder", null, new[] { MkAt("Balkenkreuz_Outline", 'L', -0.2f, 1.55f, 0.42f), MkAt("Balkenkreuz_Outline", 'R', -0.2f, 1.55f, 0.42f) }),
+            ("StuG", null, new[] { MkAt("Balkenkreuz", 'L', -0.1f, 1.45f, 0.5f), MkAt("Balkenkreuz", 'R', -0.1f, 1.45f, 0.5f), MkAt("Balkenkreuz", 'B', 0f, 1.2f, 0.42f) }),
+            ("Wirbelwind", null, new[] { MkAt("Balkenkreuz", 'L', -0.1f, 1.3f, 0.55f), MkAt("Balkenkreuz", 'R', -0.1f, 1.3f, 0.55f), MkAt("Balkenkreuz", 'B', 0f, 1.25f, 0.45f) }),
             ("Kübelwagen", null, new[] { Mk("Plate_WH", 'F', 0f, 0.28f, 0.11f, 4f), Mk("Plate_WH", 'B', 0f, 0.35f, 0.11f, 4f) }),
             ("Kettenkrad", null, new[] { Mk("Plate_WH", 'B', 0f, 0.55f, 0.1f, 4f) }),
             ("Opel Blitz", null, new[] { Mk("Plate_WH", 'F', 0f, 0.14f, 0.12f, 4f), Mk("Plate_WH", 'B', 0f, 0.16f, 0.12f, 4f) }),
@@ -183,10 +190,37 @@ namespace StansGame.EditorTools
                         case 'B': o = new Vector3(x, y, b.min.z - 1f); d = Vector3.forward; break;
                         default: o = new Vector3(b.center.x, b.max.y + 1f, z); d = Vector3.down; up = Vector3.forward; break;
                     }
-                    Vector3 wo = v.TransformPoint(o), wd = v.TransformDirection(d);
-                    var hits = Physics.RaycastAll(wo, wd, b.size.magnitude + 3f).Where(h => mine.Contains(h.collider) && (!tur || h.collider.transform.IsChildOf(tur))).OrderBy(h => h.distance).ToArray();
-                    if (hits.Length == 0) { line.Append($" {mk.tex}@{mk.side} missed;"); continue; }
-                    var hit = hits[0];
+                    // the mark's two axes across the surface (in the vehicle's frame)
+                    Vector3 ax1 = mk.side == 'L' || mk.side == 'R' ? Vector3.forward : Vector3.right;
+                    Vector3 ax2 = mk.side == 'T' || mk.side == 'U' ? Vector3.forward : Vector3.up;
+                    float hw = mk.size * mk.aspect * 0.45f, hh = mk.size * 0.45f;
+                    var tur0 = tur;
+                    bool CastMark(Vector3 from, out RaycastHit h)
+                    {
+                        var all = Physics.RaycastAll(v.TransformPoint(from), v.TransformDirection(d), b.size.magnitude + 3f)
+                            .Where(rh => mine.Contains(rh.collider) && (!tur0 || rh.collider.transform.IsChildOf(tur0))).OrderBy(rh => rh.distance).ToArray();
+                        h = all.Length > 0 ? all[0] : default; return all.Length > 0;
+                    }
+                    // the whole mark must lie on one surface: its corners hit within a few cm of its middle (else it hung
+                    // in the air off a track guard or an edge - printscreen 41). Try the given spot, then a little round it.
+                    RaycastHit hit = default; bool found = false, flat = false;
+                    // spots nearest first, out to 0.6 m along and 0.5 m up or down
+                    var spots = new List<(float du, float dv)>();
+                    for (float a1 = -0.6f; a1 <= 0.61f; a1 += 0.15f) for (float a2 = -0.5f; a2 <= 0.51f; a2 += 0.1f) spots.Add((a1, a2));
+                    spots.Sort((p1, p2) => (p1.du * p1.du + p1.dv * p1.dv).CompareTo(p2.du * p2.du + p2.dv * p2.dv));
+                    foreach (var (du, dv) in spots)
+                    {
+                        var c0 = o + ax1 * du + ax2 * dv;
+                        if (!CastMark(c0, out var h0)) continue;
+                        if (!found) { hit = h0; found = true; }
+                        bool ok = true;
+                        foreach (var (s1, s2) in new[] { (1f, 1f), (1f, -1f), (-1f, 1f), (-1f, -1f) })
+                            if (!CastMark(c0 + ax1 * s1 * hw + ax2 * s2 * hh, out var hc) || Mathf.Abs(hc.distance - h0.distance) > 0.06f + 0.25f * mk.size) { ok = false; break; }
+                        if (ok) { hit = h0; flat = true; break; }
+                    }
+                    if (!found) { line.Append($" {mk.tex}@{mk.side} missed;"); continue; }
+                    if (!flat) line.Append(" (uneven)");
+                    Vector3 wd = v.TransformDirection(d);
                     if (Vector3.Dot(hit.normal, -wd) < 0.2f) { line.Append($" {mk.tex}@{mk.side} too slanted;"); continue; }
                     var q = GameObject.CreatePrimitive(PrimitiveType.Quad);
                     Object.DestroyImmediate(q.GetComponent<Collider>());

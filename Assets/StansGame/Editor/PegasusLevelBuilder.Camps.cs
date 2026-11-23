@@ -388,7 +388,13 @@ namespace StansGame.EditorTools
             CamoNet(g, new Vector3(GermanParkX, 0f, -30f), new Vector2(16f, 22f), wood);
             // the field kitchen on its Opel (the "Gulaschkanone") and a fire by the tents
             var fk = PgModel($"{PgProps}/FieldKitchenTruck.fbx", g, new Vector3(66f, 0f, -36f), 0f, $"{PgProps}/Textures/FieldKitchenTruck", "Field kitchen (Opel Blitz)");
-            if (fk) { SolidBox(fk); keepOut.Add(WorldBounds(fk)); pgWorn.Add(new Vector3(66f, 6f, -36f)); }
+            if (fk)
+            {
+                // it stood inside the command tent (printscreen 40): drawn back south until it is clear of the tent
+                var tb = WorldBounds(cmd); tb.Expand(new Vector3(1.5f, 0f, 1.5f));
+                for (int i = 0; i < 30 && WorldBounds(fk).Intersects(tb); i++) fk.transform.position += Vector3.back;
+                SolidBox(fk); keepOut.Add(WorldBounds(fk)); var fp = fk.transform.position; pgWorn.Add(new Vector3(fp.x, 6f, fp.z));
+            }
             CampFire(g, new Vector3(50f, 0f, -32f));
             // the field bunker, the timber for the next one, fuel drums, stores
             foreach (var (f, p, y) in new[] { ("FieldBunker", new Vector3(122f, 0f, 70f), 270f), ("TimberPile", new Vector3(76f, 0f, 96f), 10f), ("TimberWale", new Vector3(84f, 0f, 98f), 80f),
