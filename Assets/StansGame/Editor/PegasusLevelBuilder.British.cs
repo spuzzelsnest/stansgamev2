@@ -84,10 +84,13 @@ namespace StansGame.EditorTools
         /// Puts the rigged British model on a soldier (instead of the blockout capsule): animator, ragdoll.
         /// Returns false when the model is not there.
         /// </summary>
-        static bool AddBritishBody(GameObject root, bool officer = false)
+        static bool AddBritishBody(GameObject root, bool officer = false, string body = null)
         {
             LoadBritishModels();
             var model = officer && britishOfficerModel ? britishOfficerModel : britishParaModel;
+            // a line infantryman (the 2nd Royal Warwicks): Joan's British_Infantry, battledress and Brodie helmet
+            var bodyModel = body != null ? HumanModel($"{CharDir}/{body}/{body}.fbx") : null;
+            if (bodyModel) model = bodyModel;
             var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(Root + "/Animations/Soldier.controller");
             if (!model) return false;
             var inst = (GameObject)PrefabUtility.InstantiatePrefab(model);
@@ -95,7 +98,8 @@ namespace StansGame.EditorTools
             inst.transform.SetParent(root.transform, false);
             // stand him on the ground: 1.78 m to the top of the helmet (a man of about 1.73 m, the average then)
             var rs = inst.GetComponentsInChildren<Renderer>();
-            var mat = BritishMat(model == britishOfficerModel ? "British_Officer" : "British_Para");
+            var mat = bodyModel ? TexMat("Char_" + body, $"{CharDir}/{body}/{body}_BaseColor.jpg", 0.25f)
+                    : BritishMat(model == britishOfficerModel ? "British_Officer" : "British_Para");
             foreach (var r in rs) { var ms = r.sharedMaterials; for (int i = 0; i < ms.Length; i++) ms[i] = mat; r.sharedMaterials = ms; }
             Bounds b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds);
             if (b.size.y > 0.1f) inst.transform.localScale *= 1.78f / b.size.y;

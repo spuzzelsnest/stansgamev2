@@ -105,6 +105,7 @@ namespace StansGame
             else if (w.Contains("kar")) rec = Recorded("kar98_shot");                       // the shot and the bolt worked
             else if (w.Contains("lee") || w.Contains("enfield")) rec = Recorded("enfield_shot");
             else if (w.Contains("thompson")) rec = Recorded("thompson_shot");
+            else if (w.Contains("browning") || w.Contains("50cal") || w.Contains(".50") || w.Contains("m2hb")) rec = Recorded("m2_shot");   // the .50 M2HB
             else if (w.Contains("mg42") || w.Contains("mg 42") || w.Contains("mg")) rec = Recorded("mg42_shot");   // one round of the "buzz saw"
             else if (w.Contains("bren")) rec = Recorded("bren_shot");
             if (rec) return rec;
@@ -121,6 +122,8 @@ namespace StansGame
         public static AudioClip ReloadClip(string weapon)
         {
             string w = (weapon ?? "").ToLowerInvariant();
+            if (w.Contains("pak") || w.Contains("pounder") || w.Contains("atgun") || w.Contains("anti-tank")) return Recorded("atgun_reload");
+            if (w.Contains("mortar")) return Recorded("mortar_load");
             if (w.Contains("carbine")) return Recorded("carbine_reload");
             if (w.Contains("mg")) return Recorded("mg42_reload");
             if (w.Contains("bren")) return Recorded("bren_reload");

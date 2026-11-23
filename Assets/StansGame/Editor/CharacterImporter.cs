@@ -12,7 +12,7 @@ namespace StansGame.EditorTools
     /// Menu: Stan's Game > Import Characters &amp; Weapons.
     /// Pulls models from the project's _downloads folder and from the old 2012 project, configures them,
     /// and builds ready-to-use prefabs:
-    ///   German_Rifleman / German_MG     (rigged Wehrmacht soldier, humanoid, ragdoll, retargeted Hero animations)
+    ///   (German_Rifleman / German_MG / German_SMG: retired 23 Nov - the Germans are PegasusLevelBuilder.Germans.cs)
     ///   Weapon_Sten / Weapon_Bren        (real models, barrel along +Z, muzzle marker)
     /// Model credits: see Assets/StansGame/CREDITS.txt.
     /// </summary>
@@ -92,17 +92,11 @@ namespace StansGame.EditorTools
                 BuildWeaponPrefab("M1911", $"{ModelDir}/Weapons/M1911.fbx", 0.216f, new Dictionary<string, Material>
                     { { "M1911", LitMat("M1911", Tex($"{ModelDir}/Weapons/M1911_BaseColor.jpg"), Tex($"{ModelDir}/Weapons/M1911_Normal.png", true), Tex($"{ModelDir}/Weapons/M1911_MetallicSmoothness.png"), 0.5f) } }, 0.22f, 0.45f);
 
-                EditorUtility.DisplayProgressBar("Stan's Game", "Configuring German soldier", 0.7f);
-                var german = SetupGermanModel();
-                if (german)
-                {
-                    BuildSoldierPrefab("German_Rifleman", german, controller, Faction.German, kar, "Kar98k", 55f, 30f, false, 5);
-                    BuildSoldierPrefab("German_MG", german, controller, Faction.German, mg42, "MG42", 20f, 1200f, true, 50);
-                    BuildSoldierPrefab("German_SMG", german, controller, Faction.German, mp40, "MP40", 30f, 500f, true, 32);
-                }
+                // the old German_Rifleman / German_MG / German_SMG (the first "German soldier" download, stiff joints) are
+                // retired (23 Nov): the Germans are the Normandy Heer models now (PegasusLevelBuilder.Germans.cs)
                 WriteCredits();
                 AssetDatabase.SaveAssets();
-                Debug.Log($"Stan's Game: import done. Hero avatar: {(heroAvatar ? "ok" : "MISSING")}, animator: {(controller ? "ok" : "missing")}, Sten: {(sten ? "ok" : "missing")}, Bren: {(bren ? "ok" : "missing")}, German: {(german ? "ok" : "missing")}");
+                Debug.Log($"Stan's Game: import done. Hero avatar: {(heroAvatar ? "ok" : "MISSING")}, animator: {(controller ? "ok" : "missing")}, Sten: {(sten ? "ok" : "missing")}, Bren: {(bren ? "ok" : "missing")}, Germans: the Normandy Heer models (PegasusLevelBuilder.Germans.cs)");
             }
             finally { EditorUtility.ClearProgressBar(); }
         }

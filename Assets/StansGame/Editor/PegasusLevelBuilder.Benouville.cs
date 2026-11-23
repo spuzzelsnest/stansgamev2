@@ -143,7 +143,12 @@ namespace StansGame.EditorTools
             var macdonald = Group("C Company platoon (Lt MacDonald), 19:00", british);
             for (int i = 0; i < 8; i++) Para(i == 0 ? officer : i % 3 == 0 ? bren : rifle, i == 0 ? "Lt MacDonald" : "C Coy platoon", macdonald, new Vector3(CaenRoadX(-260f) + (i % 2) * 3f - 1.5f, 0f, -240f + i * 3f), 180f);
             var warwicks = Group("2nd Royal Warwickshire Regiment (relief)", british);
-            for (int i = 0; i < 12; i++) Para(i % 4 == 0 ? bren : rifle, "2nd Royal Warwicks", warwicks, new Vector3(-260f + (i % 2) * 3f - 1.5f, 0f, 60f + i * 3f), 180f);
+            // line infantry of the 3rd Infantry Division, not paratroopers: battledress and Brodie helmets (British_Infantry);
+            // rebuilt each time so a changed model reaches them
+            GameObject Fresh(string n, System.Func<GameObject> make) { AssetDatabase.DeleteAsset($"{PrefabDir}/{n}.prefab"); return make() ?? rifle; }
+            var wRifle = Fresh("WarwicksRifleman", () => BuildSoldierPrefab("WarwicksRifleman", Faction.British, new Color(0.40f, 0.37f, 0.26f), "Lee-Enfield", 70f, 30f, false, 10, false, "British_Infantry"));
+            var wBren = Fresh("WarwicksBrenGunner", () => BuildSoldierPrefab("WarwicksBrenGunner", Faction.British, new Color(0.40f, 0.37f, 0.26f), "Bren Mk II", 45f, 520f, true, 30, false, "British_Infantry"));
+            for (int i = 0; i < 12; i++) Para(i % 4 == 0 ? wBren : wRifle, "2nd Royal Warwicks", warwicks, new Vector3(-260f + (i % 2) * 3f - 1.5f, 0f, 60f + i * 3f), 180f);
 
             // Germans
             var germans = Group("Germans", actors);
@@ -238,7 +243,8 @@ namespace StansGame.EditorTools
             AdoptBattle("ChateauBenouville", root, Faction.German, BenouvilleCommanders);   // the Germans attack, A Company holds
 
             DressBuildings(root, "ChateauBenouville");
-            DressVehicles(root, "ChateauBenouville");   // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
+            DressVehicles(root, "ChateauBenouville"); DressFoliage(root, "ChateauBenouville");   // leaf and bark textures on the crowns, hedges and trunks (PegasusLevelBuilder.Foliage.cs)
+              // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
             string path = SceneDir + "/ChateauBenouville.unity";
             EditorSceneManager.SaveScene(scene, path);
 #if STANS_NET

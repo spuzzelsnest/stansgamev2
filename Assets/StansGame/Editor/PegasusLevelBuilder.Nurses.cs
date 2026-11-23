@@ -108,6 +108,12 @@ namespace StansGame.EditorTools
             // and at the aid post in the village
             Woman(g, "Nurse at the aid post", AidPost + new Vector3(-6f, 0f, -1.5f), -90f, "White", brown);
             Woman(g, "Villager", AidPost + new Vector3(-6.5f, 0f, 3f), -110f, "Brown", fair);
+            // the second nurse (Joan's Nurse_Vintage: white uniform and cap) - one at the portico with Madame Vion, one
+            // helping at the aid post (Vion's maternity home took in the wounded of both sides, 6 June)
+            Vector3 n1 = front + outDir * 2.2f - side * 2.8f, n2 = AidPost + new Vector3(-4.5f, 0f, -3.2f);
+            n1.y = GroundAt(n1); n2.y = GroundAt(n2);
+            StoryCivilian(g, "Nurse_Vintage", "Nurse (white uniform and cap)", n1, face + 35f, 1.62f);
+            StoryCivilian(g, "Nurse_Vintage", "Nurse at the aid post (white uniform and cap)", n2, -60f, 1.6f);
             return vion ? vion.transform : null;
         }
     }

@@ -128,15 +128,25 @@ namespace StansGame
             if (barrel) barrel.localPosition = barrelRest + Vector3.back * recoil;
         }
 
+        float reloadSoundAt = -1f;
+
         void LateUpdate()
         {
+            if (reloadSoundAt > 0f && Time.time >= reloadSoundAt)
+            {
+                reloadSoundAt = -1f;
+                var rc = Sfx.ReloadClip("atgun");
+                if (rc && audioSrc) audioSrc.PlayOneShot(rc, 0.8f);
+            }
             if (!gunner || !cam || !elevate) return;
             bool sightView = Mouse.current != null && Mouse.current.rightButton.isPressed;
             Quaternion look = elevate.rotation;
             Vector3 eye = sightView && sight ? sight.position
                         : (traverse ? traverse.position : transform.position) + (traverse ? traverse : transform).rotation * eyeOffset;
             cam.transform.SetPositionAndRotation(eye, sightView ? look : Quaternion.Euler(look.eulerAngles.x + 6f, look.eulerAngles.y, 0f));
-            cam.nearClipPlane = 0.05f;
+            // through the sight the eye sits behind the shield: clip the gun's own shield and breech away so the view
+            // is not a solid plate (Joan's PaK test, 23 Nov)
+            cam.nearClipPlane = sightView ? 1.6f : 0.05f;
             cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, sightView ? 18f : 55f, Time.deltaTime * 10f);
         }
 
@@ -167,6 +177,7 @@ namespace StansGame
             recoil = recoilLength;
             var clip = Sfx.GunClip("tank");
             if (clip) audioSrc.PlayOneShot(clip, 1f);
+            reloadSoundAt = Time.time + Mathf.Min(1f, reloadTime * 0.3f);   // the crew throws the breech open and loads
             MuzzleBlast(muzzle.position, dir);
             NoiseEvents.Report(transform.position, 450f, gameObject);
             return true;
@@ -274,7 +285,31 @@ namespace StansGame
 
         // ------------------------------------------------------------------ gunner's view and prompts
 
-        static Texture2D px;
+        static Texture2D px, binoMask;
+
+        /// <summary>Black with two overlapping clear circles and a soft edge (2:1, drawn the screen's height).</summary>
+        static Texture2D BinocularMask()
+        {
+            if (binoMask) return binoMask;
+            const int H = 512, W = 1024;
+            binoMask = new Texture2D(W, H, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, name = "Binocular mask" };
+            var c = new Color32[W * H];
+            float r = 0.46f * H, off = 0.27f * H, edge = 10f;
+            for (int y = 0; y < H; y++)
+                for (int x = 0; x < W; x++)
+                {
+                    float dy = y - H * 0.5f;
+                    float d1 = Mathf.Sqrt((x - (W * 0.5f - off)) * (x - (W * 0.5f - off)) + dy * dy);
+                    float d2 = Mathf.Sqrt((x - (W * 0.5f + off)) * (x - (W * 0.5f + off)) + dy * dy);
+                    float inside = Mathf.Clamp01((r - Mathf.Min(d1, d2)) / edge);
+                    // a faint darkening towards the rim, as through real glass
+                    float vign = Mathf.Clamp01(Mathf.Min(d1, d2) / r);
+                    byte a = (byte)(255f * (1f - inside * (1f - 0.35f * vign * vign * vign)));
+                    c[y * W + x] = new Color32(0, 0, 0, a);
+                }
+            binoMask.SetPixels32(c); binoMask.Apply(false, true);
+            return binoMask;
+        }
 
         void OnGUI()
         {
@@ -298,11 +333,16 @@ namespace StansGame
                     }
                 }
                 for (int i = 1; i <= 4; i++) GUI.DrawTexture(new Rect(cx - 6f * s, cy + 70f * s + i * 18f * s, 12f * s, 2f * s), px);
-                // the edge of the eyepiece
-                GUI.color = new Color(0f, 0f, 0f, 0.85f);
-                float r = Screen.height * 0.46f;
-                GUI.DrawTexture(new Rect(0, 0, cx - r, Screen.height), px);
-                GUI.DrawTexture(new Rect(cx + r, 0, Screen.width - cx - r, Screen.height), px);
+                // the binocular view: two overlapping round fields with the target in the middle, black round them
+                GUI.color = Color.white;
+                float h = Screen.height, w = 2f * h;
+                GUI.DrawTexture(new Rect(cx - w * 0.5f, 0, w, h), BinocularMask());
+                GUI.color = Color.black;
+                if (cx - w * 0.5f > 0f)
+                {
+                    GUI.DrawTexture(new Rect(0, 0, cx - w * 0.5f + 1f, h), px);
+                    GUI.DrawTexture(new Rect(cx + w * 0.5f - 1f, 0, Screen.width - cx - w * 0.5f + 1f, h), px);
+                }
             }
             else
             {

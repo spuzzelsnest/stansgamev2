@@ -19,7 +19,7 @@ namespace StansGame
             baseST = m && m.HasProperty("_BaseMap_ST") ? m.GetVector("_BaseMap_ST") : new Vector4(1, 1, 0, 0);
         }
 
-        void OnEnable() => Water.Register(GetComponent<Renderer>());
+        void OnEnable() { Water.Register(GetComponent<Renderer>()); PlanarReflection.Ensure(); }
         void OnDisable() => Water.Unregister(GetComponent<Renderer>());
 
         void Update()

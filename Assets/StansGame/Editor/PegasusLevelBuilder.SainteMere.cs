@@ -186,7 +186,8 @@ namespace StansGame.EditorTools
 
             if (smeRaw != null) SmeGroundEverything(root);
             DressBuildings(root, "SainteMereEglise");
-            DressVehicles(root, "SainteMereEglise");   // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
+            DressVehicles(root, "SainteMereEglise"); DressFoliage(root, "SainteMereEglise");   // leaf and bark textures on the crowns, hedges and trunks (PegasusLevelBuilder.Foliage.cs)
+              // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
             string path = SceneDir + "/SainteMereEglise.unity";
             EditorSceneManager.SaveScene(scene, path);
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
@@ -1020,11 +1021,31 @@ namespace StansGame.EditorTools
                 Prim(PrimitiveType.Sphere, "Head", c, new Vector3(0f, 1.55f, 0f), Vector3.zero, new Vector3(0.23f, 0.25f, 0.23f), Mat("Skin", new Color(0.72f, 0.56f, 0.45f)));
                 Prim(PrimitiveType.Cylinder, "Bucket", c, new Vector3(0.3f, 0.8f, 0.2f), Vector3.zero, new Vector3(0.25f, 0.15f, 0.25f), Mat("SME_Iron", new Color(0.1f, 0.1f, 0.1f), 0.4f, 0.8f));
             }
+            // townspeople held back by the guards on the far side of the place, watching Madame Pommier's house burn
+            var watch = new[] { new Vector3(-44f, 0f, -58f), new Vector3(-46f, 0f, -56.5f), new Vector3(-48.5f, 0f, -57.5f), new Vector3(-42f, 0f, -55.5f),
+                                new Vector3(-50f, 0f, -55f), new Vector3(-45f, 0f, -54f) };
+            for (int i = 0; i < watch.Length; i++)
+            {
+                var c = new GameObject($"Townsperson (watching the fire) {i + 1}").transform; c.SetParent(g); c.position = watch[i];
+                var look = SmeFireHouse - watch[i]; look.y = 0f;
+                float yaw = Quaternion.LookRotation(look).eulerAngles.y + Random.Range(-15f, 15f);
+                StoryCivilian(c, i % 3 == 1 ? "Civilian_Man" : "Civilian_Woman", "Person", watch[i], yaw);
+            }
         }
 
         /// <summary>A townsperson of the bucket chain: the rigged French civilian, a bucket in his right hand.</summary>
         static bool SmeTownsperson(Transform c, int i)
         {
+            // Joan's townsman and townswoman (Civilian_Man / Civilian_Woman), men and women by turns along the chain
+            var who = StoryCivilian(c, i % 2 == 0 ? "Civilian_Man" : "Civilian_Woman", "Person", c.position, c.eulerAngles.y);
+            if (who)
+            {
+                var person = who.transform.Find("Model");
+                var pail = Prim(PrimitiveType.Cylinder, "Bucket", c, new Vector3(0.3f, 0.5f, 0.2f), Vector3.zero, new Vector3(0.28f, 0.16f, 0.28f), Mat("SME_Iron", new Color(0.1f, 0.1f, 0.1f), 0.4f, 0.8f));
+                var pc = pail.GetComponent<Collider>(); if (pc) Object.DestroyImmediate(pc);
+                if (person) person.gameObject.AddComponent<HeldProp>().prop = pail.transform;
+                return true;
+            }
             var model = CivilianModel();
             if (!model) return false;
             var inst = (GameObject)PrefabUtility.InstantiatePrefab(model, c);

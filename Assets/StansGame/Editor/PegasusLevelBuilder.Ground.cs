@@ -175,22 +175,31 @@ namespace StansGame.EditorTools
 
         // ---------------------------------------------------------------- water
 
-        static Material WaterShaderMaterial(bool muddy)
+        static Material WaterShaderMaterial(bool muddy, bool pond = false)
         {
-            var sh = Shader.Find("StansGame/Water");
+            var sh = Shader.Find("StansGame/Water");   // Scripts/Environment/Water.shader (23 Nov: it was missing, so the water was flat)
             if (!sh) return null;
-            string path = $"{MatDir}/{(muddy ? "Water_Orne" : "Water_Canal")}.mat";
+            string path = $"{MatDir}/{(pond ? "Water_Pond" : muddy ? "Water_Orne" : "Water_Canal")}.mat";
             var m = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (!m) { m = new Material(sh); AssetDatabase.CreateAsset(m, path); }
             m.shader = sh;
             m.SetTexture("_NormalMap", MakeWaterNormal());
-            if (muddy)
+            m.SetFloat("_ReflStrength", 0.9f); m.SetFloat("_Distortion", 0.025f); m.SetFloat("_Glitter", 6f);
+            if (pond)
+            {
+                // a village pond: still, peaty brown-green, the trees standing in it upside down
+                m.SetColor("_Color", new Color(0.035f, 0.045f, 0.03f));
+                m.SetColor("_SkyColor", new Color(0.30f, 0.36f, 0.46f));
+                m.SetVector("_Flow", new Vector4(0.002f, 0.004f, 0f, 0f));
+                m.SetFloat("_NormalScale", 0.3f); m.SetFloat("_Tiling", 0.35f); m.SetFloat("_Smoothness", 0.96f); m.SetFloat("_Distortion", 0.015f);
+            }
+            else if (muddy)
             {
                 // the tidal Orne: brown with silt, a little current towards the sea
                 m.SetColor("_Color", new Color(0.075f, 0.062f, 0.042f));
                 m.SetColor("_SkyColor", new Color(0.26f, 0.29f, 0.36f));
                 m.SetVector("_Flow", new Vector4(0.01f, 0.05f, 0f, 0f));
-                m.SetFloat("_NormalScale", 0.75f); m.SetFloat("_Tiling", 0.3f); m.SetFloat("_Smoothness", 0.88f);
+                m.SetFloat("_NormalScale", 0.75f); m.SetFloat("_Tiling", 0.3f); m.SetFloat("_Smoothness", 0.88f); m.SetFloat("_ReflStrength", 0.75f); m.SetFloat("_Distortion", 0.04f);
             }
             else
             {

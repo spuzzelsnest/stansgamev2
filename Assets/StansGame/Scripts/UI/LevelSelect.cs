@@ -152,6 +152,8 @@ namespace StansGame
         class Photo { public string file, caption, credit; public Texture2D tex; }
         static readonly System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<Photo>> photos = new System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<Photo>>();
         static Texture2D mapTex, glowBritish, glowAmerican, franceTex;
+        // the three protagonists, photographed by the level builder (PegasusLevelBuilder.Portraits.cs): British, American, German
+        static Texture2D[] portraits;
         static float s, ox;   // the 1280 x 720 layout, scaled to the screen height and centred
 
         static Rect R(float x, float y, float w, float h) => new Rect(ox + x * s, y * s, w * s, h * s);
@@ -243,13 +245,15 @@ namespace StansGame
         static void DrawSectors(string mode, Action back)
         {
             if (!mapTex) { mapTex = Resources.Load<Texture2D>("Menu/NormandyMap"); glowBritish = Resources.Load<Texture2D>("Menu/SectorBritish"); glowAmerican = Resources.Load<Texture2D>("Menu/SectorAmerican"); franceTex = Resources.Load<Texture2D>("Menu/FranceLocator"); }
+            if (portraits == null) portraits = new[] { Resources.Load<Texture2D>("Menu/Protagonist_British"), Resources.Load<Texture2D>("Menu/Protagonist_American"), Resources.Load<Texture2D>("Menu/Protagonist_German") };
             // left: the title and the two sectors
             GUI.Label(R(36, 44, 320, 18), "STAN'S GAME", Style(12 * s, Gold, true));
             GUI.Label(R(36, 66, 340, 120), "CHOOSE YOUR\nSECTOR", Style(36 * s, Ink, true));   // fits the left column, clear of the map
             GUI.Label(R(36, 186, 340, 20), "Normandy  ·  the night of 5–6 June 1944", Style(14 * s, Sub));
             Fill(R(36, 216, 64, 2), Gold);
-            SectorCard(0, R(36, 240, 308, 104), Gold, "BRITISH SECTOR", "6th Airborne Division", "Pegasus Bridge  ·  Bénouville  ·  Ranville");
-            SectorCard(1, R(36, 360, 308, 104), Blue, "AMERICAN SECTOR", "82nd and 101st Airborne", "Sainte-Mère-Église  ·  La Fière");
+            SectorCard(0, R(36, 236, 308, 128), Gold, "BRITISH SECTOR", "6th Airborne Division", "Pegasus Bridge  ·  Bénouville  ·  Ranville");
+            SectorCard(1, R(36, 376, 308, 128), Blue, "AMERICAN SECTOR", "82nd and 101st Airborne", "Sainte-Mère-Église  ·  La Fière");
+            GermanCard(R(36, 516, 308, 128));
             GUI.Label(R(36, 672, 360, 20), "← →  choose     Enter  confirm     Esc  back", Style(12 * s, DarkGrey));
             // right: the map, the sectors glowing on it, the places
             GUI.Label(R(400, 46, 700, 20), "CLICK A SECTOR ON THE MAP, OR CHOOSE ON THE LEFT", Style(12 * s, DarkGrey, true));
@@ -301,11 +305,35 @@ namespace StansGame
             Fill(new Rect(r.x, r.y, 3 * s, r.height), sel ? accent : Line);
             if (sel) { Fill(new Rect(r.x, r.y, r.width, 2 * s), accent); Fill(new Rect(r.x, r.yMax - 2 * s, r.width, 2 * s), accent); Fill(new Rect(r.xMax - 2 * s, r.y, 2 * s, r.height), accent); }
             GUI.Label(new Rect(r.x + 18 * s, r.y + 14 * s, r.width, 16 * s), tag, Style(11 * s, accent, true));
-            GUI.Label(new Rect(r.x + 18 * s, r.y + 32 * s, r.width, 28 * s), head, Style(21 * s, Ink, true));
-            GUI.Label(new Rect(r.x + 18 * s, r.y + 62 * s, r.width - 24 * s, 18 * s), places, Style(12.5f * s, Sub));
+            float pw = Portrait(side, r);
+            GUI.Label(new Rect(r.x + 18 * s, r.y + 32 * s, r.width - 24 * s - pw, 26 * s), head, Style(18 * s, Ink, true));
+            GUI.Label(new Rect(r.x + 18 * s, r.y + 60 * s, r.width - 24 * s - pw, 36 * s), places, Style(12.5f * s, Sub, false, TextAnchor.UpperLeft, true));
             int playable = 0; foreach (int i in SectorMissions(side)) if (!Missions[i].locked) playable++;
-            GUI.Label(new Rect(r.x + 18 * s, r.y + 80 * s, r.width, 16 * s), $"{playable} mission{(playable == 1 ? "" : "s")} to play", Style(11 * s, DarkGrey));
+            GUI.Label(new Rect(r.x + 18 * s, r.y + 104 * s, r.width, 16 * s), $"{playable} mission{(playable == 1 ? "" : "s")} to play", Style(11 * s, DarkGrey));
             if (GUI.Button(r, GUIContent.none, GUIStyle.none)) { if (sel) EnterSector(side); sectorSel = side; }
+        }
+
+        /// <summary>The protagonist of this side, standing at the right of his card; returns the width he takes.</summary>
+        static float Portrait(int side, Rect r)
+        {
+            var tex = portraits != null && side < portraits.Length ? portraits[side] : null;
+            if (!tex) return 0f;
+            float h = r.height - 4 * s, w = h * tex.width / tex.height;
+            GUI.DrawTexture(new Rect(r.xMax - w - 2 * s, r.y + 2 * s, w, h), tex, ScaleMode.ScaleAndCrop);
+            return w;
+        }
+
+        /// <summary>The third protagonist: the German soldier (716th Infantry and 21st Panzer Divisions), not playable yet.</summary>
+        static void GermanCard(Rect r)
+        {
+            var red = new Color(0.62f, 0.30f, 0.26f);
+            Fill(r, Card);
+            Fill(new Rect(r.x, r.y, 3 * s, r.height), Line);
+            GUI.Label(new Rect(r.x + 18 * s, r.y + 14 * s, r.width, 16 * s), "GERMAN SIDE", Style(11 * s, red, true));
+            float pw = Portrait(2, r);
+            GUI.Label(new Rect(r.x + 18 * s, r.y + 32 * s, r.width - 24 * s - pw, 26 * s), "Heer, Normandy", Style(18 * s, Ink, true));
+            GUI.Label(new Rect(r.x + 18 * s, r.y + 60 * s, r.width - 24 * s - pw, 36 * s), "716th Infantry  ·  21st Panzer Division", Style(12.5f * s, Sub, false, TextAnchor.UpperLeft, true));
+            GUI.Label(new Rect(r.x + 18 * s, r.y + 104 * s, r.width, 16 * s), "playable later", Style(11 * s, DarkGrey));
         }
 
         static void DrawSector(string mode, bool alone, bool busy, Action<string> start, Action<Mission> history)

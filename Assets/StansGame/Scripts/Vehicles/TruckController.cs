@@ -69,7 +69,9 @@ namespace StansGame
         [Header("Seats")]
         [Tooltip("Lorry: driver and mate in the cab, eight on the benches in the back. Car (Kübelwagen): two in front, two behind.")]
         public SeatLayout layout = SeatLayout.Lorry;
-        public enum SeatLayout { Lorry, Car }
+        public enum SeatLayout { Lorry, Car, Kettenkrad }
+        [Tooltip("Only the wheels named Wheel_F... steer (the Kettenkrad: one front wheel, the track wheels behind roll only).")]
+        public bool steerByName;
         [Tooltip("Car layout: how far behind the front axle the front and the back seats are (m). Kübelwagen 0.95 / 1.85; the Willys jeep's seats sit further back.")]
         public float frontSeatBack = 0.95f, rearSeatBack = 1.85f;
         [Tooltip("Car layout: how much higher the seats are than the Kübelwagen's (the Willys sits higher: its floor is over the axles).")]
@@ -167,7 +169,7 @@ namespace StansGame
                 float zMin = float.MaxValue, zMax = float.MinValue, xMax = 0f;
                 foreach (var w in list) { zMin = Mathf.Min(zMin, w.z); zMax = Mathf.Max(zMax, w.z); xMax = Mathf.Max(xMax, Mathf.Abs(w.x)); }
                 float mid = (zMin + zMax) * 0.5f;
-                for (int i = 0; i < list.Count; i++) { var w = list[i]; w.front = w.z > mid; list[i] = w; }
+                for (int i = 0; i < list.Count; i++) { var w = list[i]; w.front = steerByName ? w.t.name.StartsWith("Wheel_F") : w.z > mid; list[i] = w; }
                 frontZ = zMax; rearZ = zMin; wheelBase = Mathf.Max(1.5f, zMax - zMin); halfTrack = Mathf.Max(0.5f, xMax);
             }
             else if (box) { frontZ = box.center.z + box.size.z * 0.3f; rearZ = box.center.z - box.size.z * 0.3f; wheelBase = frontZ - rearZ; halfTrack = box.size.x * 0.4f; }
@@ -190,6 +192,13 @@ namespace StansGame
 
         void MakeSeats()
         {
+            if (layout == SeatLayout.Kettenkrad)
+            {
+                // the driver astride the saddle behind the front wheel, two men on the rear bench facing backwards
+                seats = new[] { new Vector3(0f, 0.86f, frontZ - 0.94f), new Vector3(-0.22f, 1.0f, frontZ - 1.9f), new Vector3(0.22f, 1.0f, frontZ - 1.9f) };
+                cabSeats = 0;
+                return;
+            }
             if (layout == SeatLayout.Car)
             {
                 float fz = frontZ - frontSeatBack, rz = frontZ - rearSeatBack;
@@ -213,7 +222,7 @@ namespace StansGame
         Quaternion SeatFacing(int i)
         {
             // the cab and the car face forward; on the benches they face each other across the bed
-            float turn = i < cabSeats || layout == SeatLayout.Car ? 0f : seats[i].x < 0f ? 90f : -90f;
+            float turn = layout == SeatLayout.Kettenkrad ? (i == 0 ? 0f : 180f) : i < cabSeats || layout == SeatLayout.Car ? 0f : seats[i].x < 0f ? 90f : -90f;
             return Quaternion.Euler(0f, transform.eulerAngles.y + turn, 0f);
         }
 
@@ -236,7 +245,7 @@ namespace StansGame
         {
             s.SetControlActive(false);
             bool cab = seat < cabSeats;
-            bool stow = cab || (layout == SeatLayout.Car && seat == 0 && localDriver == s);   // two hands on the wheel (printscreen 32)
+            bool stow = cab || ((layout == SeatLayout.Car || layout == SeatLayout.Kettenkrad) && seat == 0 && localDriver == s);   // two hands on the wheel (printscreen 32)
             var hid = new List<Renderer>();
             foreach (var r in s.GetComponentsInChildren<Renderer>(true))
             {

@@ -112,9 +112,11 @@ namespace StansGame.EditorTools
             }
             var m = new Mesh { name = key };
             m.SetVertices(v); m.SetNormals(n); m.SetUVs(0, uv); m.SetTriangles(tri, 0);
-            // the winding must face out: flip if the first face's triangle normal points in
+            // the winding must face out. Unity draws the side whose triangle runs clockwise as seen from the camera,
+            // so the right-hand cross product of a front face points INTO the cube (printscreen 38: the first version
+            // had it the other way round, every block inside out - walls and roofs seen through from outside)
             Vector3 tn = Vector3.Cross(v[tri[1]] - v[tri[0]], v[tri[2]] - v[tri[0]]);
-            if (Vector3.Dot(tn, n[tri[0]]) < 0f)
+            if (Vector3.Dot(tn, n[tri[0]]) > 0f)
             {
                 for (int i = 0; i < tri.Count; i += 3) { int t = tri[i + 1]; tri[i + 1] = tri[i + 2]; tri[i + 2] = t; }
                 m.SetTriangles(tri, 0);

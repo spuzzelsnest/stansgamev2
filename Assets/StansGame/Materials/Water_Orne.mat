@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Water_Orne
-  m_Shader: {fileID: 4800000, guid: 90913056a683517438d6346808f48938, type: 3}
+  m_Shader: {fileID: 4800000, guid: d6ea94f24fa787b448e4eb1dcff6ecd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -29,9 +29,12 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Distortion: 0.04
     - _Fresnel: 4.5
     - _Glint: 4
+    - _Glitter: 6
     - _NormalScale: 0.75
+    - _ReflStrength: 0.75
     - _Smoothness: 0.88
     - _Tiling: 0.3
     m_Colors:

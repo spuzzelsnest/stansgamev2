@@ -173,6 +173,7 @@ namespace StansGame.EditorTools
             if (!EditorUtility.DisplayDialog("Build everything",
                 "Rebuilds the animation sets, then Pegasus Bridge, Sainte-Mère-Église, the Château de Bénouville and the Proving Ground, one after another (overwriting their scenes). This takes a few minutes. Continue?", "Build all", "Cancel")) return;
             var t0 = System.DateTime.Now;
+            RetireOldGermans();
             batchBuild = true;
             try
             {
@@ -231,7 +232,6 @@ namespace StansGame.EditorTools
             var britishRifle = BuildSoldierPrefab("BritishRifleman", Faction.British, new Color(0.42f, 0.40f, 0.28f), "Lee-Enfield", 70f, 30f, false, 10);
             // the officer in the maroon beret of the Parachute Regiment leads the 7th Para Battalion relief
             var paraOfficer = BuildSoldierPrefab("BritishParaOfficer", Faction.British, new Color(0.42f, 0.40f, 0.28f), "Sten Mk II", 34f, 500f, true, 32, true);
-            var germanPrefab = BuildSoldierPrefab("GermanSoldier", Faction.German, new Color(0.38f, 0.40f, 0.37f), "Kar98k", 75f, 30f, false, 5);
             PegasusOrneElement(lz, defences, actors, britishRifle, britishBren, britishPrefab);   // Euston II: the Orne gliders and the river bridge guard (PegasusLevelBuilder.Orne.cs)
             foreach (var d in defenders.all) if (!d.GetComponent<SoldierAI>()) SetupDefender(d, d.name.Contains("MG42"));
             GiveGermansSmoke(defenders.all);
@@ -318,7 +318,8 @@ namespace StansGame.EditorTools
             AdoptBattle("PegasusBridge", root, Faction.British, PegasusCommanders);   // battle sheet + commanders (PegasusLevelBuilder.Battles.cs)
 
             DressBuildings(root, "PegasusBridge");   // textures in metres, footings (PegasusLevelBuilder.Buildings.cs)
-            DressVehicles(root, "PegasusBridge");    // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
+            DressVehicles(root, "PegasusBridge"); DressFoliage(root, "PegasusBridge");   // leaf and bark textures on the crowns, hedges and trunks (PegasusLevelBuilder.Foliage.cs)
+               // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
             string path = SceneDir + "/PegasusBridge.unity";
             EditorSceneManager.SaveScene(scene, path);
 #if STANS_NET
@@ -862,6 +863,7 @@ namespace StansGame.EditorTools
             water.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
             Object.DestroyImmediate(water.GetComponent<Collider>());
             water.AddComponent<WaterRipple>();
+            water.layer = 4;   // "Water": left out of its own reflection (PlanarReflection)
             return water;
         }
 
@@ -1620,8 +1622,9 @@ namespace StansGame.EditorTools
         static Health Soldier(string name, Transform parent, Vector3 pos, float yaw)
         {
             // the Normandy Germans (PegasusLevelBuilder.Germans.cs) when their models are in; else the older single body
-            var prefab = GermanSoldierPrefab(name)
-                ?? AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/{(name.Contains("MG42") ? "German_MG" : name.Contains("MP40") ? "German_SMG" : "German_Rifleman")}.prefab");
+            // (the old German_MG / German_Rifleman / German_SMG prefabs were retired 23 Nov: stiff joints)
+            var prefab = GermanSoldierPrefab(name);
+            if (!prefab) Debug.LogWarning($"Stan's Game: no Normandy German model for {name} - a stand-in body is used");
             if (prefab)
             {
                 var s = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
@@ -1737,7 +1740,7 @@ namespace StansGame.EditorTools
 
         // ---------------------------------------------------------------- British
 
-        static GameObject BuildSoldierPrefab(string name, Faction faction, Color uniform, string gun, float dmg, float rpm, bool auto, int mag, bool officer = false)
+        static GameObject BuildSoldierPrefab(string name, Faction faction, Color uniform, string gun, float dmg, float rpm, bool auto, int mag, bool officer = false, string body = null)
         {
             var go = new GameObject(name);
             var cc = go.AddComponent<CharacterController>(); cc.height = 1.8f; cc.radius = 0.3f; cc.center = new Vector3(0f, 0.9f, 0f);
@@ -1748,7 +1751,7 @@ namespace StansGame.EditorTools
             if (faction == Faction.British) { ai.smokeGrenade = smokeNo77; ai.smokeGrenades = 1; }
             else { ai.smokeGrenade = smokeNb39; ai.smokeGrenades = 1; }
             go.AddComponent<Ragdoll>();
-            if (faction == Faction.British && AddBritishBody(go, officer)) MountWeapons(go, w);
+            if (faction == Faction.British && AddBritishBody(go, officer, body)) MountWeapons(go, w);
             else BodyBlockout(go.transform, Mat(name + "_Uniform", uniform), Mat(name + "_Helmet", new Color(0.26f, 0.27f, 0.20f)), faction == Faction.German);
             AddNet(go);
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{PrefabDir}/{name}.prefab");
@@ -2048,6 +2051,7 @@ namespace StansGame.EditorTools
             pondGo.transform.localScale = new Vector3(14f, 0.05f, 9f);
             pondGo.GetComponent<Renderer>().sharedMaterial = WaterShaderMaterial(true) ?? WaterMaterial();
             Object.DestroyImmediate(pondGo.GetComponent<Collider>());
+            pondGo.layer = 4;
             }
 
             for (int i = 0; i < rests.Length; i++)
@@ -2311,6 +2315,16 @@ namespace StansGame.EditorTools
             // muzzle test leaves its nose at -Z and it drove in reverse (printscreens 35, 37) - it is always turned round
             bool turn = key == "M16Halftrack" || t.InverseTransformPoint(mz.position).z < 0f;
             if (turn) m.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * m.transform.localRotation;
+            // the mount itself must face forward too: turning the M16 round left its quad mount looking back, so the
+            // Gun empty (built facing +Z) elevated the barrels down into the hull and the aim ran in reverse. Swing the
+            // turret, gun and muzzle 180 deg round the mount's own pivot whenever the barrels point back.
+            var pivot = tm ? tm.position : gm ? gm.position : (Vector3?)null;
+            if (pivot.HasValue && t.InverseTransformDirection(mz.position - (gm ? gm.position : pivot.Value)).z < 0f)
+            {
+                foreach (var part in new[] { tm, gm, mz })
+                    if (part && (part == tm || !tm || !part.IsChildOf(tm)) && (part != mz || ((!gm || !mz.IsChildOf(gm)) && (!tm || !mz.IsChildOf(tm)))))
+                        part.RotateAround(pivot.Value, t.up, 180f);
+            }
             // a casemate gun (no turret): the mount is a point behind the muzzle, as on the StuG
             turret = new GameObject("Turret").transform; turret.SetParent(t, false);
             turret.position = tm ? tm.position : gm ? gm.position : mz.position - t.forward * 2.2f;
@@ -2434,6 +2448,9 @@ namespace StansGame.EditorTools
                 tc.automatic = ts.auto; tc.magazineSize = ts.mag; tc.magazineReload = ts.magReload;
                 if (ts.auto) tc.recoil = 30f;
             }
+            // the M45 quad mount fires .50 Brownings, not a cannon (Joan's M2 recording, 23 Nov); the American tracks clatter
+            if (kind == Armour.M16) { tc.fireSound = "m2_shot"; tc.reloadSound = ""; }
+            if (kind == Armour.M16 || kind == Armour.Sherman || kind == Armour.Stuart) tc.trackSound = "tank_moving";
             if (QuadBarrels.TryGetValue(kind, out var qb) && muzzle)
             {
                 var ms = new Transform[qb.Length];

@@ -24,23 +24,33 @@ namespace StansGame.EditorTools
     {
         const string MarkDir = Root + "/Textures/Markings";
 
-        struct VMark { public string tex; public char side; public float along, height, size, aspect; }
+        struct VMark { public string tex; public char side; public float along, height, size, aspect, metres; }
 
-        /// <summary>side: L (left, -x), R (right, +x), F (front, +z), B (back, -z), T (top). along: -0.5 (rear / left)
+        /// <summary>side: L (left, -x), R (right, +x), F (front, +z), B (back, -z), T (top), U (turret roof:
+        /// only the turret is hit, and the mark turns with it - printscreen 39, the deck star floated beside the turret). along: -0.5 (rear / left)
         /// to 0.5 (front / right). height: 0 (ground) to 1 (top of the vehicle). size: height in metres.</summary>
         static VMark Mk(string tex, char side, float along, float height, float size, float aspect = 1f)
             => new VMark { tex = tex, side = side, along = along, height = height, size = size, aspect = aspect };
 
+        /// <summary>A marking at a set height in metres above the ground (from the regulations and photographs),
+        /// rather than a share of the vehicle's height, which an aerial or a stowage rack can stretch.</summary>
+        static VMark MkAt(string tex, char side, float along, float metres, float size, float aspect = 1f)
+            => new VMark { tex = tex, side = side, along = along, metres = metres, size = size, aspect = aspect };
+
         static readonly (string match, string[] exclude, VMark[] marks)[] VehicleMarks =
         {
-            ("Sherman", null, new[] { Mk("Star_Circle", 'L', 0.05f, 0.42f, 0.75f), Mk("Star_Circle", 'R', 0.05f, 0.42f, 0.75f), Mk("Star_Circle", 'T', -0.3f, 0f, 1.2f) }),
-            ("Stuart", null, new[] { Mk("Star", 'L', 0.05f, 0.45f, 0.5f), Mk("Star", 'R', 0.05f, 0.45f, 0.5f), Mk("Star_Circle", 'T', -0.3f, 0f, 0.9f) }),
+            ("Sherman", null, new[] { Mk("Star_Circle", 'L', 0.05f, 0.42f, 0.75f), Mk("Star_Circle", 'R', 0.05f, 0.42f, 0.75f), Mk("Star_Circle", 'U', 0f, 0f, 0.8f) }),
+            ("Stuart", null, new[] { Mk("Star", 'L', 0.05f, 0.45f, 0.5f), Mk("Star", 'R', 0.05f, 0.45f, 0.5f), Mk("Star_Circle", 'U', 0f, 0f, 0.6f) }),
             ("Bedford", null, new[] { Mk("Star", 'L', 0.33f, 0.5f, 0.42f), Mk("Star", 'R', 0.33f, 0.5f, 0.42f), Mk("Star_Circle", 'T', 0.33f, 0f, 0.6f),
                                       Mk("Bridge_5", 'F', 0.28f, 0.32f, 0.22f), Mk("ArmOfService_RASC", 'F', -0.28f, 0.32f, 0.2f) }),
-            ("Panzer IV", new[] { "Wirbelwind", "Flakpanzer" }, new[] { Mk("Balkenkreuz", 'L', -0.15f, 0.42f, 0.5f), Mk("Balkenkreuz", 'R', -0.15f, 0.42f, 0.5f),
-                                      Mk("Balkenkreuz", 'B', 0f, 0.5f, 0.42f), Mk("Turret_421", 'L', 0.1f, 0.7f, 0.3f, 2.67f), Mk("Turret_421", 'R', 0.1f, 0.7f, 0.3f, 2.67f) }),
+            // Panzer IV H in Normandy (photographs of 21. Pz.Div. and 12. SS-Pz.Div. tanks, e.g. Bundesarchiv
+            // 101I-297-1722-29): the cross centred on the hull Schuerzen a little behind mid-length, about 1.3 m up;
+            // the turret number (30-35 cm digits, black with a white edge) on both sides of the turret Schuerzen
+            ("Panzer IV", new[] { "Wirbelwind", "Flakpanzer" }, new[] { MkAt("Balkenkreuz", 'L', -0.1f, 1.3f, 0.55f), MkAt("Balkenkreuz", 'R', -0.1f, 1.3f, 0.55f),
+                                      MkAt("Balkenkreuz", 'B', 0f, 1.25f, 0.45f), MkAt("Turret_421", 'L', 0.05f, 2.05f, 0.33f, 2.67f), MkAt("Turret_421", 'R', 0.05f, 2.05f, 0.33f, 2.67f) }),
             ("Hotchkiss", null, new[] { Mk("Balkenkreuz_Outline", 'L', -0.2f, 0.45f, 0.42f), Mk("Balkenkreuz_Outline", 'R', -0.2f, 0.45f, 0.42f) }),
             ("Kübelwagen", null, new[] { Mk("Plate_WH", 'F', 0f, 0.28f, 0.11f, 4f), Mk("Plate_WH", 'B', 0f, 0.35f, 0.11f, 4f) }),
+            ("Kettenkrad", null, new[] { Mk("Plate_WH", 'B', 0f, 0.55f, 0.1f, 4f) }),
             ("Opel Blitz", null, new[] { Mk("Plate_WH", 'F', 0f, 0.14f, 0.12f, 4f), Mk("Plate_WH", 'B', 0f, 0.16f, 0.12f, 4f) }),
         };
 
@@ -153,9 +163,20 @@ namespace StansGame.EditorTools
                 foreach (var mk in spec.marks)
                 {
                     Vector3 o, d, up = Vector3.up;
-                    float y = b.min.y + mk.height * b.size.y, z = b.center.z + mk.along * b.size.z, x = b.center.x + mk.along * b.size.x;
+                    float y = b.min.y + (mk.metres > 0f ? mk.metres : mk.height * b.size.y), z = b.center.z + mk.along * b.size.z, x = b.center.x + mk.along * b.size.x;
+                    Transform tur = null;
+                    if (mk.side == 'U')
+                    {
+                        tur = v.GetComponentsInChildren<Transform>(true).FirstOrDefault(c => c.name == "Turret");
+                        var tr = tur ? tur.GetComponentsInChildren<MeshFilter>(true).Where(f => f.sharedMesh).ToArray() : new MeshFilter[0];
+                        if (tr.Length == 0) { line.Append($" {mk.tex}@U no turret;"); continue; }
+                        var tb = new Bounds(v.InverseTransformPoint(tr[0].transform.TransformPoint(tr[0].sharedMesh.bounds.center)), Vector3.zero);
+                        foreach (var f in tr) { var mb = f.sharedMesh.bounds; for (int c = 0; c < 8; c++) tb.Encapsulate(v.InverseTransformPoint(f.transform.TransformPoint(new Vector3(c % 2 == 0 ? mb.min.x : mb.max.x, (c / 2) % 2 == 0 ? mb.min.y : mb.max.y, c / 4 == 0 ? mb.min.z : mb.max.z)))); }
+                        x = tb.center.x; z = tb.center.z - 0.15f * tb.size.z + mk.along * tb.size.z;   // behind the gun mantlet, on the flat roof
+                    }
                     switch (mk.side)
                     {
+                        case 'U': o = new Vector3(x, b.max.y + 1f, z); d = Vector3.down; up = Vector3.forward; break;
                         case 'L': o = new Vector3(b.min.x - 1f, y, z); d = Vector3.right; break;
                         case 'R': o = new Vector3(b.max.x + 1f, y, z); d = Vector3.left; break;
                         case 'F': o = new Vector3(x, y, b.max.z + 1f); d = Vector3.back; break;
@@ -163,7 +184,7 @@ namespace StansGame.EditorTools
                         default: o = new Vector3(b.center.x, b.max.y + 1f, z); d = Vector3.down; up = Vector3.forward; break;
                     }
                     Vector3 wo = v.TransformPoint(o), wd = v.TransformDirection(d);
-                    var hits = Physics.RaycastAll(wo, wd, b.size.magnitude + 3f).Where(h => mine.Contains(h.collider)).OrderBy(h => h.distance).ToArray();
+                    var hits = Physics.RaycastAll(wo, wd, b.size.magnitude + 3f).Where(h => mine.Contains(h.collider) && (!tur || h.collider.transform.IsChildOf(tur))).OrderBy(h => h.distance).ToArray();
                     if (hits.Length == 0) { line.Append($" {mk.tex}@{mk.side} missed;"); continue; }
                     var hit = hits[0];
                     if (Vector3.Dot(hit.normal, -wd) < 0.2f) { line.Append($" {mk.tex}@{mk.side} too slanted;"); continue; }

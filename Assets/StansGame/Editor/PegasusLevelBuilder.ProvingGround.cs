@@ -145,6 +145,7 @@ namespace StansGame.EditorTools
             // beside each table, that army's main character (the soldier the player plays) on show: he stays on his
             // spot and goes through his animations, the name of each over his head (AnimationShowcase)
             var protagonists = BuildProtagonists();
+            RenderProtagonistPortraits(protagonists);   // their pictures for the sector selection (PegasusLevelBuilder.Portraits.cs)
             string[] who = { "British para (player)", "US paratrooper (player)", "German rifleman (player-to-be)" };
             var showSpots = new List<Bounds>();
             for (int i = 0; i < armies.Length && i < protagonists.Length; i++)
@@ -216,6 +217,7 @@ namespace StansGame.EditorTools
             Slot(p => ParkedLorry("OpelBlitzCovered", park, p, 270f, "Opel Blitz (canvas tilt)"), "Opel Blitz 3.6-36S (canvas tilt)");
             Slot(p => ParkedLorry("OpelBlitzOpen", park, p, 270f, "Opel Blitz (open bed)"), "Opel Blitz 3.6-36S (open bed)");
             Slot(p => Kubelwagen(park, "Kübelwagen", p, 270f), "VW Kübelwagen Typ 82");
+            Slot(p => Kettenkrad(park, "Kettenkrad", p, 270f), "Sd.Kfz. 2 Kettenkrad (NSU HK 101)");   // PegasusLevelBuilder.Kettenkrad.cs
             // (BuildArmour turns its vehicles a further 90 degrees: 180 here lines them up with the lorries, nose to the west)
             Slot(p => BuildArmour("Panzer IV", park, p, 180f, Armour.PanzerIV), "Panzer IV Ausf. H");
             Slot(p => BuildArmour("StuG III", park, p, 180f, Armour.StuG), "StuG III Ausf. G");
@@ -248,6 +250,7 @@ namespace StansGame.EditorTools
             // ------------------------------------------------ the player, at the training station
             var campAreas = BuildCamps(root, keepOut, wood);
             BuildVillage(root, keepOut);   // the hamlet south of the station (PegasusLevelBuilder.Village.cs)
+            PgPond(env, keepOut);          // the pond behind it, for the swimming (PegasusLevelBuilder.Pond.cs)
             PaintProvingGround();
             ProvingTrees(env, keepOut);
             var player = BuildPlayer(actors);
@@ -304,7 +307,8 @@ namespace StansGame.EditorTools
             }
 
             DressBuildings(root, "ProvingGround");
-            DressVehicles(root, "ProvingGround");   // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
+            DressVehicles(root, "ProvingGround"); DressFoliage(root, "ProvingGround");   // leaf and bark textures on the crowns, hedges and trunks (PegasusLevelBuilder.Foliage.cs)
+              // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
             string scenePath = $"{SceneDir}/{ProvingScene}.unity";
             EditorSceneManager.SaveScene(scene, scenePath);
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
@@ -321,7 +325,9 @@ namespace StansGame.EditorTools
 
         /// <summary>How high the ground is at x, z: 0 on the level working area, gentle rolling farmland round it
         /// (a few metres), and a long wooded rise behind the stop butt that also catches stray rounds.</summary>
-        static float PgHeightAt(float x, float z)
+        static float PgHeightAt(float x, float z) => PgPondShape(x, z, PgNaturalHeight(x, z));   // with the pond (PegasusLevelBuilder.Pond.cs)
+
+        static float PgNaturalHeight(float x, float z)
         {
             float dx = Mathf.Max(PgFlat.xMin - x, 0f, x - PgFlat.xMax), dz = Mathf.Max(PgFlat.yMin - z, 0f, z - PgFlat.yMax);
             float away = Mathf.Sqrt(dx * dx + dz * dz);
@@ -335,12 +341,13 @@ namespace StansGame.EditorTools
 
         static void ProvingTerrain(Transform env, Texture2D turfTex)
         {
-            const int res = 257;
+            const int res = 513;   // 1.25 m a sample: fine enough for the pond's banks
+            pondRimY = float.NaN;
             string dataPath = $"{Root}/Terrain/ProvingGround_Terrain.asset", layerPath = $"{Root}/Terrain/ProvingGround_Turf.terrainlayer";
             if (!AssetDatabase.IsValidFolder($"{Root}/Terrain")) AssetDatabase.CreateFolder(Root, "Terrain");
             AssetDatabase.DeleteAsset(dataPath);
             var data = new TerrainData { heightmapResolution = res };
-            data.size = new Vector3(PgSize, PgHeight, PgSize);
+            data.size = new Vector3(PgSize, PgHeight + PgBase, PgSize);   // PgBase below 0 so the pond can be dug
             var layer = AssetDatabase.LoadAssetAtPath<TerrainLayer>(layerPath);
             if (!layer) { layer = new TerrainLayer(); AssetDatabase.CreateAsset(layer, layerPath); }
             layer.diffuseTexture = turfTex; layer.tileSize = new Vector2(4f, 4f);
@@ -353,7 +360,7 @@ namespace StansGame.EditorTools
                 for (int ix = 0; ix < res; ix++)
                 {
                     float x = -PgSize / 2f + PgSize * ix / (res - 1f), z = -PgSize / 2f + PgSize * iz / (res - 1f);
-                    h[iz, ix] = PgHeightAt(x, z) / PgHeight;
+                    h[iz, ix] = (PgHeightAt(x, z) + PgBase) / (PgHeight + PgBase);
                 }
             data.SetHeights(0, 0, h);
             EditorUtility.SetDirty(data);
@@ -361,7 +368,7 @@ namespace StansGame.EditorTools
             var t = Terrain.CreateTerrainGameObject(data);
             t.name = "Terrain (rolling farmland)";
             t.transform.SetParent(env);
-            t.transform.position = new Vector3(-PgSize / 2f, 0f, -PgSize / 2f);
+            t.transform.position = new Vector3(-PgSize / 2f, -PgBase, -PgSize / 2f);
             var terrain = t.GetComponent<Terrain>();
             terrain.basemapDistance = 600f; terrain.heightmapPixelError = 3f;
             terrainRef = terrain;
@@ -426,7 +433,8 @@ namespace StansGame.EditorTools
                 }
                 // two hedgerows along the field boundaries, west and south
                 Hedgerow(trees, OnGround(-152f, -80f), OnGround(-152f, 120f));   // (outside the camps)
-                Hedgerow(trees, OnGround(-140f, -76f), OnGround(140f, -76f));
+                Hedgerow(trees, OnGround(-140f, -76f), OnGround(PondCentre.x - 7f, -76f));   // a gap: the way to the pond
+                Hedgerow(trees, OnGround(PondCentre.x + 7f, -76f), OnGround(140f, -76f));
             }
             finally { flatGround = wasFlat; }
         }
@@ -458,7 +466,7 @@ namespace StansGame.EditorTools
 
         /// <summary>
         /// The range as a 1944 training range: the firing point with a sandbag parapet, two machine-gun pits (Vickers and
-        /// Browning .30) and two anti-tank guns (6-pounder and PaK 38) along it; barbed wire in a continuous line down
+        /// Browning .50 M2HB) and two anti-tank guns (6-pounder and PaK 38) along it; barbed wire in a continuous line down
         /// both sides with a sandbag wall behind it; mortar pits outside the wire; the red flag on the stop butt, anti-glider
         /// poles on the ridge, the range hut, and an old lorry down range as the anti-tank target.
         /// </summary>
@@ -570,11 +578,14 @@ namespace StansGame.EditorTools
         /// </summary>
         static FieldGun MountedMg(Transform parent, Vector3 pos, float yaw, bool vickers)
         {
-            var root = new GameObject(vickers ? "Vickers MG Mk I (.303)" : "Browning M1919A4 (.30) - mock-up").transform;
+            string pre = vickers ? "Vickers" : "M2";
+            var root = new GameObject(vickers ? "Vickers MG Mk I (.303)" : "Browning M2HB (.50) on M3 tripod").transform;
             root.SetParent(parent); root.SetPositionAndRotation(pos, Quaternion.Euler(0f, yaw, 0f));
             // Joan's Vickers (vickers-machine-gun): tripod, ammunition box and the gun with its belt on the tripod head
-            var vm = vickers ? PgModel($"{PgProps}/VickersMG.fbx", root, pos, yaw, $"{PgProps}/Textures/VickersMG", "Vickers model") : null;
-            Transform vGun = vm ? FindDeep(vm.transform, "Vickers_Gun") : null, vMuzzle = vm ? FindDeep(vm.transform, "Vickers_Muzzle") : null;
+            // Joan's M2 (m2-browning-machine-gun, 23 Nov): the .50 heavy barrel on the low M3 tripod, its belt and can on the gun
+            var vm = vickers ? PgModel($"{PgProps}/VickersMG.fbx", root, pos, yaw, $"{PgProps}/Textures/VickersMG", "Vickers model")
+                             : PgModel($"{PgProps}/BrowningM2.fbx", root, pos, yaw, $"{PgProps}/Textures/BrowningM2", "M2 model");
+            Transform vGun = vm ? FindDeep(vm.transform, pre + "_Gun") : null, vMuzzle = vm ? FindDeep(vm.transform, pre + "_Muzzle") : null;
             if (vm && (!vGun || !vMuzzle)) { Object.DestroyImmediate(vm); vm = null; }
             if (vm && root.InverseTransformPoint(vMuzzle.position).z < 0f) vm.transform.rotation = Quaternion.AngleAxis(180f, Vector3.up) * vm.transform.rotation;
             var steel = Mat("PG_GunSteel", new Color(0.12f, 0.12f, 0.12f), 0.45f, 0.7f);
@@ -618,14 +629,14 @@ namespace StansGame.EditorTools
                 muzzleZ = 0.72f;
             }
             // the working gun: rate of fire, damage, sound, tracer (Weapon), and a belt that never runs out
-            var w = AddWeapon(elev, vickers ? "Vickers MG (.303)" : "Browning M1919 MG (.30)", vickers ? 45f : 40f, vickers ? 500f : 450f, true, 250);
+            var w = AddWeapon(elev, vickers ? "Vickers MG (.303)" : vm ? "Browning M2HB (.50)" : "Browning M1919 MG (.30)", vickers ? 45f : vm ? 70f : 40f, vickers ? 500f : vm ? 500f : 450f, true, vm && !vickers ? 110 : 250);
             w.transform.localPosition = Vector3.zero; w.transform.localRotation = Quaternion.identity;
             foreach (Transform c in w.transform.Cast<Transform>().ToList()) if (c.name == "Gun") Object.DestroyImmediate(c.gameObject);
             w.muzzle.localPosition = new Vector3(0f, 0f, muzzleZ);
             w.range = 800f; w.hipSpread = 0.6f; w.aimSpread = 0.35f;
             var sight = new GameObject("Sight").transform; sight.SetParent(elev, false); sight.localPosition = new Vector3(0f, 0.1f, -0.5f);
             var fg = root.gameObject.AddComponent<FieldGun>();
-            fg.displayName = vickers ? "Vickers MG (.303)" : "Browning M1919A4 (.30)";
+            fg.displayName = vickers ? "Vickers MG (.303)" : vm ? "Browning M2HB (.50)" : "Browning M1919A4 (.30)";
             fg.traverse = trav; fg.elevate = elev; fg.barrel = gunT; fg.muzzle = w.muzzle; fg.sight = sight; fg.gun = w;
             fg.traverseLimit = 40f; fg.minElevation = -8f; fg.maxElevation = 18f; fg.traverseSpeed = 140f; fg.elevateSpeed = 90f;
             fg.recoilLength = 0.015f; fg.eyeOffset = new Vector3(-0.3f, 0.75f, -1.6f);

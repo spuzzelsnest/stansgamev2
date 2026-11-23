@@ -15,6 +15,21 @@ namespace StansGame
         public static void Register(Renderer r) { if (r && !surfaces.Contains(r)) surfaces.Add(r); }
         public static void Unregister(Renderer r) => surfaces.Remove(r);
 
+        /// <summary>The height of the water surface nearest to p (within maxDistance across): for the reflections.</summary>
+        public static bool NearestSurface(Vector3 p, float maxDistance, out float y)
+        {
+            y = 0f; float best = maxDistance * maxDistance; bool found = false;
+            foreach (var r in surfaces)
+            {
+                if (!r || !r.enabled || !r.gameObject.activeInHierarchy) continue;
+                var b = r.bounds;
+                var q = b.ClosestPoint(new Vector3(p.x, b.center.y, p.z));
+                float d = (q.x - p.x) * (q.x - p.x) + (q.z - p.z) * (q.z - p.z);
+                if (d < best || (found && Mathf.Approximately(d, best) && b.center.y > y)) { best = d; y = b.center.y; found = true; }
+            }
+            return found;
+        }
+
         /// <summary>Is there water over this point? Returns its surface height.</summary>
         public static bool SurfaceAt(Vector3 p, out float y)
         {
