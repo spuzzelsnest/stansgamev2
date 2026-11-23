@@ -304,6 +304,7 @@ namespace StansGame.EditorTools
             }
 
             DressBuildings(root, "ProvingGround");
+            DressVehicles(root, "ProvingGround");   // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
             string scenePath = $"{SceneDir}/{ProvingScene}.unity";
             EditorSceneManager.SaveScene(scene, scenePath);
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);

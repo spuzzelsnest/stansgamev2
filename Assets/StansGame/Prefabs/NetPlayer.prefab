@@ -60,7 +60,7 @@ MonoBehaviour:
   impactForce: 30
   muzzle: {fileID: 8778378309496164698}
   muzzleFlash: {fileID: 0}
-  muzzleLight: {fileID: 2126715031639636519}
+  muzzleLight: {fileID: 7320229982009415750}
   audioSource: {fileID: 5426272268956400914}
   fireClip: {fileID: 0}
   reloadClip: {fileID: 0}
@@ -216,7 +216,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2177053160610566505}
-  m_Mesh: {fileID: -8478265232431912171, guid: eb92bc5047eede24bb5a4289ee56ea57, type: 2}
+  m_Mesh: {fileID: 6044849667287393083, guid: eb92bc5047eede24bb5a4289ee56ea57, type: 2}
 --- !u!23 &6906283999826097821
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -593,7 +593,7 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!1 &7178113953990590915
+--- !u!1 &7350420650803610429
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -601,8 +601,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8153536129410756515}
-  - component: {fileID: 2126715031639636519}
+  - component: {fileID: 3681489013203260326}
+  - component: {fileID: 7320229982009415750}
   m_Layer: 0
   m_Name: Muzzle light
   m_TagString: Untagged
@@ -610,13 +610,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8153536129410756515
+--- !u!4 &3681489013203260326
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7178113953990590915}
+  m_GameObject: {fileID: 7350420650803610429}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -625,13 +625,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8778378309496164698}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &2126715031639636519
+--- !u!108 &7320229982009415750
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7178113953990590915}
+  m_GameObject: {fileID: 7350420650803610429}
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 2
@@ -2383,7 +2383,7 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1065037483785816486, guid: 68de7f5343c3d1c4493d4234333a1f72, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8153536129410756515}
+      addedObject: {fileID: 3681489013203260326}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 68de7f5343c3d1c4493d4234333a1f72, type: 3}
 --- !u!4 &7423902998062669836 stripped

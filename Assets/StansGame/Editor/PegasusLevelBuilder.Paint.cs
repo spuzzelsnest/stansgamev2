@@ -12,7 +12,7 @@ namespace StansGame.EditorTools
     /// </summary>
     public static partial class PegasusLevelBuilder
     {
-        static readonly string[] TruckPaints = { "Camo", "Dunkelgelb", "Olive", "Grau" };
+        static readonly string[] TruckPaints = { "Camo", "Dunkelgelb", "Camo", "Olive" };   // Normandy 1944: mostly the three-tone camouflage (no Panzergrau)
         static int truckPaint;
         const string TruckPaintDir = Root + "/Models/Props/SME/Textures/OpelBlitzPaint";
 

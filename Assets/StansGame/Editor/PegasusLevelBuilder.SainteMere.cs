@@ -186,6 +186,7 @@ namespace StansGame.EditorTools
 
             if (smeRaw != null) SmeGroundEverything(root);
             DressBuildings(root, "SainteMereEglise");
+            DressVehicles(root, "SainteMereEglise");   // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
             string path = SceneDir + "/SainteMereEglise.unity";
             EditorSceneManager.SaveScene(scene, path);
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);

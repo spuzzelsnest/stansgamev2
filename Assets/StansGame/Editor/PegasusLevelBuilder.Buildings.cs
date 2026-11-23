@@ -232,7 +232,7 @@ namespace StansGame.EditorTools
         /// </summary>
         static int CutHousePads(Transform root)
         {
-            var terrains = Object.FindObjectsByType<Terrain>(FindObjectsSortMode.None);
+            var terrains = Terrain.activeTerrains;
             if (terrains.Length == 0) return 0;
             int cut = 0;
             var data = new Dictionary<Terrain, float[,]>();
@@ -279,7 +279,7 @@ namespace StansGame.EditorTools
 
         static float TerrainY(Vector3 p, float fallback)
         {
-            foreach (var ter in Object.FindObjectsByType<Terrain>(FindObjectsSortMode.None))
+            foreach (var ter in Terrain.activeTerrains)
             {
                 var td = ter.terrainData; var tp = ter.transform.position;
                 float u = (p.x - tp.x) / td.size.x, v = (p.z - tp.z) / td.size.z;

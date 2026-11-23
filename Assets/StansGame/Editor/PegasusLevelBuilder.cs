@@ -318,6 +318,7 @@ namespace StansGame.EditorTools
             AdoptBattle("PegasusBridge", root, Faction.British, PegasusCommanders);   // battle sheet + commanders (PegasusLevelBuilder.Battles.cs)
 
             DressBuildings(root, "PegasusBridge");   // textures in metres, footings (PegasusLevelBuilder.Buildings.cs)
+            DressVehicles(root, "PegasusBridge");    // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
             string path = SceneDir + "/PegasusBridge.unity";
             EditorSceneManager.SaveScene(scene, path);
 #if STANS_NET
