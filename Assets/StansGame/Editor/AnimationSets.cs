@@ -158,18 +158,20 @@ namespace StansGame.EditorTools
             // rifle idles turn the chest away, so the gun pointed off to the side (printscreen 21)
             var idle = Pick("idle", Hero("AimStraight"), M(S, "Rifle Idle"), Hero("Idle"));
             var aimIdle = Pick("aim", Hero("AimStraight"), M(S, "Rifle Aiming Idle"));
-            var walk = Pick("walk", M(S, "Rifle Walk"), Hero("WalkForward"));
-            var run = Pick("run", M(S, "Run Forward"), Hero("RunForward"));
-            var back = Pick("walk backwards", M(S, "Stepping Backward"), Hero("WalkBackward"));
-            var backRun = Pick("run backwards", M(S, "Sprint Backward"), Hero("RunBackward"));
-            var side = Pick("side step", M(S, "Walk Right"), Hero("WalkStrafeRight"));
-            var sideRun = Pick("strafe run", M(S, "Strafe Right"), Hero("RunStrafeRight"));
+            // Joan's Mixamo "Pro Rifle Pack" (23 Nov) first: a matched set of walk, run and strafe clips with the rifle
+            const string P = "Pro Rifle Pack";
+            var walk = Pick("walk", M(P, "walk forward"), M(S, "Rifle Walk"), Hero("WalkForward"));
+            var run = Pick("run", M(P, "run forward"), M(S, "Run Forward"), Hero("RunForward"));
+            var back = Pick("walk backwards", M(P, "walk backward"), M(S, "Stepping Backward"), Hero("WalkBackward"));
+            var backRun = Pick("run backwards", M(P, "run backward"), M(S, "Sprint Backward"), Hero("RunBackward"));
+            var side = Pick("side step", M(P, "walk right"), M(S, "Walk Right"), Hero("WalkStrafeRight"));
+            var sideRun = Pick("strafe run", M(P, "run right"), M(S, "Strafe Right"), Hero("RunStrafeRight"));
             var loco = MoveState(ac, "Locomotion", idle, walk, run, back, backRun, side, sideRun, 2.2f, 4.2f);
             var aim = MoveState(ac, "Aim", aimIdle, walk, run, back, backRun, side, sideRun, 2.2f, 4.2f);
             sm.defaultState = loco;
             var crouchIdle = Pick("crouch", M(S, "Idle Crouching Aiming"), Gen("CrouchIdle"));
-            var crouchWalk = Pick("crouch walk", M(S, "Rifle Crouch Walk"), M(S, "Crouch Walking"), Gen("CrouchWalk"));
-            var crouchBack = Pick("crouch backwards", M(S, "Walk Crouching Backward Left"));
+            var crouchWalk = Pick("crouch walk", M(P, "walk crouching forward"), M(S, "Rifle Crouch Walk"), M(S, "Crouch Walking"), Gen("CrouchWalk"));
+            var crouchBack = Pick("crouch backwards", M(P, "walk crouching backward"), M(S, "Walk Crouching Backward Left"));
             var crouch = MoveState(ac, "Crouch", crouchIdle, crouchWalk, Pick("crouch run", M(S, "Crouch Running")), crouchBack, null, null, null, 1.4f, 2.6f);
             var proneIdle = Pick("prone", M(S, "Prone Idle"), Gen("ProneIdle"));
             var crawl = Pick("crawl", M(S, "Prone Forward"), Gen("ProneCrawl"));
@@ -215,7 +217,9 @@ namespace StansGame.EditorTools
                 (StansGame.AnimActions.Stumble, "Stumble", Pick("stumble", M(I, "injured stumble idle"))),
                 (StansGame.AnimActions.WaveHello, "Wave", Pick("wave (soldier)", M("Civilian", "Waving"))),
                 (StansGame.AnimActions.Driving, "Driving", Pick("driving", M("Civilian", "Driving"))),
-                (StansGame.AnimActions.Seated, "Seated (riding)", Pick("seated", M("Civilian", "Sitting Talking"), M(S, "Sitting Dazed"))));
+                (StansGame.AnimActions.Seated, "Seated (riding)", Pick("seated", M("Civilian", "Sitting Talking"), M(S, "Sitting Dazed"))),
+                (StansGame.AnimActions.EnterCar, "Enter car", Pick("enter car", M("Civilian", "Entering Car"))),
+                (StansGame.AnimActions.ExitCar, "Exit car", Pick("exit car", M("Civilian", "Exiting Car"))));
             var layers = ac.layers; layers[0].iKPass = true; ac.layers = layers;   // HandIK: both hands on the weapon
             EditorUtility.SetDirty(ac);
             report.AppendLine();

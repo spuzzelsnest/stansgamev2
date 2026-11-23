@@ -261,6 +261,13 @@ namespace StansGame.EditorTools
             foreach (var (f, p, y) in new[] { ("CrateStackA", new Vector3(-70f, 0f, -38f), 10f), ("CrateStackB", new Vector3(-67f, 0f, -40f), -20f), ("SupplyStack", new Vector3(-46f, 0f, -42f), 0f) })
                 { var o = SmeProp(f, brit, p, y); if (o) keepOut.Add(WorldBounds(o)); }
             CampSign(brit, new Vector3(-41f, 0f, CampTrackZ - 3.2f), 270f, "6TH AIRBORNE DIV.  BRITISH LINES");
+            CampFire(brit, new Vector3(-52f, 0f, -24f));
+            // the British transport by the south edge of the lines: Bedford OX lorries, empty, loaded, and the gun lorry
+            foreach (var (file, x, label) in new[] { ("BedfordOX", -70f, "Bedford OX lorry"), ("BedfordOX_Loaded", -61f, "Bedford OX lorry (loaded)"), ("BedfordOX_Gun", -52f, "Bedford OX gun lorry") })
+            {
+                var bl = Bedford(brit, label, new Vector3(x, 0f, -47.5f), 90f, file);
+                if (bl) { keepOut.Add(WorldBounds(bl)); pgWorn.Add(new Vector3(x, 6f, -47.5f)); }
+            }
             // a Cromwell by the north end of the lines (the airborne division's armoured recce had them from July 1944)
             var crom = BuildArmour("Cromwell IV", brit, new Vector3(-66f, 0f, 108f), 90f, Armour.Cromwell);
             if (crom)
@@ -291,28 +298,29 @@ namespace StansGame.EditorTools
             foreach (var (f, p, y) in new[] { ("CrateStackB", new Vector3(-122f, 0f, -38f), 5f), ("CrateWide", new Vector3(-120f, 0f, -42f), 30f), ("Barrel", new Vector3(-90f, 0f, -42f), 0f), ("Barrel", new Vector3(-90.8f, 0f, -43f), 0f) })
                 { var o = SmeProp(f, us, p, y); if (o) keepOut.Add(WorldBounds(o)); }
             CampSign(us, new Vector3(-86f, 0f, CampTrackZ - 3.2f), 270f, "82ND AIRBORNE DIV.  505TH P.I.R.");
+            CampFire(us, new Vector3(-99f, 0f, -24f));
             // a Sherman by the north gate, drivable like the German tanks (BuildArmour turns it a further 90 degrees)
             var sherman = BuildArmour("M4A3E8 Sherman", us, new Vector3(-100f, 0f, 108f), 90f, Armour.Sherman);
             if (sherman)
             {
                 foreach (var hp in sherman.GetComponentsInChildren<Health>(true)) hp.regenPerSecond = Mathf.Max(hp.regenPerSecond, 50f);
                 keepOut.Add(WorldBounds(sherman)); pgWorn.Add(new Vector3(-100f, 6f, 108f));
-                CampSign(us, new Vector3(-93f, 0f, 104f), 270f, "M4A3E8 SHERMAN (LATE 1944)");
+                CampSign(us, new Vector3(-93f, 0f, 104f), 0f, "M4A3E8 SHERMAN (LATE 1944)");
             }
             var stu = BuildArmour("M5A1 Stuart", us, new Vector3(-113f, 0f, 108f), 90f, Armour.Stuart);
             if (stu)
             {
                 foreach (var hp in stu.GetComponentsInChildren<Health>(true)) hp.regenPerSecond = Mathf.Max(hp.regenPerSecond, 50f);
                 keepOut.Add(WorldBounds(stu)); pgWorn.Add(new Vector3(-113f, 5f, 108f));
-                CampSign(us, new Vector3(-119f, 0f, 104f), 90f, "M5A1 STUART  (37 MM)");
+                CampSign(us, new Vector3(-119f, 0f, 104f), 0f, "M5A1 STUART  (37 MM)");
             }
             // the M16 multiple gun motor carriage: the battalions' anti-aircraft half-tracks (the M45 Quadmount, four .50s)
-            var m16 = BuildArmour("M16 MGMC half-track", us, new Vector3(-127f, 0f, 108f), 90f, Armour.M16);
+            var m16 = BuildArmour("M16 MGMC half-track", us, new Vector3(-88f, 0f, 108f), 90f, Armour.M16);   // nose south, to the camp (printscreens 35, 37; BuildArmour adds 90)   // by the road (at -127 it stood in the watchtower, printscreen 31)
             if (m16)
             {
                 foreach (var hp in m16.GetComponentsInChildren<Health>(true)) hp.regenPerSecond = Mathf.Max(hp.regenPerSecond, 50f);
-                keepOut.Add(WorldBounds(m16)); pgWorn.Add(new Vector3(-127f, 5f, 108f));
-                CampSign(us, new Vector3(-133f, 0f, 104f), 90f, "M16 MGMC  (4 X .50 CAL)");
+                keepOut.Add(WorldBounds(m16)); pgWorn.Add(new Vector3(-88f, 5f, 108f));
+                CampSign(us, new Vector3(-84.5f, 0f, 103.2f), 0f, "M16 MGMC  (4 X .50 CAL)");   // read from the camp (printscreen 35)
             }
 
             // the road through the camp, sentry posts with a barrier at both ends, a watchtower at each far corner
@@ -378,6 +386,10 @@ namespace StansGame.EditorTools
             CampSign(g, new Vector3(88.5f, 0f, 18f), 90f, "8,8 CM FLAK 36");
             // a camouflage net on poles over the near end of the motor pool
             CamoNet(g, new Vector3(GermanParkX, 0f, -30f), new Vector2(16f, 22f), wood);
+            // the field kitchen on its Opel (the "Gulaschkanone") and a fire by the tents
+            var fk = PgModel($"{PgProps}/FieldKitchenTruck.fbx", g, new Vector3(66f, 0f, -36f), 0f, $"{PgProps}/Textures/FieldKitchenTruck", "Field kitchen (Opel Blitz)");
+            if (fk) { SolidBox(fk); keepOut.Add(WorldBounds(fk)); pgWorn.Add(new Vector3(66f, 6f, -36f)); }
+            CampFire(g, new Vector3(50f, 0f, -32f));
             // the field bunker, the timber for the next one, fuel drums, stores
             foreach (var (f, p, y) in new[] { ("FieldBunker", new Vector3(122f, 0f, 70f), 270f), ("TimberPile", new Vector3(76f, 0f, 96f), 10f), ("TimberWale", new Vector3(84f, 0f, 98f), 80f),
                                               ("SupplyStack", new Vector3(118f, 0f, -38f), 0f), ("CrateStackA", new Vector3(80f, 0f, -36f), 25f), ("CrateTall", new Vector3(78f, 0f, -40f), 0f),
@@ -768,6 +780,14 @@ namespace StansGame.EditorTools
         /// <summary>A timber watchtower: four legs, a platform with a breastwork at 4 m, a roof, a ladder.</summary>
         static void Watchtower(Transform parent, Vector3 pos, Material wood, List<Bounds> keepOut)
         {
+            // Joan's watchtower with its guard hut (props_batch4.py), walkable inside; else the timber one below
+            var wt = PgModel($"{PgProps}/WatchtowerHut.fbx", parent, pos, pos.x < 0f ? 90f : 270f, $"{PgProps}/Textures/WatchtowerHut", "Watchtower and guard hut");
+            if (wt)
+            {
+                foreach (var mf in wt.GetComponentsInChildren<MeshFilter>()) mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+                keepOut.Add(WorldBounds(wt)); pgWorn.Add(new Vector3(pos.x, 5f, pos.z));
+                return;
+            }
             var t = new GameObject("Watchtower").transform; t.SetParent(parent); t.position = pos;
             var dark = Mat("PG_Wood_Dark", new Color(0.28f, 0.2f, 0.13f), 0.15f);
             const float s = 1.4f, deck = 4f;
@@ -786,7 +806,7 @@ namespace StansGame.EditorTools
                                             (new Vector3(s + 0.1f, deck + 0.55f, 0f), new Vector3(0.08f, 1f, 3.4f)), (new Vector3(-s - 0.1f, deck + 0.55f, 0.6f), new Vector3(0.08f, 1f, 2.2f)) })
                 Prim(PrimitiveType.Cube, "Breastwork", t, p, Vector3.zero, sc, wood, true);
             Prim(PrimitiveType.Cube, "Roof", t, new Vector3(0f, deck + 2.3f, 0f), new Vector3(0f, 0f, 8f), new Vector3(3.9f, 0.1f, 3.9f), dark);
-            SmeProp("Ladder", t, pos + new Vector3(-s - 0.9f, 0f, -0.9f), 90f, -14f, "Ladder", false);
+            SmeProp("Ladder", t, pos + new Vector3(-s - 0.9f, 0f, -0.9f), 90f, 14f, "Ladder", false);   // leaning in to the platform (printscreen 31)
             keepOut.Add(new Bounds(pos + Vector3.up * 3f, new Vector3(5f, 7f, 5f))); pgWorn.Add(new Vector3(pos.x, 3f, pos.z));
         }
 
@@ -868,6 +888,38 @@ namespace StansGame.EditorTools
             return MakeJeepDrivable(go, wheels);
         }
 
+        /// <summary>
+        /// Joan's Bedford OX 30-cwt lorry (Models/Source~/bedford_oxd.py, from bedford_oxa_mesh.stl): BedfordOX (empty bed),
+        /// BedfordOX_Loaded (ammunition boxes, sacks, jerrycans) or BedfordOX_Gun (the guns on the bed and the cab roof).
+        /// Drivable like the Opel: driver on the right, benches in the back. 72 hp, 40 mph (64 km/h).
+        /// </summary>
+        static GameObject Bedford(Transform parent, string name, Vector3 pos, float yaw, string file)
+        {
+            var go = new GameObject(name); var t = go.transform;
+            t.SetParent(parent); t.SetPositionAndRotation(pos, Quaternion.Euler(0f, yaw, 0f));
+            var model = PgModel($"{PgVehicles}/{file}.fbx", t, pos, yaw, $"{PgVehicles}/Textures/BedfordOX", "Model");
+            if (!model) { Object.DestroyImmediate(go); return null; }
+            var mw = model.GetComponentsInChildren<Transform>(true).Where(c => c.name.StartsWith("Wheel_")).ToList();
+            float fz = 0f, rz = 0f; int nf = 0, nr = 0;
+            foreach (var w in mw) { float z = t.InverseTransformPoint(w.position).z; if (w.name.StartsWith("Wheel_F")) { fz += z; nf++; } else { rz += z; nr++; } }
+            if (nf > 0 && nr > 0 && fz / nf < rz / nr) model.transform.rotation = Quaternion.AngleAxis(180f, t.up) * model.transform.rotation;
+            var b = WorldBounds(model);
+            var col = go.AddComponent<BoxCollider>();
+            col.center = t.InverseTransformPoint(b.center) + new Vector3(0f, 0.15f, 0f);
+            var sz = t.InverseTransformVector(b.size); col.size = new Vector3(Mathf.Abs(sz.x), Mathf.Abs(sz.y) - 0.3f, Mathf.Abs(sz.z));
+            var rb = go.AddComponent<Rigidbody>(); rb.isKinematic = true;
+            var tc = go.AddComponent<TruckController>();
+            tc.displayName = "Bedford OX lorry";
+            tc.wheels = mw.ToArray(); tc.wheelRadius = 0.51f;
+            tc.maxForwardSpeed = 17.9f; tc.maxReverseSpeed = 3.5f; tc.acceleration = 2.0f;   // 72 hp, 64 km/h
+            tc.layout = TruckController.SeatLayout.Lorry; tc.rightHandDrive = true; tc.benchHeight = 1.25f;   // the bed floor is at 0.81 m
+            NetScenery(go, false);
+#if STANS_NET
+            if (!go.GetComponent<NetTruck>()) go.AddComponent<NetTruck>();
+#endif
+            return go;
+        }
+
         static GameObject MakeJeepDrivable(GameObject go, List<Transform> wheels)
         {
             var col = go.AddComponent<BoxCollider>(); col.center = new Vector3(0f, 0.75f, 0.1f); col.size = new Vector3(1.55f, 1.2f, 3.3f);
@@ -878,7 +930,7 @@ namespace StansGame.EditorTools
             tc.maxForwardSpeed = 25f; tc.maxReverseSpeed = 5f; tc.acceleration = 3.8f; tc.maxSteer = 36f; tc.stepHeight = 0.4f;   // Willys MB: 60 hp for 1.1 t, ~90 km/h
             tc.cameraDistance = 7f; tc.cameraHeight = 2f;
             tc.layout = TruckController.SeatLayout.Car;   // driver, front passenger, two behind
-            tc.frontSeatBack = 1.25f; tc.rearSeatBack = 2.3f;   // the Willys' seats: just ahead of the middle, and over the rear axle
+            tc.frontSeatBack = 1.45f; tc.rearSeatBack = 2.35f; tc.seatRaise = 0.1f;   // hips on the cushions (measured on the model), feet on the floor (printscreens 29, 32)   // the Willys' seats: just ahead of the middle, and over the rear axle
             NetScenery(go, false);
 #if STANS_NET
             if (!go.GetComponent<NetTruck>()) go.AddComponent<NetTruck>();

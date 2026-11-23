@@ -18,6 +18,12 @@ namespace StansGame
 
         [Tooltip("How far the gun tilts up or down with the aim (degrees). It never turns sideways away from the body.")]
         public float maxPitch = 35f;
+        [Tooltip("Sling arms: the gun hangs on its sling over the right shoulder (on parade, strolling in camp), hands free.")]
+        public bool slingArms;
+        /// <summary>The gun is on its sling over the shoulder this frame (HandIK then holds the strap and swings the other arm).</summary>
+        public bool Slung { get; private set; }
+        /// <summary>Where the sling lies over the shoulder (world), while Slung.</summary>
+        public Vector3 SlingPoint { get; private set; }
         float pitch;
 
         /// <summary>The weapon in the soldier's hands (null when he has a grenade out or nothing).</summary>
@@ -119,6 +125,9 @@ namespace StansGame
             if (stow) Active = null;
             bool grenade = !stow && !Active && owner && owner.enabled && owner.WeaponIndex == 2 && kit && (kit.NextGrenade || ThrowAge < 0.6f);
             Gesture = swim ? HoldGesture.None : bandage ? HoldGesture.Bandage : grenade ? HoldGesture.Grenade : HoldGesture.None;
+            Slung = slingArms && !stow && Active;
+            if (Slung) { SlungPose(body, Active); Active = null; GrenadeInHand(); return; }
+            if (lastSling) { lastSling.overShoulder = false; lastSling = null; slungInit = false; }
             HoldStyle style = Active ? Active.hold : HoldStyle.Rifle;
             if (!stance) body.TryGetComponent(out stance);
             StanceKind sk = stance ? stance.Current : StanceKind.Stand;
@@ -166,6 +175,43 @@ namespace StansGame
             }
             transform.SetPositionAndRotation(body.TransformPoint(LocalPos), body.rotation * LocalRot);
             GrenadeInHand();
+        }
+
+        // ------------------------------------------------------------------ sling arms
+
+        WeaponSling lastSling; bool slungInit; Vector3 lastTop, lastVel; Vector2 sway, swayVel;
+
+        /// <summary>
+        /// The gun on its sling over the right shoulder: rifles and sub-machine guns muzzle up behind the shoulder, the
+        /// Bren and MG 42 muzzle down at the side. It hangs like a pendulum from the shoulder, so the soldier's starts,
+        /// stops and turns swing it a little (and the strap, WeaponSling, drapes over the shoulder).
+        /// </summary>
+        void SlungPose(Transform body, Weapon w)
+        {
+            var sl = w.GetComponent<WeaponSling>();
+            Transform clav = animator && animator.isHuman ? animator.GetBoneTransform(HumanBodyBones.RightShoulder) : null;
+            Vector3 joint = clav ? Vector3.Lerp(clav.position, shoulder ? shoulder.position : clav.position, 0.6f) : shoulder ? shoulder.position : body.TransformPoint(new Vector3(0.18f, 1.42f, 0f));
+            Vector3 top = joint + body.up * 0.08f + body.right * 0.01f;
+            SlingPoint = top;
+            float dt = Mathf.Max(Time.deltaTime, 1e-4f);
+            if (!slungInit) { lastTop = top; lastVel = Vector3.zero; sway = swayVel = Vector2.zero; slungInit = true; }
+            Vector3 vel = (top - lastTop) / dt, acc = Vector3.ClampMagnitude((vel - lastVel) / dt, 25f);
+            lastTop = top; lastVel = vel;
+            // a pendulum (about 1 swing a second): leaning against the way the shoulder speeds up or turns
+            float ax = Vector3.Dot(acc, body.forward), az = Vector3.Dot(acc, body.right);
+            swayVel.x += (-40f * sway.x - 4f * swayVel.x - ax * 60f) * dt;
+            swayVel.y += (-40f * sway.y - 4f * swayVel.y + az * 60f) * dt;
+            sway += swayVel * dt; sway = Vector2.ClampMagnitude(sway, 25f);
+            Quaternion swing = Quaternion.AngleAxis(sway.x, body.right) * Quaternion.AngleAxis(sway.y, body.forward);
+            bool heavy = w.hold == HoldStyle.Heavy;
+            Quaternion carry = heavy ? Quaternion.Euler(72f, 6f, 0f) : Quaternion.Euler(-76f, 8f, -10f);
+            Vector3 hang = (heavy ? -body.up * 0.42f + body.right * 0.10f : -body.up * 0.2f + body.right * 0.03f) - body.forward * 0.1f;
+            transform.rotation = swing * body.rotation * carry;
+            Vector3 mid = top + swing * hang;
+            Vector3 midLocal = sl ? sl.MidLocal : new Vector3(0f, -0.03f, 0.3f);
+            transform.position += mid - w.transform.TransformPoint(midLocal);
+            if (sl) { sl.overShoulder = true; sl.shoulderPoint = top; }
+            lastSling = sl;
         }
 
         // ------------------------------------------------------------------ the grenade in his right fist
@@ -221,6 +267,7 @@ namespace StansGame
 
         void OnDisable()
         {
+            if (lastSling) { lastSling.overShoulder = false; lastSling = null; } slungInit = false; Slung = false;
             if (heldGrenade) heldGrenade.SetActive(false);
             // drop the weapon when its owner dies
             if (!Application.isPlaying || !transform.parent) return;

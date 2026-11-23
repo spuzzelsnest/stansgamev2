@@ -53,8 +53,8 @@ namespace StansGame.EditorTools
         [MenuItem("Stan's Game/Build Sainte-Mère-Église Level", priority = 2)]
         public static void BuildSainteMere()
         {
-            if (!EditorUtility.DisplayDialog("Build Sainte-Mère-Église level",
-                "Creates a new scene Assets/StansGame/Scenes/SainteMereEglise.unity (overwrites it if it exists). Continue?", "Build", "Cancel"))
+            if (!ConfirmBuild("Build Sainte-Mère-Église level",
+                "Creates a new scene Assets/StansGame/Scenes/SainteMereEglise.unity (overwrites it if it exists). Continue?"))
                 return;
 
             EnsureFolders();
@@ -185,6 +185,7 @@ namespace StansGame.EditorTools
             SmeNetworking(mission, mk2, canopy, garrison, defenders04, krause, waveSouth, waveNorth);   // co-op (STANS_NET)
 
             if (smeRaw != null) SmeGroundEverything(root);
+            DressBuildings(root, "SainteMereEglise");
             string path = SceneDir + "/SainteMereEglise.unity";
             EditorSceneManager.SaveScene(scene, path);
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
@@ -310,7 +311,7 @@ namespace StansGame.EditorTools
             var g = Group("Churchyard wall", town);
             // on the line of the low wall the church model already has on its west, north and part of its south side
             // (x -30.9, z -11 / +10.9): only the missing stretches are added
-            float x0 = -30.9f, x1 = b.max.x + 2.5f, z0 = -11f, z1 = 10.9f;
+            float x0 = -30.9f, x1 = b.max.x - 0.3f, z0 = -13f, z1 = 10.9f;   // the south wall stands clear of the south chapel (church_sme.py, 23 Nov)
             var tower = church.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Church tower");
             float towerZ = tower ? tower.position.z : 0f;
             void Side(Vector3 a, Vector3 c, float gateAt)

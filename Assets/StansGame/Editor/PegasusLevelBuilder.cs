@@ -317,6 +317,7 @@ namespace StansGame.EditorTools
             PegasusHistory(root);   // "The History" film from the main menu (PegasusLevelBuilder.History.cs)
             AdoptBattle("PegasusBridge", root, Faction.British, PegasusCommanders);   // battle sheet + commanders (PegasusLevelBuilder.Battles.cs)
 
+            DressBuildings(root, "PegasusBridge");   // textures in metres, footings (PegasusLevelBuilder.Buildings.cs)
             string path = SceneDir + "/PegasusBridge.unity";
             EditorSceneManager.SaveScene(scene, path);
 #if STANS_NET
@@ -2305,7 +2306,10 @@ namespace StansGame.EditorTools
             }
             var tm = FindDeep(m.transform, key + "_Turret"); var gm = FindDeep(m.transform, key + "_Gun"); var mz = FindDeep(m.transform, key + "_Muzzle");
             if (!mz) { Object.DestroyImmediate(m); return false; }
-            if (t.InverseTransformPoint(mz.position).z < 0f) m.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * m.transform.localRotation;
+            // the gun points forward (to +Z). Not on the M16: its quad mount sits at the back of the half-track, so the
+            // muzzle test leaves its nose at -Z and it drove in reverse (printscreens 35, 37) - it is always turned round
+            bool turn = key == "M16Halftrack" || t.InverseTransformPoint(mz.position).z < 0f;
+            if (turn) m.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * m.transform.localRotation;
             // a casemate gun (no turret): the mount is a point behind the muzzle, as on the StuG
             turret = new GameObject("Turret").transform; turret.SetParent(t, false);
             turret.position = tm ? tm.position : gm ? gm.position : mz.position - t.forward * 2.2f;

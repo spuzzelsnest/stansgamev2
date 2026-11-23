@@ -72,6 +72,11 @@ namespace StansGame
         public enum SeatLayout { Lorry, Car }
         [Tooltip("Car layout: how far behind the front axle the front and the back seats are (m). Kübelwagen 0.95 / 1.85; the Willys jeep's seats sit further back.")]
         public float frontSeatBack = 0.95f, rearSeatBack = 1.85f;
+        [Tooltip("Car layout: how much higher the seats are than the Kübelwagen's (the Willys sits higher: its floor is over the axles).")]
+        public float seatRaise = 0f;
+        [Tooltip("Lorry layout: the driver on the right (British lorries); and the height of the benches in the back.")]
+        public bool rightHandDrive;
+        public float benchHeight = 1.5f;
 
         [Header("Camera")]
         public float cameraDistance = 9.5f;
@@ -188,15 +193,16 @@ namespace StansGame
             if (layout == SeatLayout.Car)
             {
                 float fz = frontZ - frontSeatBack, rz = frontZ - rearSeatBack;
-                seats = new[] { new Vector3(-0.33f, 0.68f, fz), new Vector3(0.33f, 0.68f, fz), new Vector3(-0.33f, 0.74f, rz), new Vector3(0.33f, 0.74f, rz) };   // hips on the cushions
+                seats = new[] { new Vector3(-0.33f, 0.68f + seatRaise, fz), new Vector3(0.33f, 0.68f + seatRaise, fz), new Vector3(-0.33f, 0.74f + seatRaise, rz), new Vector3(0.33f, 0.74f + seatRaise, rz) };   // hips on the cushions
                 cabSeats = 0;   // an open car: everyone keeps his rifle
                 return;
             }
-            var list = new List<Vector3> { new Vector3(-0.42f, 1.3f, frontZ - 0.95f), new Vector3(0.42f, 1.3f, frontZ - 0.95f) };
+            float dx = rightHandDrive ? 0.42f : -0.42f;
+            var list = new List<Vector3> { new Vector3(dx, 1.3f, frontZ - 0.95f), new Vector3(-dx, 1.3f, frontZ - 0.95f) };
             for (int k = 0; k < 4; k++)   // the benches down both sides of the load bed
             {
                 float z = frontZ - 2.55f - k * 0.85f;
-                list.Add(new Vector3(-0.72f, 1.5f, z)); list.Add(new Vector3(0.72f, 1.5f, z));
+                list.Add(new Vector3(-0.72f, benchHeight, z)); list.Add(new Vector3(0.72f, benchHeight, z));
             }
             seats = list.ToArray(); cabSeats = 2;
         }
@@ -230,7 +236,14 @@ namespace StansGame
         {
             s.SetControlActive(false);
             bool cab = seat < cabSeats;
-            foreach (var r in s.GetComponentsInChildren<Renderer>(true)) r.enabled = !(cab && r.GetComponentInParent<Weapon>());
+            bool stow = cab || (layout == SeatLayout.Car && seat == 0 && localDriver == s);   // two hands on the wheel (printscreen 32)
+            var hid = new List<Renderer>();
+            foreach (var r in s.GetComponentsInChildren<Renderer>(true))
+            {
+                if (r.GetComponentInParent<Weapon>()) { if (stow && r.enabled) { r.enabled = false; hid.Add(r); } }
+                else r.enabled = true;   // the body shows in the seat (first person hides it while walking; printscreen 34)
+            }
+            stowed[s] = hid;
             if (!s.TryGetComponent(out Stance st)) { st = s.gameObject.AddComponent<Stance>(); st.animator = s.animator; }
             // sitting: the driver at the wheel (Mixamo "Driving"), the others sitting (Animations: Build Animation Sets);
             // an old animator without the seated actions kneels as before
@@ -245,6 +258,40 @@ namespace StansGame
             s.transform.SetPositionAndRotation(SeatRoot(seat, seated), SeatFacing(seat));
         }
 
+        bool boarding;
+
+        static bool HasState(Animator a, string state)
+            => a && a.runtimeAnimatorController && (a.HasState(0, Animator.StringToHash("Base Layer." + state)) || a.HasState(0, Animator.StringToHash(state)));
+
+        /// <summary>
+        /// The open cars (Kübelwagen, jeep): the driver climbs in over the side (Mixamo "Entering Car") and out again
+        /// ("Exiting Car"), moved between the door and the seat as the clip plays; the car doesn't drive meanwhile.
+        /// </summary>
+        System.Collections.IEnumerator Board(SoldierController s, bool getIn)
+        {
+            boarding = true;
+            Vector3 door = ExitSpot(), seat = SeatRoot(0, true);
+            Quaternion face = SeatFacing(0);
+            s.animator.SetInteger("Action", getIn ? AnimActions.EnterCar : AnimActions.ExitCar);
+            string state = getIn ? "Enter car" : "Exit car";
+            float until = Time.time + 6f, t = 0f;
+            while (Time.time < until && s)
+            {
+                var info = s.animator.GetCurrentAnimatorStateInfo(0);
+                if (info.IsName(state)) { t = info.normalizedTime; if (t >= 0.85f) break; }
+                float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.85f));
+                s.transform.SetPositionAndRotation(getIn ? Vector3.Lerp(door, seat, k) : Vector3.Lerp(seat, door, k), face);
+                yield return null;
+            }
+            boarding = false;
+            if (!s) yield break;
+            if (getIn)
+            {
+                if (localDriver == s) { s.animator.SetInteger("Action", AnimActions.Driving); s.transform.SetPositionAndRotation(seat, face); }
+            }
+            else { StandUp(s); s.SetControlActive(true, door); }
+        }
+
         static bool HasAction(Animator a)
         {
             if (!a || !a.runtimeAnimatorController) return false;
@@ -252,8 +299,11 @@ namespace StansGame
             return false;
         }
 
-        static void StandUp(SoldierController s)
+        readonly Dictionary<SoldierController, List<Renderer>> stowed = new Dictionary<SoldierController, List<Renderer>>();
+
+        void StandUp(SoldierController s)
         {
+            if (s && stowed.TryGetValue(s, out var hid)) { foreach (var r in hid) if (r) r.enabled = true; stowed.Remove(s); }
             if (s.TryGetComponent(out Stance st)) st.Set(StanceKind.Stand);
             if (HasAction(s.animator)) s.animator.SetInteger("Action", 0);
             var hands = s.GetComponentInChildren<HandIK>(); if (hands) hands.enabled = true;
@@ -296,6 +346,7 @@ namespace StansGame
             localDriver = soldier;
             if (seats == null) MakeSeats();
             SitDown(soldier, 0);   // at the wheel, seen through the windscreen
+            if (layout == SeatLayout.Car && HasState(soldier.animator, "Enter car")) StartCoroutine(Board(soldier, true));
             soldier.InVehicle = true;
             Cursor.lockState = CursorLockMode.Locked;
             camYaw = transform.eulerAngles.y; camPitch = 12f; lastLook = -10f;
@@ -303,14 +354,16 @@ namespace StansGame
             TakeOverFromAmbient();
         }
 
+        public bool HasLocalDriver(SoldierController s) => s && localDriver == s;
+
         public void Exit()
         {
-            if (!localDriver) return;
+            if (!localDriver || boarding) return;
             var s = localDriver;
             localDriver = null;
             s.InVehicle = false;
-            StandUp(s);
-            s.SetControlActive(true, ExitSpot());
+            if (layout == SeatLayout.Car && HasState(s.animator, "Exit car")) StartCoroutine(Board(s, false));
+            else { StandUp(s); s.SetControlActive(true, ExitSpot()); }
             if (link != null) { if (Net.IsRemoteClient) link.RequestExit(); else link.ServerRelease(); }
         }
 
@@ -365,7 +418,7 @@ namespace StansGame
                 var h = localDriver.GetComponent<Health>();
                 if (h && h.IsDead) { var s = localDriver; localDriver = null; s.InVehicle = false; if (link != null) { if (Net.IsRemoteClient) link.RequestExit(); else link.ServerRelease(); } }
                 else if (link != null && Net.IsRemoteClient && !link.LocalIsDriver && !pending) { var s = localDriver; localDriver = null; s.InVehicle = false; s.SetControlActive(true, ExitSpot()); }   // the host took it back (it left)
-                else if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame && Time.time > enteredAt + 0.4f) { Exit(); }   // not the press that got him in
+                else if (!boarding && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame && Time.time > enteredAt + 0.4f) { Exit(); }   // not the press that got him in
                 else if (Keyboard.current != null && Keyboard.current.hKey.wasPressedThisFrame && horn && horn.clip && !horn.isPlaying)
                 {
                     // H: the horn - in co-op the host plays it on every machine
@@ -383,7 +436,7 @@ namespace StansGame
             if (TakenOver && ambient && ambient.enabled) { ambient.Release(); RestWheels(); }
 
             float th = 0f, st = 0f; bool hb = false;
-            if (localDriver) ReadKeys(out th, out st, out hb);
+            if (localDriver && !boarding) ReadKeys(out th, out st, out hb);
 
             if (link != null && Net.IsRemoteClient)
             {

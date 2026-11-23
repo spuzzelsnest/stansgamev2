@@ -257,6 +257,7 @@ namespace StansGame.EditorTools
             PgPostProcessingOn();   // the grade needs post-processing on the cameras
 
             // ------------------------------------------------ everyone in the game, out for a stroll
+            BuildParades(actors, keepOut);   // each side's section marching round its lines (PegasusLevelBuilder.Parade.cs)
             var people = Group("Characters (strolling, peaceful)", actors);
             var area = new Bounds(new Vector3(0f, 0f, -24f), new Vector3(60f, 20f, 36f));   // townspeople: round the training station, behind the firing point
             var stroll = StrollController();
@@ -292,6 +293,7 @@ namespace StansGame.EditorTools
                 while (guard++ < 80 && keepOut.Exists(b => { var e = b; e.Expand(2f); return e.Contains(new Vector3(p.x, e.center.y, p.z)); }));
                 go.transform.SetPositionAndRotation(p, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
                 foreach (var ai in go.GetComponentsInChildren<SoldierAI>(true)) ai.enabled = false;   // nobody fights here
+                if (armed) foreach (var h in go.GetComponentsInChildren<WeaponHolder>(true)) h.slingArms = true;   // in camp the guns hang on their slings
                 var ctrl = civilian ? AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(Root + "/Animations/Civilian.controller")
                          : AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(Root + (hp0 && hp0.faction == Faction.German ? "/Animations/Soldier_German.overrideController" : "/Animations/Soldier_Allied.overrideController"));
                 if (anim) { anim.runtimeAnimatorController = ctrl ? ctrl : (armed ? anim.runtimeAnimatorController : stroll); anim.applyRootMotion = false; }
@@ -301,6 +303,7 @@ namespace StansGame.EditorTools
                 wd.label = Label(go.transform, NiceName(go.name), go.transform.position + Vector3.up * 2.15f, 0.05f, new Color(1f, 0.92f, 0.7f), Quaternion.identity);   // over his head (a world position)
             }
 
+            DressBuildings(root, "ProvingGround");
             string scenePath = $"{SceneDir}/{ProvingScene}.unity";
             EditorSceneManager.SaveScene(scene, scenePath);
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);

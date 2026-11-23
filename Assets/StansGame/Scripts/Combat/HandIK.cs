@@ -348,6 +348,7 @@ namespace StansGame
                 return;
             }
 
+            if (holder && holder.isActiveAndEnabled && holder.Slung) { SlungArms(); return; }
             var w = holder && holder.isActiveAndEnabled ? holder.Active : null;
             var gesture = holder && holder.isActiveAndEnabled && !w ? holder.Gesture : WeaponHolder.HoldGesture.None;
             float k = 1f - Mathf.Exp(-10f * Time.deltaTime);
@@ -432,6 +433,31 @@ namespace StansGame
                 anim.SetBoneLocalRotation(neckBone, neckDelta * baseNeck);
             }
             if (Mathf.Abs(twist) < 0.05f) { chestDelta = Quaternion.identity; neckDelta = Quaternion.identity; }
+        }
+
+        /// <summary>
+        /// Sling arms: the right hand holds the strap in front of the chest, the left arm swings with the stride
+        /// (forward as the right foot goes forward), as on the march.
+        /// </summary>
+        void SlungArms()
+        {
+            Transform body = holder.Body;
+            float k = 1f - Mathf.Exp(-8f * Time.deltaTime);
+            wRight = Mathf.Lerp(wRight, 0.9f, k); wLeft = Mathf.Lerp(wLeft, 0.75f, k);
+            Vector3 strap = holder.SlingPoint + body.forward * 0.13f - body.up * 0.2f - body.right * 0.02f;
+            anim.SetIKPositionWeight(AvatarIKGoal.RightHand, wRight); anim.SetIKPosition(AvatarIKGoal.RightHand, strap);
+            anim.SetIKRotationWeight(AvatarIKGoal.RightHand, 0f);
+            anim.SetIKHintPositionWeight(AvatarIKHint.RightElbow, wRight);
+            anim.SetIKHintPosition(AvatarIKHint.RightElbow, strap - body.up * 0.25f + body.right * 0.2f);
+            var lHip = anim.GetBoneTransform(HumanBodyBones.LeftUpperLeg);
+            var rFoot = anim.GetBoneTransform(HumanBodyBones.RightFoot); var lFoot = anim.GetBoneTransform(HumanBodyBones.LeftFoot);
+            if (!lHip) { anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, 0f); return; }
+            float stride = rFoot && lFoot ? Mathf.Clamp(Vector3.Dot(rFoot.position - lFoot.position, body.forward) * 0.45f, -0.22f, 0.22f) : 0f;
+            Vector3 hand = lHip.position - body.right * 0.13f - body.up * 0.06f + body.forward * stride + body.up * Mathf.Abs(stride) * 0.3f;
+            anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, wLeft); anim.SetIKPosition(AvatarIKGoal.LeftHand, hand);
+            anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, 0f);
+            anim.SetIKHintPositionWeight(AvatarIKHint.LeftElbow, wLeft);
+            anim.SetIKHintPosition(AvatarIKHint.LeftElbow, hand + body.up * 0.3f - body.right * 0.1f - body.forward * 0.15f);
         }
 
         void Off()

@@ -4,8 +4,9 @@ using UnityEngine;
 namespace StansGame
 {
     /// <summary>
-    /// In the built game: errors and exceptions (and our own "Stan's Game" warnings) are also written to
-    /// Logs/errors.txt next to StansGame.exe, so a bug seen while playing can be read back and fixed.
+    /// Errors and exceptions (and our own "Stan's Game" warnings) are also written to Logs/errors.txt - next to
+    /// StansGame.exe in the built game, in the project's Logs folder in the Editor - so a bug seen while playing can
+    /// be read back and fixed without a screenshot of the Console.
     /// Each run starts a new section; the file is trimmed when it gets big.
     /// </summary>
     public static class ErrorLog
@@ -17,7 +18,6 @@ namespace StansGame
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Init()
         {
-            if (Application.isEditor) return;
             try
             {
                 string dir = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Logs");
@@ -25,6 +25,7 @@ namespace StansGame
                 path = Path.Combine(dir, "errors.txt");
                 if (File.Exists(path) && new FileInfo(path).Length > 2_000_000) File.Delete(path);
                 File.AppendAllText(path, $"\n===== {System.DateTime.Now:yyyy-MM-dd HH:mm:ss}  {Application.productName} {Application.version} =====\n");
+                Application.logMessageReceivedThreaded -= OnLog;   // play mode without a domain reload: not twice
                 Application.logMessageReceivedThreaded += OnLog;
             }
             catch { path = null; }

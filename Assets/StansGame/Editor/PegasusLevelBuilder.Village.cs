@@ -25,7 +25,9 @@ namespace StansGame.EditorTools
 
         static Material VillageMat(string name, float metres, float smooth)
         {
-            var m = TexMat(name, $"{VillageTexDir}/{name}.jpg", Color.white, smooth, false, $"{VillageTexDir}/{name}_N.jpg");
+            // "PG_": the Benouville village has its own Village_Slate / Village_Render materials - one name, one asset, so
+            // building one level must not repaint the other
+            var m = TexMat("PG_" + name, $"{VillageTexDir}/{name}.jpg", Color.white, smooth, false, $"{VillageTexDir}/{name}_N.jpg");
             var scale = Vector2.one / metres;   // the box meshes carry their UVs in metres
             m.SetTextureScale("_BaseMap", scale); m.mainTextureScale = scale;
             EditorUtility.SetDirty(m);
@@ -112,6 +114,26 @@ namespace StansGame.EditorTools
             return h.gameObject;
         }
 
+        /// <summary>One box collider round a placed model (as SmeProp does).</summary>
+        static void SolidBox(GameObject go)
+        {
+            var b = WorldBounds(go);
+            var bc = go.AddComponent<BoxCollider>();
+            bc.center = go.transform.InverseTransformPoint(b.center);
+            var sz = go.transform.InverseTransformVector(b.size);
+            bc.size = new Vector3(Mathf.Abs(sz.x), Mathf.Abs(sz.y), Mathf.Abs(sz.z));
+        }
+
+        /// <summary>A camp fire (Joan's camp-fire) with a low warm light over the embers.</summary>
+        static void CampFire(Transform parent, Vector3 pos)
+        {
+            var f = PgModel($"{PgProps}/CampFire.fbx", parent, pos, Random.Range(0f, 360f), $"{PgProps}/Textures/CampFire", "Camp fire");
+            if (!f) return;
+            var l = new GameObject("Embers (light)").AddComponent<Light>(); l.transform.SetParent(f.transform, false);
+            l.transform.position = pos + Vector3.up * 0.5f;
+            l.type = LightType.Point; l.range = 6f; l.intensity = 1.6f; l.color = new Color(1f, 0.55f, 0.25f); l.shadows = LightShadows.None;
+        }
+
         static void BuildVillage(Transform root, List<Bounds> keepOut)
         {
             var g = Group("Hamlet (texture test)", root);
@@ -160,9 +182,15 @@ namespace StansGame.EditorTools
             foreach (float side in new[] { -1f, 1f })
                 foreach (float x0 in new[] { -35f, 6.5f })
                     VBox("Garden wall", g, new Vector3(x0 + 14.25f, 0.6f, StreetZ + side * 18.5f), Vector3.zero, new Vector3(28.5f, 1.2f, 0.5f), rubble);
-            var pump = new GameObject("Village pump").transform; pump.SetParent(g); pump.position = new Vector3(5.5f, 0f, StreetZ + 3.5f);
-            VBox("Pump trough", pump, new Vector3(0f, 0.35f, 0f), Vector3.zero, new Vector3(1.8f, 0.7f, 0.8f), lime);
-            Prim(PrimitiveType.Cylinder, "Pump", pump, new Vector3(0f, 1.0f, -0.25f), Vector3.zero, new Vector3(0.25f, 0.65f, 0.25f), Mat("SME_Iron", new Color(0.1f, 0.1f, 0.1f), 0.4f, 0.8f), true);
+            // the village well with its iron hand pump (Joan's old-water-pump, Models/Source~/props_batch4.py), else a simple one
+            var well = PgModel($"{PgProps}/WaterPump.fbx", g, new Vector3(5.5f, 0f, StreetZ + 3.5f), 200f, $"{PgProps}/Textures/WaterPump", "Village well and pump");
+            if (well) SolidBox(well);
+            else
+            {
+                var pump = new GameObject("Village pump").transform; pump.SetParent(g); pump.position = new Vector3(5.5f, 0f, StreetZ + 3.5f);
+                VBox("Pump trough", pump, new Vector3(0f, 0.35f, 0f), Vector3.zero, new Vector3(1.8f, 0.7f, 0.8f), lime);
+                Prim(PrimitiveType.Cylinder, "Pump", pump, new Vector3(0f, 1.0f, -0.25f), Vector3.zero, new Vector3(0.25f, 0.65f, 0.25f), Mat("SME_Iron", new Color(0.1f, 0.1f, 0.1f), 0.4f, 0.8f), true);
+            }
             // a few things about the street (the props Joan downloaded for Sainte-Mère-Église)
             foreach (var (f, p, y) in new[] { ("Barrel", new Vector3(-2.8f, 0f, StreetZ - 4.2f), 0f), ("Barrel", new Vector3(-3.5f, 0f, StreetZ - 4.6f), 40f),
                                               ("CrateSmall", new Vector3(18.6f, 0f, StreetZ + 3.6f), 10f), ("Bucket", new Vector3(6.6f, 0f, StreetZ + 3.0f), 0f),

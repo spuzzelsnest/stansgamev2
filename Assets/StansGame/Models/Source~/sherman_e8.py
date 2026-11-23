@@ -49,6 +49,15 @@ P = [o.matrix_world @ v.co for o in objs.values() for v in o.data.vertices]
 lo = Vector([min(p[i] for p in P) for i in range(3)]); hi = Vector([max(p[i] for p in P) for i in range(3)])
 print('size', [round(x, 2) for x in hi - lo], 'ring', [round(x, 2) for x in ring], 'trunnion', [round(x, 2) for x in trunnion], 'muzzle y', round(muzzle.y, 2))
 for o in objs.values(): print(o.name, len(o.data.polygons))
+# outward normals (the generated mesh has patches facing in: holes in Unity, printscreen 30), and no parents in
+# the file (the nested gun came into Unity at 1/100 size); the game finds M4_Turret, M4_Gun, M4_Muzzle by name
+import bmesh as _bm
+for o in objs.values():
+    b = _bm.new(); b.from_mesh(o.data); _bm.ops.recalc_face_normals(b, faces=b.faces); b.to_mesh(o.data); b.free()
+bpy.context.view_layer.update()
+for o in list(bpy.data.objects):
+    mw = o.matrix_world.copy(); o.parent = None; o.matrix_world = mw
+bpy.context.view_layer.update()
 bpy.ops.export_scene.fbx(filepath=OUT, use_selection=False, axis_forward='-Z', axis_up='Y', apply_unit_scale=True, bake_space_transform=True, mesh_smooth_type='FACE')
 # check: the turret turned 40 degrees, the gun raised 10
 objs['turret'].rotation_euler = (0, 0, math.radians(40)); objs['gun'].rotation_euler = (math.radians(10), 0, 0)

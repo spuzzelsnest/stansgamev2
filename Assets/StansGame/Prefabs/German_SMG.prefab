@@ -147,6 +147,7 @@ MonoBehaviour:
   handOffset: {x: 0, y: 0.02, z: 0.05}
   aimSource: {fileID: 0}
   maxPitch: 35
+  slingArms: 0
 --- !u!1 &8062356009016130198
 GameObject:
   m_ObjectHideFlags: 0
@@ -390,6 +391,9 @@ MonoBehaviour:
   supportHand: {x: 0, y: -0.03, z: 0.22}
   magazinePoint: {x: 0, y: -0.12, z: 0.06}
   handOffset: {x: 0, y: 0, z: 0}
+  magazine: {fileID: 0}
+  magazinePull: {x: 0, y: -0.2, z: 0}
+  cockingPoint: {x: 0, y: 0, z: 0}
   projectile: {fileID: 0}
   projectileSpeed: 77
 --- !u!82 &4472701183887095577

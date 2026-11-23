@@ -2,7 +2,7 @@
 # that week: stMereEglise07 / 13 in _downloads/Photos/Sainte-Mere-Eglise).
 #   Romanesque nave with a steep slate roof and a lean-to south aisle; the square crossing tower with a belfry of paired
 #   louvred lancets, corner pinnacles and a saddleback slate roof with a clock in each gable; a Gothic choir with a flat
-#   east end and a three-light window; buttresses; the low rubble churchyard wall with gate piers and a few graves.
+#   east end and a three-light window; buttresses; the classical south chapel; the rubble churchyard wall with gate piers and pasted bills (no graves).
 # Blender: X = east, Y = north, Z = up, metres, ground at z = 0. Origin = centre of the tower on the ground.
 # Markers: TowerMarker (top of the saddleback ridge), SteeleMarker (tip of the north-west pinnacle).
 # Materials (textures from church_tex.py, UVs in metres / tile): SME_Rubble 4 m, SME_Ashlar 2 m, SME_Slate 2 m, SME_Oak 2 m,
@@ -94,7 +94,19 @@ def arch(u0, w, zb, h, steps=7):
         a = math.radians(60 * k / steps); pts.append((u0 + w / 2 - r * math.cos(a), spring + r * math.sin(a)))
     return pts
 
-def opening(wall, u0, w, zb, h, fill='glass', frame=0.24, depth=0.16, lights=1, louvres=False, sill=True):
+def round_arch(u0, w, zb, h, steps=9):
+    """outline of a round-headed (semicircular) window: width w, sill zb, total height h"""
+    r = w / 2; spring = zb + h - r
+    return [(u0 - r, zb), (u0 + r, zb)] + [(u0 + r * math.cos(math.pi * k / steps), spring + r * math.sin(math.pi * k / steps)) for k in range(steps + 1)]
+
+def opening(wall, u0, w, zb, h, fill='glass', frame=0.24, depth=0.16, lights=1, louvres=False, sill=True, round_head=False):
+    global arch
+    pointed = arch
+    if round_head: arch = round_arch
+    try: _opening(wall, u0, w, zb, h, fill, frame, depth, lights, louvres, sill)
+    finally: arch = pointed
+
+def _opening(wall, u0, w, zb, h, fill='glass', frame=0.24, depth=0.16, lights=1, louvres=False, sill=True):
     out = arch(u0, w, zb, h)
     # the dark opening, a hair proud of the wall
     prism([wall.p(u, z, 0.0) for u, z in out], (0, 0, 0), tuple(wall.n * 0.03), fill)
@@ -216,6 +228,20 @@ bar((-T - 0.2, 0, TR + 0.4), (-T - 0.2, 0, TR + 2.2), 0.1, 0.1, 'iron'); bar((-T
 bar((T + 0.2, 0, TR + 0.4), (T + 0.2, 0, TR + 1.9), 0.06, 0.06, 'iron')                          # weathercock rod
 faces([(T + 0.2, -0.05, TR + 1.6), (T + 0.2, -0.05, TR + 2.1), (T + 0.75, -0.05, TR + 1.75), (T - 0.3, -0.05, TR + 1.7)], [(0, 2, 1), (0, 1, 3)], 'iron')
 
+# ================================================================== the south chapel (stMereEglise07, 13)
+# A later classical block against the south face of the tower: rendered walls, round-headed windows under brick
+# relieving arches, a hipped slate roof dying into the tower.
+SX0, SX1, SY0, SY1, SE = -4.0, 4.4, -T, -10.9, 8.2
+box(SX0, SX1, SY1, SY0, 0, SE, 'ashlar')
+box(SX0 - 0.15, SX1 + 0.15, SY1 - 0.15, SY0, 0, 0.6, 'ashlar')                                    # plinth
+for z0, z1, o in ((SE - 0.35, SE, 0.18),): box(SX0 - o, SX1 + o, SY1 - o, SY0, z0, z1, 'ashlar')    # cornice
+sw = Wall((0, SY1, 0), (-1, 0, 0), (0, -1, 0))
+for u in (-2.3, 1.9): opening(sw, u, 1.5, 2.4, 3.6, round_head=True, frame=0.3)
+ew = Wall((SX1, 0, 0), (0, 1, 0), (1, 0, 0)); opening(ew, -7.8, 1.7, 2.2, 3.9, round_head=True, frame=0.3)
+hw = (SX1 - SX0) / 2; RX = (SX0 + SX1) / 2; RZ = SE + hw * 0.9; RY = SY1 + hw
+faces([(SX0 - 0.35, SY1 - 0.35, SE), (SX1 + 0.35, SY1 - 0.35, SE), (SX1 + 0.35, SY0, SE), (SX0 - 0.35, SY0, SE), (RX, RY, RZ), (RX, SY0, RZ)],
+      [(0, 3, 2, 1), (3, 0, 4, 5), (1, 2, 5, 4), (0, 1, 4), (2, 3, 5)], 'slate')
+
 # ================================================================== choir (east of the tower)
 CX0, CX1, CHW, CE = T, 18.0, 4.3, 8.0
 CR = CE + CHW * PITCH
@@ -237,7 +263,8 @@ slab((9.4, CHW + 3.5, 3.4), (14.2, CHW + 3.5, 3.4), (9.4, CHW, 5.4), (14.2, CHW,
 sac = Wall((0, CHW + 3.2, 0), (1, 0, 0), (0, 1, 0)); opening(sac, 11.8, 0.8, 1.2, 1.8)
 
 # ================================================================== churchyard: low rubble wall, gate piers, graves
-WY, WX0, WX1, WT, WH = 11.0, -31.0, 27.0, 0.55, 1.05
+WY, WX0, WX1, WT, WH = 11.0, -31.0, 27.0, 0.55, 1.5   # chest-high on the street (stMereEglise07, 13)
+WYS = 13.0                         # the south wall, clear of the south chapel
 def wall_run(p, q):
     p, q = Vector((*p, 0)), Vector((*q, 0)); d = (q - p); L = d.length; a = d / L
     side = Vector((-a.y, a.x, 0))
@@ -249,29 +276,20 @@ def pier(x, y):
     box(x - 0.4, x + 0.4, y - 0.4, y + 0.4, 0, 1.6, 'ashlar'); pyramid(x, y, 0.9, 1.6, 2.1)
 GATE_S = (8.5, 11.5); GATE_W = (-1.8, 1.8)
 wall_run((WX0, WY), (WX1, WY))
-wall_run((WX0, -WY), (GATE_S[0] - 0.4, -WY)); wall_run((GATE_S[1] + 0.4, -WY), (WX1, -WY))
-wall_run((WX0, -WY), (WX0, GATE_W[0] - 0.4)); wall_run((WX0, GATE_W[1] + 0.4), (WX0, WY))
-wall_run((WX1, -WY), (WX1, WY))
-for x in GATE_S: pier(x + (-0.4 if x < 10 else 0.4), -WY)
+wall_run((WX0, -WYS), (GATE_S[0] - 0.4, -WYS)); wall_run((GATE_S[1] + 0.4, -WYS), (WX1, -WYS))
+wall_run((WX0, -WYS), (WX0, GATE_W[0] - 0.4)); wall_run((WX0, GATE_W[1] + 0.4), (WX0, WY))
+wall_run((WX1, -WYS), (WX1, WY))
+for x in GATE_S: pier(x + (-0.4 if x < 10 else 0.4), -WYS)
 for y in GATE_W: pier(WX0, y + (-0.4 if y < 0 else 0.4))
+# No graves (Joan, 23 Nov: the churchyard is kept clear for play).
+# Bills pasted on the street side of the south wall, as in stMereEglise13: German notices and the mairie's posters.
 import random
 rnd = random.Random(6)
-for i in range(22):                # graves: the north side and round the choir
-    while True:
-        x, y = rnd.uniform(-29, 25), rnd.uniform(-9.8, 9.8)
-        inside_church = (NX0 - 1.5 < x < NX1 and -NHW - AW - 1.5 < y < NHW + 1.6) or (-T - 1 < x < CX1 + 1.8 and -CHW - 1.6 < y < CHW + 3.6)
-        path = abs(y) < 2.2 and x < NX0 or (9 < x < 11 and y < -7)
-        if not inside_church and not path: break
-    yaw = math.radians(rnd.uniform(-6, 6))
-    if rnd.random() < 0.6:          # headstone with a rounded top, facing east-west like the church
-        h = rnd.uniform(0.6, 1.0); w = rnd.uniform(0.45, 0.65)
-        prof = [(-w / 2, 0), (w / 2, 0), (w / 2, h - w / 2)] + [(w / 2 * math.cos(math.pi * k / 6), h - w / 2 + w / 2 * math.sin(math.pi * k / 6)) for k in range(1, 6)] + [(-w / 2, h - w / 2)]
-        rot = Matrix.Rotation(yaw, 3, 'Z')
-        pts = [tuple(rot @ Vector((-0.06, u, z)) + Vector((x, y, 0))) for u, z in prof]
-        prism(pts, (0, 0, 0), tuple(rot @ Vector((0.12, 0, 0))), 'ashlar')
-        box(x + 0.15, x + 1.9, y - 0.4, y + 0.4, 0, 0.12, 'ashlar')
-    else:                           # an iron cross
-        bar((x, y, 0), (x, y, 1.2), 0.06, 0.06, 'iron'); bar((x, y - 0.3, 0.9), (x, y + 0.3, 0.9), 0.06, 0.06, 'iron')
+for i in range(7):
+    x = rnd.uniform(-26, 22)
+    if GATE_S[0] - 1.5 < x < GATE_S[1] + 1.5: continue
+    w, h = rnd.uniform(0.45, 0.8), rnd.uniform(0.55, 0.9)
+    box(x - w / 2, x + w / 2, -WYS - WT / 2 - 0.035, -WYS - WT / 2 - 0.01, 0.55, 0.55 + h, 'clock')
 
 # ================================================================== mesh, UVs, markers, export
 bmesh.ops.recalc_face_normals(bm, faces=bm.faces)   # every piece is a closed solid: point all faces outwards

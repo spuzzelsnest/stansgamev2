@@ -60,7 +60,7 @@ MonoBehaviour:
   impactForce: 60
   muzzle: {fileID: 6414249610931031961}
   muzzleFlash: {fileID: 0}
-  muzzleLight: {fileID: 6137971077485627079}
+  muzzleLight: {fileID: 6641511519368415046}
   audioSource: {fileID: 5743208522044489518}
   fireClip: {fileID: 0}
   reloadClip: {fileID: 0}
@@ -274,6 +274,7 @@ MonoBehaviour:
   handOffset: {x: 0, y: 0.02, z: 0.05}
   aimSource: {fileID: 0}
   maxPitch: 35
+  slingArms: 0
 --- !u!1 &5373979378088703697
 GameObject:
   m_ObjectHideFlags: 0
@@ -314,7 +315,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5373979378088703697}
-  m_Mesh: {fileID: -1353199818413532906, guid: eb92bc5047eede24bb5a4289ee56ea57, type: 2}
+  m_Mesh: {fileID: -5158200319617327538, guid: eb92bc5047eede24bb5a4289ee56ea57, type: 2}
 --- !u!23 &1395063597534503178
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -426,7 +427,7 @@ MonoBehaviour:
   impactForce: 30
   muzzle: {fileID: 2980241566667143554}
   muzzleFlash: {fileID: 0}
-  muzzleLight: {fileID: 8089715542021404589}
+  muzzleLight: {fileID: 9036922335940605053}
   audioSource: {fileID: 4265703221491567074}
   fireClip: {fileID: 0}
   reloadClip: {fileID: 0}
@@ -542,7 +543,7 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1 &5950065388924645489
+--- !u!1 &6713500084153341923
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -550,8 +551,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4707087271719113308}
-  - component: {fileID: 8089715542021404589}
+  - component: {fileID: 3177095090944386621}
+  - component: {fileID: 9036922335940605053}
   m_Layer: 0
   m_Name: Muzzle light
   m_TagString: Untagged
@@ -559,13 +560,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4707087271719113308
+--- !u!4 &3177095090944386621
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5950065388924645489}
+  m_GameObject: {fileID: 6713500084153341923}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -574,13 +575,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2980241566667143554}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &8089715542021404589
+--- !u!108 &9036922335940605053
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5950065388924645489}
+  m_GameObject: {fileID: 6713500084153341923}
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 2
@@ -639,7 +640,7 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!1 &8180541594124242761
+--- !u!1 &8967184296492637615
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -647,8 +648,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4408962334175393404}
-  - component: {fileID: 6137971077485627079}
+  - component: {fileID: 25403342907555295}
+  - component: {fileID: 6641511519368415046}
   m_Layer: 0
   m_Name: Muzzle light
   m_TagString: Untagged
@@ -656,13 +657,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4408962334175393404
+--- !u!4 &25403342907555295
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8180541594124242761}
+  m_GameObject: {fileID: 8967184296492637615}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -671,13 +672,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6414249610931031961}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &6137971077485627079
+--- !u!108 &6641511519368415046
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8180541594124242761}
+  m_GameObject: {fileID: 8967184296492637615}
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 2
@@ -800,7 +801,7 @@ PrefabInstance:
       addedObject: {fileID: 3927658820957106985}
     - targetCorrespondingSourceObject: {fileID: 5843768374966347681, guid: 526b9ad5cd9474343b198c673ed690ab, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4408962334175393404}
+      addedObject: {fileID: 25403342907555295}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 526b9ad5cd9474343b198c673ed690ab, type: 3}
 --- !u!4 &4787314937545302735 stripped
@@ -875,7 +876,7 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1065037483785816486, guid: 68de7f5343c3d1c4493d4234333a1f72, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4707087271719113308}
+      addedObject: {fileID: 3177095090944386621}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 68de7f5343c3d1c4493d4234333a1f72, type: 3}
 --- !u!4 &2980241566667143554 stripped

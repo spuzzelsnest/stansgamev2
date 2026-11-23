@@ -97,6 +97,182 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!1 &5461635443419950833
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4647838867708900427}
+  - component: {fileID: 976670899503202452}
+  - component: {fileID: 1947612142594882253}
+  m_Layer: 0
+  m_Name: MG42
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4647838867708900427
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5461635443419950833}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3546242485571288311}
+  m_Father: {fileID: 7899237765664324072}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &976670899503202452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5461635443419950833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe72d92ef94b9ed47a16f3e304ab2e7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StansGame.Weapon
+  displayName: MG42
+  slot: 0
+  damage: 20
+  roundsPerMinute: 1200
+  automatic: 1
+  magazineSize: 50
+  spareMagazines: 6
+  reloadTime: 2.4
+  range: 200
+  hipSpread: 3.5
+  aimSpread: 0.8
+  impactForce: 60
+  muzzle: {fileID: 3692480765680435885}
+  muzzleFlash: {fileID: 0}
+  muzzleLight: {fileID: 1798532016607771185}
+  audioSource: {fileID: 1947612142594882253}
+  fireClip: {fileID: 0}
+  reloadClip: {fileID: 0}
+  emptyClip: {fileID: 0}
+  lastRoundClip: {fileID: 0}
+  impactPrefab: {fileID: 0}
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  hold: 0
+  supportHand: {x: 0, y: -0.03, z: 0.22}
+  magazinePoint: {x: 0, y: -0.12, z: 0.06}
+  handOffset: {x: 0, y: 0, z: 0}
+  magazine: {fileID: 0}
+  magazinePull: {x: 0, y: -0.2, z: 0}
+  cockingPoint: {x: 0, y: 0, z: 0}
+  projectile: {fileID: 0}
+  projectileSpeed: 77
+--- !u!82 &1947612142594882253
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5461635443419950833}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 400
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &7584299577694314372
 GameObject:
   m_ObjectHideFlags: 0
@@ -194,7 +370,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StansGame.SoldierAI
   mode: 0
   advanceTarget: {fileID: 0}
-  weapon: {fileID: 3098315899798728293}
+  weapon: {fileID: 976670899503202452}
   viewRange: 70
   nightViewRange: 35
   fieldOfView: 140
@@ -404,7 +580,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8957534403264932460}
+  - {fileID: 4647838867708900427}
   m_Father: {fileID: 6379396193536508362}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &815068647972602850
@@ -424,182 +600,7 @@ MonoBehaviour:
   handOffset: {x: 0, y: 0.02, z: 0.05}
   aimSource: {fileID: 0}
   maxPitch: 35
---- !u!1 &9056673066957023375
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8957534403264932460}
-  - component: {fileID: 3098315899798728293}
-  - component: {fileID: 3588728375404266542}
-  m_Layer: 0
-  m_Name: MG42
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8957534403264932460
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9056673066957023375}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 3546242485571288311}
-  m_Father: {fileID: 7899237765664324072}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3098315899798728293
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9056673066957023375}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe72d92ef94b9ed47a16f3e304ab2e7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StansGame.Weapon
-  displayName: MG42
-  slot: 0
-  damage: 20
-  roundsPerMinute: 1200
-  automatic: 1
-  magazineSize: 50
-  spareMagazines: 6
-  reloadTime: 2.4
-  range: 200
-  hipSpread: 3.5
-  aimSpread: 0.8
-  impactForce: 60
-  muzzle: {fileID: 3692480765680435885}
-  muzzleFlash: {fileID: 0}
-  muzzleLight: {fileID: 1798532016607771185}
-  audioSource: {fileID: 3588728375404266542}
-  fireClip: {fileID: 0}
-  reloadClip: {fileID: 0}
-  emptyClip: {fileID: 0}
-  lastRoundClip: {fileID: 0}
-  impactPrefab: {fileID: 0}
-  hitMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  hold: 0
-  supportHand: {x: 0, y: -0.03, z: 0.22}
-  magazinePoint: {x: 0, y: -0.12, z: 0.06}
-  handOffset: {x: 0, y: 0, z: 0}
-  magazine: {fileID: 0}
-  magazinePull: {x: 0, y: -0.2, z: 0}
-  cockingPoint: {x: 0, y: 0, z: 0}
-  projectile: {fileID: 0}
-  projectileSpeed: 77
---- !u!82 &3588728375404266542
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9056673066957023375}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 400
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  slingArms: 0
 --- !u!1001 &3327358252043779470
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1899,7 +1900,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 8957534403264932460}
+    m_TransformParent: {fileID: 4647838867708900427}
     m_Modifications:
     - target: {fileID: 7133642664058975160, guid: 2b1dce03e99245b48831f592fd49193c, type: 3}
       propertyPath: m_Name

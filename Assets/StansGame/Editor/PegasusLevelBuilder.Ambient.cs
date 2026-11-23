@@ -115,7 +115,7 @@ namespace StansGame.EditorTools
                 if (!ai) continue;
                 // the second man walks the same round three paces behind (same pauses, so they stay together)
                 var r = new Vector3[route.Length];
-                for (int k = 0; k < route.Length; k++) r[k] = route[k] - dir * (i * 3f);
+                for (int k = 0; k < route.Length; k++) r[k] = k == 0 ? route[k] - dir * (i * 3f) : route[k];   // the same path, so he never cuts through a bunker or sandbags
                 ai.patrolRoute = r; ai.patrolPause = 2.5f; ai.walkSpeed = 1.25f;
                 ai.sleepsUntilAlarm = false; ai.combatRoam = 10f;
             }
@@ -205,7 +205,7 @@ namespace StansGame.EditorTools
         static void PegasusWindowLights(Transform env)
         {
             var bld = env.Find("Buildings");
-            if (bld) WindowLightsFor(bld, 6644, 0.3f, 0f, Vector3.zero, 40);
+            if (bld) WindowLightsFor(bld, 6644, 0.12f, 0f, Vector3.zero, 16);   // the blackout: only a few curtained windows show a glow
         }
 
         /// <summary>

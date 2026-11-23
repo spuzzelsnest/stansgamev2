@@ -25,43 +25,12 @@ namespace StansGame.EditorTools
         static void CommitAndPush()
         {
             if (running) { Debug.LogWarning("Stan's Game: git is still busy"); return; }
-            CommitMessageWindow.Ask(Push);
-        }
-
-        /// <summary>A small window asking what changed; the commit message is "Stan's Game V2 (date): what you typed".</summary>
-        class CommitMessageWindow : EditorWindow
-        {
-            string text = ""; System.Action<string> done; bool focused;
-            public static void Ask(System.Action<string> then)
-            {
-                var w = CreateInstance<CommitMessageWindow>();
-                w.titleContent = new GUIContent("Commit & push"); w.done = then;
-                w.minSize = w.maxSize = new Vector2(460f, 150f);
-                w.ShowUtility();
-            }
-            void OnGUI()
-            {
-                EditorGUILayout.LabelField("What changed? (one line, e.g. \"Proving Ground hills and Mixamo animations\")", EditorStyles.wordWrappedLabel);
-                GUI.SetNextControlName("msg");
-                text = EditorGUILayout.TextField(text);
-                if (!focused) { EditorGUI.FocusTextInControl("msg"); focused = true; }
-                GUILayout.FlexibleSpace();
-                using (new EditorGUILayout.HorizontalScope())
-                {
-                    GUILayout.FlexibleSpace();
-                    if (GUILayout.Button("Cancel", GUILayout.Width(90f))) Close();
-                    GUI.enabled = text.Trim().Length > 0;
-                    if (GUILayout.Button("Commit & push", GUILayout.Width(120f)) || (GUI.enabled && Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return))
-                    { var t = text.Trim(); Close(); done?.Invoke(t); }
-                    GUI.enabled = true;
-                }
-            }
-        }
-
-        static void Push(string what)
-        {
             AssetDatabase.SaveAssets();
-            string msg = $"Stan's Game V2 ({System.DateTime.Now:yyyy-MM-dd}): {what}\n\n" +
+            // the message: _downloads/commit_message.txt if it is there (write the next commit's title in it), else the old default
+            string custom = Path.Combine(Root, "_downloads", "commit_message.txt");
+            string title = File.Exists(custom) ? File.ReadAllText(custom).Trim() : "";
+            if (title.Length == 0) title = "Stan's Game V2: Pegasus Bridge level, soldiers, weapons, stances, crosshairs";
+            string msg = title + "\n\n" +
                          "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n" +
                          "Claude-Session: https://claude.ai/code/session_011ANkRibquZj7zCzW4NoPAP\n";
             string msgFile = Path.Combine(Root, "Temp", "git_commit_msg.txt");

@@ -41,7 +41,7 @@ namespace StansGame
                 TruckOnE();
                 return;
             }
-            foreach (var t in FindObjectsByType<TankController>())
+            foreach (var t in FindObjectsByType<TankController>(FindObjectsSortMode.None))
             {
                 if (t.HasDriver) continue;
                 var h = t.GetComponent<Health>();
@@ -79,8 +79,11 @@ namespace StansGame
             var loadout = GetComponent<Loadout>();
             if (loadout && loadout.NearbyPickup) return;   // E picks things up first
             cooldown = 0.5f;
-            if (NearbyTruck.CanEnter) NearbyTruck.Enter(soldier);   // the wheel if it's free, else a passenger seat
+            bool drive = NearbyTruck.CanEnter;
+            if (drive) NearbyTruck.Enter(soldier);   // the wheel if it's free, else a passenger seat
             else NearbyTruck.Ride(soldier);
+            // in Logs/Editor.log (and Logs/errors.txt): what E did, so "not drivable" can be read back
+            Debug.Log($"Stan's Game: E at the {NearbyTruck.displayName} - {(drive ? "drive" : "ride")}: driver {(NearbyTruck.HasLocalDriver(soldier) ? "in" : "NOT in")}, control {(soldier.enabled ? "still on" : "off")}");
         }
 
         // the prompt is drawn here, so it shows in every level (not only where a mission script draws it)

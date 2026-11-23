@@ -313,7 +313,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StansGame.NetChute
   ShowTopMostFoldoutHeaderGroup: 1
---- !u!1 &1588081630630302361
+--- !u!1 &3312888907671330926
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -321,8 +321,60 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3295368091368263705}
-  - component: {fileID: 1371101820905301812}
+  - component: {fileID: 8017269836274179898}
+  - component: {fileID: 3746261920231449823}
+  m_Layer: 0
+  m_Name: WeaponHolder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8017269836274179898
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3312888907671330926}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.2, y: 1.35, z: 0.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5686585816607493045}
+  - {fileID: 6921325507426239152}
+  m_Father: {fileID: 6155359864404144441}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3746261920231449823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3312888907671330926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8f67b2f3022c754ab72199f060f387a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StansGame.WeaponHolder
+  hand: {fileID: 7094308347647869230}
+  animator: {fileID: 1326074281667899543}
+  handOffset: {x: 0, y: 0.02, z: 0.05}
+  aimSource: {fileID: 0}
+  maxPitch: 35
+  slingArms: 0
+--- !u!1 &3572972279285588442
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7574251420284998095}
+  - component: {fileID: 9036144728945760198}
   m_Layer: 0
   m_Name: Muzzle light
   m_TagString: Untagged
@@ -330,28 +382,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3295368091368263705
+--- !u!4 &7574251420284998095
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1588081630630302361}
+  m_GameObject: {fileID: 3572972279285588442}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1416755115420448422}
+  m_Father: {fileID: 3458544740587815544}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &1371101820905301812
+--- !u!108 &9036144728945760198
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1588081630630302361}
+  m_GameObject: {fileID: 3572972279285588442}
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 2
@@ -410,7 +462,7 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!1 &3312888907671330926
+--- !u!1 &5558221599480544099
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -418,59 +470,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8017269836274179898}
-  - component: {fileID: 3746261920231449823}
-  m_Layer: 0
-  m_Name: WeaponHolder
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8017269836274179898
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3312888907671330926}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.2, y: 1.35, z: 0.3}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 5686585816607493045}
-  - {fileID: 6921325507426239152}
-  m_Father: {fileID: 6155359864404144441}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3746261920231449823
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3312888907671330926}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8f67b2f3022c754ab72199f060f387a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StansGame.WeaponHolder
-  hand: {fileID: 7094308347647869230}
-  animator: {fileID: 1326074281667899543}
-  handOffset: {x: 0, y: 0.02, z: 0.05}
-  aimSource: {fileID: 0}
-  maxPitch: 35
---- !u!1 &3572972279285588442
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7574251420284998095}
-  - component: {fileID: 9036144728945760198}
+  - component: {fileID: 6872136139165123419}
+  - component: {fileID: 6115569054433484732}
   m_Layer: 0
   m_Name: Muzzle light
   m_TagString: Untagged
@@ -478,28 +479,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7574251420284998095
+--- !u!4 &6872136139165123419
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3572972279285588442}
+  m_GameObject: {fileID: 5558221599480544099}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3458544740587815544}
+  m_Father: {fileID: 1416755115420448422}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!108 &9036144728945760198
+--- !u!108 &6115569054433484732
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3572972279285588442}
+  m_GameObject: {fileID: 5558221599480544099}
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 2
@@ -794,7 +795,7 @@ MonoBehaviour:
   impactForce: 30
   muzzle: {fileID: 1416755115420448422}
   muzzleFlash: {fileID: 0}
-  muzzleLight: {fileID: 1371101820905301812}
+  muzzleLight: {fileID: 6115569054433484732}
   audioSource: {fileID: 3895809228960709768}
   fireClip: {fileID: 0}
   reloadClip: {fileID: 0}
@@ -967,7 +968,7 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1065037483785816486, guid: 68de7f5343c3d1c4493d4234333a1f72, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3295368091368263705}
+      addedObject: {fileID: 6872136139165123419}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 68de7f5343c3d1c4493d4234333a1f72, type: 3}
 --- !u!4 &972007466565011440 stripped

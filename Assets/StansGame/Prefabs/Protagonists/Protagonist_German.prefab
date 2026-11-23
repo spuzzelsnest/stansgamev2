@@ -600,7 +600,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4236452651851562545}
+  m_Father: {fileID: 7459739572814717183}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1654383109039000176
 GameObject:
@@ -733,6 +733,39 @@ CapsuleCollider:
   m_Height: 0.47522417
   m_Direction: 1
   m_Center: {x: 0.0000000055879354, y: 0.19670326, z: 0.000000040978193}
+--- !u!1 &2118419242400753551
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7459739572814717183}
+  m_Layer: 0
+  m_Name: Kar98k
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7459739572814717183
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2118419242400753551}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.011672952, y: 0.019061614, z: 0.1665}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1506628535259503414}
+  - {fileID: 3108096192380271397}
+  m_Father: {fileID: 6540877006992625569}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2294624899129355813
 GameObject:
   m_ObjectHideFlags: 0
@@ -783,6 +816,7 @@ MonoBehaviour:
   handOffset: {x: 0, y: 0.02, z: 0.05}
   aimSource: {fileID: 0}
   maxPitch: 35
+  slingArms: 0
 --- !u!1 &2318684100871976989
 GameObject:
   m_ObjectHideFlags: 0
@@ -2104,39 +2138,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3796297757832466809}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &4905412488820368359
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4236452651851562545}
-  m_Layer: 0
-  m_Name: Kar98k
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4236452651851562545
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4905412488820368359}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.010513622, z: -0, w: 0.99994475}
-  m_LocalPosition: {x: 0, y: 0.019061614, z: 0.16669919}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1506628535259503414}
-  - {fileID: 3108096192380271397}
-  m_Father: {fileID: 6540877006992625569}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5345619520269840994
 GameObject:
   m_ObjectHideFlags: 0
@@ -2200,7 +2201,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4236452651851562545}
+  m_Father: {fileID: 7459739572814717183}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6605304978630385268
 MeshFilter:
@@ -2316,7 +2317,7 @@ Transform:
   m_GameObject: {fileID: 7331111108377509096}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.0000008959323, y: 0.09209801, z: 0.72182196}
+  m_LocalPosition: {x: 0, y: 0.09209801, z: 0.72150004}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2640,7 +2641,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4236452651851562545}
+  - {fileID: 7459739572814717183}
   - {fileID: 3833322015590661952}
   m_Father: {fileID: 1001312587958183606}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

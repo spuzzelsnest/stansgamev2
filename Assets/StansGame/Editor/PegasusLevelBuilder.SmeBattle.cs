@@ -84,7 +84,7 @@ namespace StansGame.EditorTools
                 "Sentry patrol 1 (N13)", "Sentry patrol 2 (N13)"));
             d.groups.Add(SmePatrolGroup("patrol-church", "Patrol round the church",
                 "Round the church, outside the churchyard wall.",
-                new[] { G(-40f, -20f), G(28f, -20f), G(28f, 18f), G(-40f, 18f) },
+                new[] { G(-40f, -20f), G(31.5f, -20f), G(31.5f, 22f), G(-40f, 22f) },   // clear of the wall and the square's trees
                 "Sentry patrol 3 (church)", "Sentry patrol 4 (church)"));
 
             d.groups.Add(new BattlePlan.Group
@@ -95,7 +95,7 @@ namespace StansGame.EditorTools
                 units = new List<BattlePlan.Unit>
                 {
                     U("MG42 at the town hall", SmeTownHall + new Vector3(-12f, 0f, -4f), 270f), U("Rifleman at the town hall", SmeTownHall + new Vector3(-10f, 0f, 8f), 270f),
-                    U("Rifleman behind the churchyard wall", new Vector3(-4f, 0f, -12.5f), 180f), U("MP40 by the church", new Vector3(20f, 0f, -12.5f), 180f),
+                    U("Rifleman behind the churchyard wall", new Vector3(-9f, 0f, -12f), 180f), U("MP40 by the church", new Vector3(20f, 0f, -12f), 180f),
                     U("Rifleman at the pump", SmePump + new Vector3(2f, 0f, -2f), 270f), U("Rifleman, rue General de Gaulle", new Vector3(SmeN13X + 3f, 0f, -140f), 180f),
                     U("Rifleman, square W", new Vector3(-84f, 0f, -15f), 90f),
                 },
@@ -117,7 +117,7 @@ namespace StansGame.EditorTools
             };
             var drops = new[]
             {
-                new Vector3(-120f, 0f, 40f), new Vector3(-70f, 0f, -30f), new Vector3(-25f, 0f, 30f), Vector3.zero,
+                new Vector3(-120f, 0f, 46f), new Vector3(-70f, 0f, -30f), new Vector3(-25f, 0f, 24f), Vector3.zero,   // 1 and 3 in the streets, not in a house (paratrooper 6 falls into the burning house, as one did)
                 new Vector3(5f, 0f, -26f), SmeFireHouse, new Vector3(20f, 0f, 28f), new Vector3(25f, 0f, -40f),
                 new Vector3(100f, 0f, -90f), new Vector3(160f, 0f, 40f),
             };

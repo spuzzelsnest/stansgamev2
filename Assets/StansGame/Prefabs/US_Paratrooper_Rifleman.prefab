@@ -147,6 +147,7 @@ MonoBehaviour:
   handOffset: {x: 0, y: 0.02, z: 0.05}
   aimSource: {fileID: 0}
   maxPitch: 35
+  slingArms: 0
 --- !u!1 &8446969266213046713
 GameObject:
   m_ObjectHideFlags: 0

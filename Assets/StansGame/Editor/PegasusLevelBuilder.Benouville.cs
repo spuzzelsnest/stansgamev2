@@ -237,6 +237,7 @@ namespace StansGame.EditorTools
 
             AdoptBattle("ChateauBenouville", root, Faction.German, BenouvilleCommanders);   // the Germans attack, A Company holds
 
+            DressBuildings(root, "ChateauBenouville");
             string path = SceneDir + "/ChateauBenouville.unity";
             EditorSceneManager.SaveScene(scene, path);
 #if STANS_NET

@@ -126,6 +126,7 @@ namespace StansGame
 
         Rigidbody rb;
         SoldierController driver;
+        float enteredAt;
         float throttle, aimYaw, aimPitch, nextShot, cycle = 1f;
         int barrel, roundsFired, lastFlash = -1;
         float flashOff;
@@ -150,8 +151,9 @@ namespace StansGame
         public void Enter(SoldierController soldier)
         {
             if (aiControlled) return;
-            driver = soldier;
+            driver = soldier; enteredAt = Time.time;
             soldier.SetControlActive(false);
+            Debug.Log($"Stan's Game: {soldier.name} took the {name}");
             cam = soldier.cam;
             aimYaw = transform.eulerAngles.y;
             Cursor.lockState = CursorLockMode.Locked;
@@ -177,7 +179,7 @@ namespace StansGame
             var kb = Keyboard.current; var mouse = Mouse.current;
             if (kb == null || mouse == null) return;
 
-            if (kb.eKey.wasPressedThisFrame) { Exit(); return; }
+            if (kb.eKey.wasPressedThisFrame && Time.time > enteredAt + 0.4f) { Exit(); return; }   // not the press that got him in (the order of Updates is not fixed)
 
             Vector2 look = GameInput.LookDelta * mouseSensitivity;
             aimYaw += look.x;

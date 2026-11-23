@@ -147,6 +147,7 @@ MonoBehaviour:
   handOffset: {x: 0, y: 0.02, z: 0.05}
   aimSource: {fileID: 0}
   maxPitch: 35
+  slingArms: 0
 --- !u!1 &7938925170072911819
 GameObject:
   m_ObjectHideFlags: 0
@@ -640,7 +641,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9027514422788027025}
-  m_Mesh: {fileID: 8575459904985662219, guid: 72377e67ab32ebe4fa155ed9655091d6, type: 2}
+  m_Mesh: {fileID: 2856722689228971307, guid: 72377e67ab32ebe4fa155ed9655091d6, type: 2}
 --- !u!23 &6323180088341688850
 MeshRenderer:
   m_ObjectHideFlags: 0

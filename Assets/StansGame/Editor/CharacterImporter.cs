@@ -76,7 +76,9 @@ namespace StansGame.EditorTools
                 EditorUtility.DisplayProgressBar("Stan's Game", "Configuring weapons", 0.5f);
                 var sten = BuildWeaponPrefab("Sten", $"{ModelDir}/Weapons/Sten.fbx", 0.762f, StenMaterials());
                 var bren = BuildWeaponPrefab("Bren", $"{ModelDir}/Weapons/Bren_Mk2.fbx", 1.156f, BrenMaterials());
-                var lee = BuildWeaponPrefab("LeeEnfield", $"{ModelDir}/Weapons/LeeEnfield.fbx", 1.132f, new Dictionary<string, Material>());
+                // the SMLE Mk III (Joan's lee-enfield-smle-mkiii, 23 Nov, Models/Source~/lee_smle.py: same frame as the old model)
+                var lee = BuildWeaponPrefab("LeeEnfield", $"{ModelDir}/Weapons/LeeEnfield.fbx", 1.132f, new Dictionary<string, Material>
+                    { { "SMLE", LitMat("LeeEnfield", Tex($"{ModelDir}/Weapons/LeeEnfield_BaseColor.jpg"), Tex($"{ModelDir}/Weapons/LeeEnfield_Normal.jpg", true), null, 0.35f) } });
                 var kar = BuildWeaponPrefab("Kar98k", $"{ModelDir}/Weapons/Kar98k.fbx", 1.11f, new Dictionary<string, Material>
                     { { "material_0", LitMat("Kar98k", Tex($"{ModelDir}/Weapons/Kar98k_BaseColor.jpg"), Tex($"{ModelDir}/Weapons/Kar98k_Normal.jpg", true), null, 0.35f) } });
                 var mp40 = BuildWeaponPrefab("MP40", $"{ModelDir}/Weapons/MP40.fbx", 0.833f, new Dictionary<string, Material>

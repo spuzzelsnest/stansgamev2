@@ -144,7 +144,7 @@ namespace StansGame
             }
             if (n.Contains("sten"))
             {   Set(32, 7, 2.6f);                                            // 8 magazines in the airborne webbing
-                Hold(HoldStyle.SMG, new Vector3(0f, 0.055f, 0.03f), new Vector3(0f, 0.09f, 0.30f), new Vector3(-0.09f, 0.09f, 0.2f));
+                Hold(HoldStyle.SMG, new Vector3(0f, 0.055f, 0.03f), new Vector3(0f, 0.09f, 0.38f), new Vector3(-0.13f, 0.09f, 0.297f));
                 magazinePull = new Vector3(-0.2f, 0f, 0f); Cock(+1f, 0.02f); }   // the magazine slides out to the left; the cocking handle is in the slot on the right   // right hand round the trigger housing, the barrel sleeve in the left palm (never the side magazine)
             else if (n.Contains("bren"))
             {   Set(28, 8, 3.2f);                                            // 30-round magazine, loaded with 28 to stop jams
@@ -199,6 +199,8 @@ namespace StansGame
             if (initialised) return;
             initialised = true;
             ApplySpecs();
+            // the carrying sling (WeaponSling): every long weapon had one in 1944; pistols had a lanyard
+            if (hold != HoldStyle.Pistol && !GetComponent<WeaponSling>()) gameObject.AddComponent<WeaponSling>();
             Ammo = magazineSize;
             SpareRounds = magazineSize * spareMagazines;
             string n = displayName.ToLowerInvariant();
