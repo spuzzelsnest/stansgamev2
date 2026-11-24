@@ -46,6 +46,7 @@ Shader "StansGame/Water"
             TEXTURE2D(_PlanarReflectionTex); SAMPLER(sampler_PlanarReflectionTex);
             float _PlanarReflectionHeight;
             float _PlanarReflectionOn;
+            float _StansRain;   // Weather.cs: rain on the water roughens it
 
             struct Attributes { float4 positionOS : POSITION; };
             struct Varyings
@@ -75,6 +76,9 @@ Shader "StansGame/Water"
                 float3 n1 = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, uv + _Flow.xy * t), _NormalScale);
                 float3 n2 = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, uv * 1.73 + float2(0.37, 0.11) - _Flow.yx * t * 1.3), _NormalScale * 0.7);
                 float3 nt = normalize(float3(n1.xy + n2.xy, n1.z * n2.z));
+                // rain: a fine, fast-changing third layer of ripples
+                float3 n3 = UnpackNormalScale(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, uv * 7.3 + float2(t * 0.9, -t * 0.7)), _NormalScale * 1.6 * _StansRain);
+                nt = normalize(float3(nt.xy + n3.xy, nt.z));
                 float3 N = normalize(float3(nt.x, nt.z, nt.y));     // the surface lies flat: tangent x -> world x, y -> z
 
                 float3 V = GetWorldSpaceNormalizeViewDir(i.positionWS);

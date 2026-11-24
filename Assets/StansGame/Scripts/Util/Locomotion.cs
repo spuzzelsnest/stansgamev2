@@ -30,6 +30,43 @@ namespace StansGame
             // (kneeling and crawling have their own clips, played at their own pace)
             float want = upright ? Mathf.Clamp(rate, 0.6f, 1.5f) : 1f;
             a.speed = Mathf.MoveTowards(a.speed, want, dt * 3f);
+            Stairs(a);
+        }
+
+        // ------------------------------------------------------------------ stairs
+
+        static readonly System.Collections.Generic.Dictionary<Animator, StairsState> stairs = new System.Collections.Generic.Dictionary<Animator, StairsState>();
+        class StairsState { public Vector3 last; public float grade, since; public int now; public bool has, param; public float t; public CharacterController cc; }
+        static readonly int StairsId = Animator.StringToHash("Stairs");
+
+        /// <summary>
+        /// Going up or down stairs (or a bank as steep): sets the animator's "Stairs" to 1 or -1, so the stair clips play
+        /// instead of the flat walk. Worked out from how the character really moves - more than about 1 in 2.5 up or
+        /// down while walking - so it needs nothing in the level. Ordinary terrain slopes stay a normal walk.
+        /// </summary>
+        public static void Stairs(Animator a)
+        {
+            if (!stairs.TryGetValue(a, out var s))
+            {
+                s = new StairsState();
+                foreach (var p in a.parameters)
+                    if (p.nameHash == StairsId && p.type == AnimatorControllerParameterType.Int) s.param = true;
+                s.cc = a.GetComponentInParent<CharacterController>();
+                stairs[a] = s;
+            }
+            if (!s.param) return;
+            Vector3 pos = a.transform.position; float now = Time.time;
+            if (!s.has) { s.has = true; s.last = pos; s.t = now; return; }
+            float dt = now - s.t;
+            if (dt < 0.1f) return;   // measured over a tenth of a second, so one bump doesn't count
+            Vector3 d = pos - s.last; s.last = pos; s.t = now;
+            float flat = new Vector2(d.x, d.z).magnitude / dt, rise = d.y / dt;
+            float grade = flat > 0.4f && flat < 6f ? rise / flat : 0f;
+            if (s.cc && s.cc.enabled && !s.cc.isGrounded) grade = 0f;   // a jump or a fall is not a stair
+            s.grade = Mathf.Lerp(s.grade, grade, 0.5f);
+            int want = s.grade > 0.4f ? 1 : s.grade < -0.4f ? -1 : (Mathf.Abs(s.grade) < 0.2f ? 0 : s.now);
+            if (want != s.now) { if (now - s.since > 0.2f) { s.now = want; s.since = now; a.SetInteger(StairsId, want); } }
+            else s.since = now;
         }
     }
 }

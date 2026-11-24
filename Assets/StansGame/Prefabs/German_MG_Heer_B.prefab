@@ -276,6 +276,10 @@ MonoBehaviour:
       NameHash: 1080068516
       Synchronize: 1
       ParameterType: 3
+    - name: Stairs
+      NameHash: 655607502
+      Synchronize: 1
+      ParameterType: 3
   AnimatorParametersExpanded: 0
 --- !u!1 &3187995120068374347
 GameObject:
@@ -681,15 +685,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.9328981
+      value: 0.92253256
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.9328981
+      value: 0.92253256
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.9328981
+      value: 0.92253256
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
       propertyPath: m_LocalPosition.x
@@ -697,7 +701,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.09552997
+      value: 0.094468474
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
       propertyPath: m_LocalPosition.z
@@ -914,7 +918,7 @@ CharacterJoint:
   m_ConnectedBody: {fileID: 936093902741748436}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
-  m_Axis: {x: 0.00000011080404, y: 1, z: -0.0000009192422}
+  m_Axis: {x: 0.00000021473163, y: 1, z: -0.00000042593723}
   m_AutoConfigureConnectedAnchor: 1
   m_ConnectedAnchor: {x: 0, y: 0, z: 0}
   m_SwingAxis: {x: -0.9785202, y: 0.0000002979266, z: 0.20615087}
@@ -968,10 +972,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.06431567
-  m_Height: 0.31493998
+  m_Radius: 0.06503831
+  m_Height: 0.31566256
   m_Direction: 1
-  m_Center: {x: 0.00000006248856, y: 0.12531215, z: 0.00000012143566}
+  m_Center: {x: 0.000000050272593, y: 0.12531212, z: 0.00000006291072}
 --- !u!95 &2453865310739627258 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
@@ -1074,10 +1078,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.054668304
-  m_Height: 0.2553547
+  m_Radius: 0.05528255
+  m_Height: 0.25596884
   m_Direction: 1
-  m_Center: {x: 0.000000094376546, y: 0.1003432, z: 0.00000011441804}
+  m_Center: {x: 0.0000000687947, y: 0.10034314, z: 0.00000006038132}
 --- !u!1 &3154247022040615477 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6386480451222621022, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
@@ -1121,10 +1125,10 @@ CharacterJoint:
   m_ConnectedBody: {fileID: 7693143189341209209}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
-  m_Axis: {x: 0.000000070780516, y: 1.0000004, z: 0.000000074505806}
+  m_Axis: {x: 0.000000044703484, y: 1.0000004, z: 0.000000074505806}
   m_AutoConfigureConnectedAnchor: 1
   m_ConnectedAnchor: {x: 0, y: 0, z: 0}
-  m_SwingAxis: {x: -0.999994, y: 0.00000007339505, z: -0.0034686874}
+  m_SwingAxis: {x: -0.999994, y: 0.000000047291586, z: -0.0034686874}
   m_TwistLimitSpring:
     spring: 0
     damper: 0
@@ -1175,10 +1179,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.096473135
-  m_Height: 0.48552656
+  m_Radius: 0.097557105
+  m_Height: 0.4866106
   m_Direction: 1
-  m_Center: {x: 0.0000000046565947, y: 0.19452672, z: 0.000000013969676}
+  m_Center: {x: 0.0000000055879137, y: 0.19452675, z: 0.000000011175741}
 --- !u!1 &4532308505487280345 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3638193520734090830, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
@@ -1222,10 +1226,10 @@ CharacterJoint:
   m_ConnectedBody: {fileID: 936093902741748436}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
-  m_Axis: {x: -0.00000049145285, y: 1, z: -0.00000052385684}
+  m_Axis: {x: -0.00000049662066, y: 1, z: -0.0000005249456}
   m_AutoConfigureConnectedAnchor: 1
   m_ConnectedAnchor: {x: 0, y: 0, z: 0}
-  m_SwingAxis: {x: 0.9785202, y: 0.00000058889015, z: 0.20615093}
+  m_SwingAxis: {x: 0.9785202, y: 0.0000005941714, z: 0.20615093}
   m_TwistLimitSpring:
     spring: 0
     damper: 0
@@ -1276,10 +1280,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.064315654
-  m_Height: 0.31493995
+  m_Radius: 0.0650383
+  m_Height: 0.31566253
   m_Direction: 1
-  m_Center: {x: -0.000000074107746, y: 0.12531215, z: 0.00000012374787}
+  m_Center: {x: -0.000000074107746, y: 0.12531212, z: 0.00000012374787}
 --- !u!1 &5004033098116976912 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3897462237488877691, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
@@ -1377,8 +1381,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 3
-  m_Radius: 0.12863141
-  m_Center: {x: 1.3322676e-15, y: 0.08575497, z: 0.000000040978197}
+  m_Radius: 0.1300767
+  m_Center: {x: 0, y: 0.08671826, z: -0.050833665}
 --- !u!1 &5360433086325639463 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4108234674411243596, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
@@ -1422,10 +1426,10 @@ CharacterJoint:
   m_ConnectedBody: {fileID: 1430557905036042546}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
-  m_Axis: {x: -0.00000012107193, y: 1.0000004, z: -0.0000026673079}
+  m_Axis: {x: -0.00000013969839, y: 1.0000004, z: -0.0000026673079}
   m_AutoConfigureConnectedAnchor: 1
   m_ConnectedAnchor: {x: 0, y: 0, z: 0}
-  m_SwingAxis: {x: -0.99999446, y: -0.00000012917948, z: -0.0033340296}
+  m_SwingAxis: {x: -0.99999446, y: -0.00000014780933, z: -0.0033340296}
   m_TwistLimitSpring:
     spring: 0
     damper: 0
@@ -1476,10 +1480,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.08200218
-  m_Height: 0.47540867
+  m_Radius: 0.082923554
+  m_Height: 0.47633007
   m_Direction: 1
-  m_Center: {x: -0.0000000055879354, y: 0.19670326, z: 0.000000040978193}
+  m_Center: {x: -0.000000009313226, y: 0.19670326, z: 0.000000040978193}
 --- !u!4 &5917381562368953667 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2412161367050800168, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
@@ -1528,10 +1532,10 @@ CharacterJoint:
   m_ConnectedBody: {fileID: 1718167939939904364}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
-  m_Axis: {x: 0.00000012107193, y: 1.0000004, z: -0.0000026673079}
+  m_Axis: {x: 0.00000013969839, y: 1.0000004, z: -0.0000026673079}
   m_AutoConfigureConnectedAnchor: 1
   m_ConnectedAnchor: {x: 0, y: 0, z: 0}
-  m_SwingAxis: {x: -0.99999446, y: 0.00000012917948, z: 0.0033340296}
+  m_SwingAxis: {x: -0.99999446, y: 0.00000014780933, z: 0.0033340296}
   m_TwistLimitSpring:
     spring: 0
     damper: 0
@@ -1582,10 +1586,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.08200218
-  m_Height: 0.47540867
+  m_Radius: 0.082923554
+  m_Height: 0.47633007
   m_Direction: 1
-  m_Center: {x: 0.0000000055879354, y: 0.19670326, z: 0.000000040978193}
+  m_Center: {x: 0.000000009313226, y: 0.19670326, z: 0.000000040978193}
 --- !u!1 &7457269402853310255 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7774620517717459388, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
@@ -1629,10 +1633,10 @@ CharacterJoint:
   m_ConnectedBody: {fileID: 7693143189341209209}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
-  m_Axis: {x: -0.000000070780516, y: 1.0000004, z: 0.000000074505806}
+  m_Axis: {x: -0.000000044703484, y: 1.0000004, z: 0.000000074505806}
   m_AutoConfigureConnectedAnchor: 1
   m_ConnectedAnchor: {x: 0, y: 0, z: 0}
-  m_SwingAxis: {x: -0.999994, y: -0.00000007339505, z: 0.0034686874}
+  m_SwingAxis: {x: -0.999994, y: -0.000000047291586, z: 0.0034686874}
   m_TwistLimitSpring:
     spring: 0
     damper: 0
@@ -1683,10 +1687,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.096473135
-  m_Height: 0.48552656
+  m_Radius: 0.097557105
+  m_Height: 0.4866106
   m_Direction: 1
-  m_Center: {x: -0.0000000046565947, y: 0.19452672, z: 0.000000013969676}
+  m_Center: {x: -0.0000000055879137, y: 0.19452675, z: 0.000000011175741}
 --- !u!1 &8133869174049909418 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -8969417572210971711, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
@@ -1784,8 +1788,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 3
-  m_Size: {x: 0.3858943, y: 0.38334712, z: 0.24213466}
-  m_Center: {x: 0.0000000016534717, y: 0.16262011, z: 0.015387742}
+  m_Size: {x: 0.39023018, y: 0.38346264, z: 0.24502298}
+  m_Center: {x: 0.0000000016534711, y: 0.16262023, z: 0.015387736}
 --- !u!1 &8368622412144736467 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -8699787447509501512, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
@@ -1837,8 +1841,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 3
-  m_Size: {x: 0.3430171, y: 0.23582433, z: 0.23582433}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.34687123, y: 0.23847403, z: 0.23847403}
+  m_Center: {x: 0, y: 0.0000002384186, z: -0.000000012107222}
 --- !u!4 &8425616613146109568 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}
@@ -1887,10 +1891,10 @@ CharacterJoint:
   m_ConnectedBody: {fileID: 61770684023003435}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
-  m_Axis: {x: -0.0000009764886, y: 1, z: 0.0000004902425}
+  m_Axis: {x: -0.0000007030106, y: 1, z: -0.00000007684777}
   m_AutoConfigureConnectedAnchor: 1
   m_ConnectedAnchor: {x: 0, y: 0, z: 0}
-  m_SwingAxis: {x: 0.9030327, y: 0.00000067120686, z: 0.42957178}
+  m_SwingAxis: {x: 0.9030327, y: 0.00000066785316, z: 0.42957178}
   m_TwistLimitSpring:
     spring: 0
     damper: 0
@@ -1941,10 +1945,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Radius: 0.054668304
-  m_Height: 0.2553547
+  m_Radius: 0.05528255
+  m_Height: 0.2559689
   m_Direction: 1
-  m_Center: {x: -0.00000016869029, y: 0.1003432, z: 0.00000016663496}
+  m_Center: {x: -0.00000014310848, y: 0.10034317, z: 0.00000011259828}
 --- !u!1 &9198071207579384890 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b8d2b7319cd1c684cb48552971572ca3, type: 3}

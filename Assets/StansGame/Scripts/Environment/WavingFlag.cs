@@ -72,7 +72,8 @@ namespace StansGame
         {
             t += dt;
             // the wind gusts: a slow swell between about half and all of 'wind'
-            float gust = wind * (0.62f + 0.38f * Mathf.PerlinNoise(t * 0.11f + phase, 3.1f));
+            float w = Weather.Instance ? Mathf.Clamp01(0.15f + Weather.WindStrength) : wind;   // the level's wind, when it has weather
+            float gust = w * (0.62f + 0.38f * Mathf.PerlinNoise(t * 0.11f + phase, 3.1f));
             float time = t * speed * (0.75f + 0.5f * gust) + phase;
             for (int k = 0; k < rest.Length; k++)
             {

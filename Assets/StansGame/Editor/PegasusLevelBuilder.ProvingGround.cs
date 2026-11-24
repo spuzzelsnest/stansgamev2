@@ -225,7 +225,14 @@ namespace StansGame.EditorTools
             Slot(p => BuildArmour("Marder III M", park, p, 180f, Armour.Marder), "Marder III Ausf. M");
             Slot(p => BuildArmour("Jagdpanzer 38(t) Hetzer", park, p, 180f, Armour.Hetzer), "Jagdpanzer 38(t) (from mid-1944)");
             Slot(p => BuildArmour("Flakpanzer IV Wirbelwind", park, p, 180f, Armour.Wirbelwind), "Flakpanzer IV Wirbelwind (from July 1944)");
-            foreach (var hp in park.GetComponentsInChildren<Health>(true)) hp.regenPerSecond = Mathf.Max(hp.regenPerSecond, 50f);   // practice shots don't wreck them for good
+            // practice targets: they smoke and burn like the real thing (VehicleDamage), then are put right after 45 s
+            foreach (var hp in park.GetComponentsInChildren<Health>(true))
+            {
+                hp.regenPerSecond = Mathf.Max(hp.regenPerSecond, 8f);
+                if (!hp.GetComponent<TankController>() && !hp.GetComponent<TruckController>()) continue;
+                var vd = hp.GetComponent<VehicleDamage>(); if (!vd) vd = hp.gameObject.AddComponent<VehicleDamage>();
+                vd.repairAfter = 45f;
+            }
 
             // ------------------------------------------------ overhead
             var air = Group("Overhead", root);
@@ -309,6 +316,11 @@ namespace StansGame.EditorTools
             DressBuildings(root, "ProvingGround");
             DressVehicles(root, "ProvingGround"); DressFoliage(root, "ProvingGround");   // leaf and bark textures on the crowns, hedges and trunks (PegasusLevelBuilder.Foliage.cs)
               // see-through glass, markings (PegasusLevelBuilder.VehiclePaint.cs)
+            // the sky and the weather (level template 3a): a fine summer's afternoon; Stan's Game > Debug > Weather: ...
+            // changes it while playing, and DaySky turns the plain sky grey under the cloud and the rain
+            sun.gameObject.AddComponent<DaySky>().sun = sun;
+            AddWeather(root, WeatherKind.Clear, null, new Vector3(0.7f, 0f, -0.7f), 0.5f);
+
             string scenePath = $"{SceneDir}/{ProvingScene}.unity";
             EditorSceneManager.SaveScene(scene, scenePath);
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);

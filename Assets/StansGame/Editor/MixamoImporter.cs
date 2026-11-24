@@ -20,8 +20,8 @@ namespace StansGame.EditorTools
         public const string OutDir = "Assets/StansGame/Animations/Mixamo";
         const string TempDir = "Assets/StansGame/Animations/_MixamoTemp";
 
-        static readonly string[] OneShot = { "Death", "Dying", "Hit", "React", "Throw", "Reload", "Jump", "Salute", " To ", "Stop", "Turn", "Entering", "Exiting", "Pull Out", "Situp", "Honking", "Step" };
-        static readonly string[] KeepsHeight = { "Death", "Dying", "Prone", "Laying", "Crawl", "Situp", "Sitting", "Jump", "Kneel" };
+        static readonly string[] OneShot = { "Death", "Dying", "Hit", "React", "Throw", "Reload", "Jump", "Salute", " To ", "Stop", "Turn", "Entering", "Exiting", "Pull Out", "Situp", "Honking", "Step", "Standing Up", "Nod", "Shaking", "Gesture", "Sigh", "Shake", "Acknowledging", "Cocky", "Look Away" };
+        static readonly string[] KeepsHeight = { "Death", "Dying", "Prone", "Laying", "Crawl", "Situp", "Sitting", "Jump", "Kneel", "Standing Up" };
 
         [MenuItem("Stan's Game/Import Mixamo Animations", priority = 24)]
         public static void ImportAll()
@@ -38,6 +38,7 @@ namespace StansGame.EditorTools
                 {
                     string f = files[i];
                     string folder = new DirectoryInfo(Path.GetDirectoryName(f)).Name;
+                    if (folder == "_Animations") folder = "Common";   // loose clips in the main folder (the T-Pose)
                     string name = Path.GetFileNameWithoutExtension(f);
                     int at = name.LastIndexOf('@'); if (at >= 0) name = name.Substring(at + 1);
                     name = name.Trim();

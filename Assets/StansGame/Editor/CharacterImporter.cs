@@ -370,7 +370,7 @@ namespace StansGame.EditorTools
             inst.transform.SetParent(root.transform, false);
             // normalise height: 1.80 m to the top of the M40 helmet (a man of about 1.73 m)
             var b = WorldBounds(inst);
-            if (b.size.y > 0.1f) inst.transform.localScale *= 1.80f / b.size.y;
+            if (b.size.y > 0.1f) inst.transform.localScale *= 1.78f / b.size.y;
             b = WorldBounds(inst);
             inst.transform.localPosition -= new Vector3(0f, b.min.y, 0f);
 
@@ -465,18 +465,35 @@ namespace StansGame.EditorTools
                 c.radius = radius / lossy; c.height = local.magnitude + c.radius;
             }
             float Dist(Transform x, Transform y) => Vector3.Distance(x.position, y.position);
+            // the torso and head shapes centred front-to-back on the body itself (24 Nov 2026): on the Tripo rigs the
+            // spine bones run along the front of the body, so shapes centred on the bones sat half outside it
+            // (Models/Source~/ragdoll_overview.py shows it). Moved at most 12 cm, and only when off by more than 3 cm.
+            Vector3 fwd = a.transform.forward; float bodyF = 0f; bool hasBody = false;
+            foreach (var smr in a.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                var bb = smr.bounds;
+                bodyF = hasBody ? (bodyF + Vector3.Dot(bb.center - a.transform.position, fwd)) * 0.5f : Vector3.Dot(bb.center - a.transform.position, fwd);
+                hasBody = true;
+            }
+            Vector3 Centred(Vector3 p)
+            {
+                if (!hasBody) return p;
+                float d = Mathf.Clamp(bodyF - Vector3.Dot(p - a.transform.position, fwd), -0.12f, 0.12f);
+                return Mathf.Abs(d) < 0.03f ? p : p + fwd * d;
+            }
 
             Body(hips, 12f);
             var hb = hips.gameObject.AddComponent<BoxCollider>();
             hb.size = hips.InverseTransformVector(new Vector3(0.32f, 0.22f, 0.22f)); hb.size = new Vector3(Mathf.Abs(hb.size.x), Mathf.Abs(hb.size.y), Mathf.Abs(hb.size.z));
+            hb.center = hips.InverseTransformPoint(Centred(hips.position));
             Body(chest, 12f); Joint(chest, hips, -20f, 20f, 10f, 10f);
             var cb = chest.gameObject.AddComponent<BoxCollider>();
             float chestLen = Dist(chest, head) * 0.8f;
-            cb.center = chest.InverseTransformPoint(Vector3.Lerp(chest.position, head.position, 0.35f));
+            cb.center = chest.InverseTransformPoint(Centred(Vector3.Lerp(chest.position, head.position, 0.35f)));
             var cs = chest.InverseTransformVector(new Vector3(0.36f, chestLen, 0.24f)); cb.size = new Vector3(Mathf.Abs(cs.x), Mathf.Abs(cs.y), Mathf.Abs(cs.z));
             Body(head, 5f); Joint(head, chest, -40f, 25f, 25f, 0f);
             var hs = head.gameObject.AddComponent<SphereCollider>(); hs.radius = 0.12f / Mathf.Max(0.0001f, head.lossyScale.x);
-            hs.center = head.InverseTransformPoint(head.position + Vector3.up * 0.08f);
+            hs.center = head.InverseTransformPoint(Centred(head.position + Vector3.up * 0.08f));
             head.gameObject.name = head.gameObject.name.Contains("Head") ? head.gameObject.name : head.gameObject.name + "_Head";
 
             void Limb(HumanBodyBones upper, HumanBodyBones lower, HumanBodyBones end, Transform parent, float r, float massU, float massL, bool leg)

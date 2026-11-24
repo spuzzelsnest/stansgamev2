@@ -100,6 +100,7 @@ namespace StansGame.EditorTools
             foreach (var p in new[] { "Speed", "MoveX", "MoveZ" }) ac.AddParameter(p, AnimatorControllerParameterType.Float);
             foreach (var p in new[] { "Aiming", "Crouch", "Prone", "Swim", "Grounded", "Injured" }) ac.AddParameter(p, AnimatorControllerParameterType.Bool);
             ac.AddParameter("Action", AnimatorControllerParameterType.Int);
+            ac.AddParameter("Stairs", AnimatorControllerParameterType.Int);   // 1 going up, -1 going down (Locomotion.Stairs)
         }
 
         /// <summary>A 2D move tree: still in the middle, walk and run ahead, behind and to each side (left = the right clip mirrored).</summary>
@@ -180,8 +181,8 @@ namespace StansGame.EditorTools
             var still0 = (AnimatorConditionMode.Equals, 0f, "Action");
             Any(sm, prone, 0.45f, (AnimatorConditionMode.If, 0f, "Prone"), (AnimatorConditionMode.IfNot, 0f, "Swim"), still0);
             Any(sm, crouch, 0.25f, (AnimatorConditionMode.If, 0f, "Crouch"), (AnimatorConditionMode.IfNot, 0f, "Prone"), (AnimatorConditionMode.IfNot, 0f, "Swim"), still0);
-            Any(sm, aim, 0.2f, (AnimatorConditionMode.If, 0f, "Aiming"), (AnimatorConditionMode.IfNot, 0f, "Injured"), (AnimatorConditionMode.IfNot, 0f, "Crouch"), (AnimatorConditionMode.IfNot, 0f, "Prone"), (AnimatorConditionMode.IfNot, 0f, "Swim"), still0);
-            Any(sm, loco, 0.25f, (AnimatorConditionMode.IfNot, 0f, "Aiming"), (AnimatorConditionMode.IfNot, 0f, "Injured"), (AnimatorConditionMode.IfNot, 0f, "Crouch"), (AnimatorConditionMode.IfNot, 0f, "Prone"), (AnimatorConditionMode.IfNot, 0f, "Swim"), still0);
+            Any(sm, aim, 0.2f, (AnimatorConditionMode.Equals, 0f, "Stairs"), (AnimatorConditionMode.If, 0f, "Aiming"), (AnimatorConditionMode.IfNot, 0f, "Injured"), (AnimatorConditionMode.IfNot, 0f, "Crouch"), (AnimatorConditionMode.IfNot, 0f, "Prone"), (AnimatorConditionMode.IfNot, 0f, "Swim"), still0);
+            Any(sm, loco, 0.25f, (AnimatorConditionMode.Equals, 0f, "Stairs"), (AnimatorConditionMode.IfNot, 0f, "Aiming"), (AnimatorConditionMode.IfNot, 0f, "Injured"), (AnimatorConditionMode.IfNot, 0f, "Crouch"), (AnimatorConditionMode.IfNot, 0f, "Prone"), (AnimatorConditionMode.IfNot, 0f, "Swim"), still0);
             // badly hurt (Health sets "Injured" under 40%): the limping walk and run, clutching the wound when still
             const string I = "Male Injured Pack";
             var hurtIdle = Pick("injured still", M(I, "injured idle"));
@@ -189,8 +190,13 @@ namespace StansGame.EditorTools
             {
                 var hurt = MoveState(ac, "Injured", hurtIdle, Pick("injured walk", M(I, "injured walk")), Pick("injured run", M(I, "injured run")),
                                      Pick("injured backwards", M(I, "injured walk backwards")), Pick("injured run backwards", M(I, "injured run backwards")), null, null, 1.2f, 2.6f);
-                Any(sm, hurt, 0.4f, (AnimatorConditionMode.If, 0f, "Injured"), (AnimatorConditionMode.IfNot, 0f, "Crouch"), (AnimatorConditionMode.IfNot, 0f, "Prone"), (AnimatorConditionMode.IfNot, 0f, "Swim"), still0);
+                Any(sm, hurt, 0.4f, (AnimatorConditionMode.Equals, 0f, "Stairs"), (AnimatorConditionMode.If, 0f, "Injured"), (AnimatorConditionMode.IfNot, 0f, "Crouch"), (AnimatorConditionMode.IfNot, 0f, "Prone"), (AnimatorConditionMode.IfNot, 0f, "Swim"), still0);
             }
+            // stairs (and steep banks): walking up and down them, upright (Locomotion.Stairs sets "Stairs")
+            var up = Pick("stairs up", M(S, "Walking Up The Stairs"));
+            var down = Pick("stairs down", M(S, "Descending Stairs01"), M(S, "Descending Stairs02"));
+            if (up) { var su = sm.AddState("Stairs up"); su.motion = up; Any(sm, su, 0.25f, (AnimatorConditionMode.Equals, 1f, "Stairs"), (AnimatorConditionMode.IfNot, 0f, "Crouch"), (AnimatorConditionMode.IfNot, 0f, "Prone"), (AnimatorConditionMode.IfNot, 0f, "Swim"), still0); }
+            if (down) { var sd = sm.AddState("Stairs down"); sd.motion = down; Any(sm, sd, 0.25f, (AnimatorConditionMode.Equals, -1f, "Stairs"), (AnimatorConditionMode.IfNot, 0f, "Crouch"), (AnimatorConditionMode.IfNot, 0f, "Prone"), (AnimatorConditionMode.IfNot, 0f, "Swim"), still0); }
             var tread = Pick("tread water", M(S, "Treading Water"), Gen("TreadWater")); var swimCrawl = Pick("swim", M(S, "Swimming"), Gen("SwimCrawl"));
             if (tread && swimCrawl)
             {
@@ -219,7 +225,11 @@ namespace StansGame.EditorTools
                 (StansGame.AnimActions.Driving, "Driving", Pick("driving", M("Civilian", "Driving"))),
                 (StansGame.AnimActions.Seated, "Seated (riding)", Pick("seated", M("Civilian", "Sitting Talking"), M(S, "Sitting Dazed"))),
                 (StansGame.AnimActions.EnterCar, "Enter car", Pick("enter car", M("Civilian", "Entering Car"))),
-                (StansGame.AnimActions.ExitCar, "Exit car", Pick("exit car", M("Civilian", "Exiting Car"))));
+                (StansGame.AnimActions.ExitCar, "Exit car", Pick("exit car", M("Civilian", "Exiting Car"))),
+                (StansGame.AnimActions.StandUp, "Stand up (from lying)", Pick("stand up", M(S, "Standing Up"))),
+                (StansGame.AnimActions.ShiftWeight, "Shift weight (waiting)", Pick("shift weight", M(S, "Weight Shift"), M("Gestures Pack Basic", "weight shift"))),
+                (StansGame.AnimActions.Nod, "Nod", Pick("nod", M("Gestures Pack Basic", "head nod yes"))),
+                (StansGame.AnimActions.Acknowledge, "Acknowledge (an order)", Pick("acknowledge", M("Gestures Pack Basic", "acknowledging"))));
             var layers = ac.layers; layers[0].iKPass = true; ac.layers = layers;   // HandIK: both hands on the weapon
             EditorUtility.SetDirty(ac);
             report.AppendLine();
@@ -253,7 +263,7 @@ namespace StansGame.EditorTools
             var ac = Fresh($"{Anim}/Civilian.controller");
             Params(ac);
             var sm = ac.layers[0].stateMachine;
-            const string C = "Civilian", F = "Farming Pack";
+            const string C = "Civilian", F = "Farming Pack", G = "Gestures Pack Basic";
             var still = Pick("stand", M(C, "Standing Idle"), M(C, "Idle"), Hero("Idle"));
             var walk = Pick("walk", M(C, "Walk"), Hero("WalkForward"));
             var run = Pick("run", M(C, "Running"), Hero("RunForward"));
@@ -263,6 +273,16 @@ namespace StansGame.EditorTools
             if (walk) bt.AddChild(walk, Locomotion.Walk);
             if (run) bt.AddChild(run, Locomotion.Run);
             sm.defaultState = st;
+            // stairs: the soldiers' clips suit anyone (Joan, 24 Nov)
+            foreach (var (val, nm, clip) in new[] { (1, "Stairs up", Pick("stairs up", M("Soldier", "Walking Up The Stairs"))),
+                                                     (-1, "Stairs down", Pick("stairs down", M("Soldier", "Descending Stairs01"), M("Soldier", "Descending Stairs02"))) })
+            {
+                if (!clip) continue;
+                var s2 = sm.AddState(nm); s2.motion = clip;
+                Any(sm, s2, 0.25f, (AnimatorConditionMode.Equals, val, "Stairs"), (AnimatorConditionMode.Equals, 0f, "Action"));
+                var off = s2.AddTransition(st); off.hasExitTime = false; off.duration = 0.25f;
+                off.AddCondition(AnimatorConditionMode.Equals, 0, "Stairs");
+            }
             report.AppendLine(" actions:");
             Actions(ac, st,
                 (StansGame.AnimActions.Toast, "Toast", Pick("toast", M(C, "Toast"), M(C, "Drinking"))),
@@ -280,7 +300,16 @@ namespace StansGame.EditorTools
                 (StansGame.AnimActions.PickFruit, "Pick fruit", Pick("pick fruit", M(F, "pick fruit"))),
                 (StansGame.AnimActions.PullWeeds, "Pull weeds", Pick("pull weeds", M(F, "pull plant"))),
                 (StansGame.AnimActions.Planting, "Planting", Pick("planting", M(F, "plant a plant"))),
-                (StansGame.AnimActions.Gardening, "Gardening (kneeling)", Pick("gardening", M(F, "kneeling idle"))));
+                (StansGame.AnimActions.Gardening, "Gardening (kneeling)", Pick("gardening", M(F, "kneeling idle"))),
+                (StansGame.AnimActions.Nod, "Nod", Pick("nod", M(G, "head nod yes"), M(G, "lengthy head nod"))),
+                (StansGame.AnimActions.ShakeHead, "Shake head", Pick("shake head", M(G, "shaking head no"))),
+                (StansGame.AnimActions.HappyGesture, "Happy gesture", Pick("happy gesture", M(G, "happy hand gesture"))),
+                (StansGame.AnimActions.Angry, "Angry gesture", Pick("angry", M(G, "angry gesture"))),
+                (StansGame.AnimActions.Dismiss, "Dismissing gesture", Pick("dismiss", M(G, "dismissing gesture"))),
+                (StansGame.AnimActions.Sigh, "Relieved sigh", Pick("sigh", M(G, "relieved sigh"))),
+                (StansGame.AnimActions.Thoughtful, "Thoughtful head shake", Pick("thoughtful", M(G, "thoughtful head shake"))),
+                (StansGame.AnimActions.Acknowledge, "Acknowledge", Pick("acknowledge", M(G, "acknowledging"))),
+                (StansGame.AnimActions.ShiftWeight, "Shift weight", Pick("shift weight", M(G, "weight shift"))));
             var layers = ac.layers; layers[0].iKPass = true; ac.layers = layers;
             EditorUtility.SetDirty(ac);
         }

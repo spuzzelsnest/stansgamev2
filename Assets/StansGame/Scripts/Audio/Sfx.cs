@@ -40,8 +40,8 @@ namespace StansGame
             loaded = true;
             footsteps = LoadAll("human_footstep_01", "human_footstep_02", "human_footstep_03", "human_footstep_04");
             grunts = LoadAll("hit01", "hit02", "hit03", "hit04", "hit05", "hit06", "hit07", "hit08", "hit09", "hit10", "hit11", "hit12");
-            explosionsNear = LoadAll("NearExplosionA", "NearExplosionB");
-            explosionsFar = LoadAll("FarExplosionA", "FarExplosionB");
+            explosionsNear = LoadAll("NearExplosionA", "NearExplosionB", "explosion_near_c");
+            explosionsFar = LoadAll("FarExplosionA", "FarExplosionB", "explosion_far_c");
             reload = Resources.Load<AudioClip>("Audio/human_reload");
             impact = Resources.Load<AudioClip>("Audio/env_hit");
             bodyHit = Resources.Load<AudioClip>("Audio/human_hit");
@@ -83,14 +83,44 @@ namespace StansGame
             if (far && big) At(far, pos, 0.6f, 0.9f, 2500f);
         }
 
-        public static void Footstep(Vector3 pos, float volume = 0.35f) { Load(); At(Pick(footsteps), pos, volume * 0.22f, 0.9f + (float)rng.NextDouble() * 0.2f, 30f); }   // the recordings are normalised (+14 dB): keep the steps as soft as before
+        public static void Footstep(Vector3 pos, float volume = 0.35f)
+        {
+            Load();
+            // footsteps by surface (level template 3f): grass on the terrain, wet steps on hard ground after rain,
+            // the old recordings (boots on hard ground) everywhere else
+            AudioClip clip = null; float gain = 0.22f;
+            if (Physics.Raycast(pos + Vector3.up * 0.4f, Vector3.down, out var hit, 1.2f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                bool soft = hit.collider is TerrainCollider;
+                if (soft) { clip = PickRecorded("footstep_grass_", 2); gain = 0.5f; }
+                else if (Weather.Wetness > 0.3f) { clip = PickRecorded("footstep_wet_", 4); gain = 0.3f; }
+            }
+            if (!clip) clip = Pick(footsteps);
+            At(clip, pos, volume * gain, 0.9f + (float)rng.NextDouble() * 0.2f, 30f);   // the old recordings are normalised (+14 dB): kept as soft as before
+        }
+        static AudioClip PickRecorded(string prefix, int n) => Recorded(prefix + (1 + rng.Next(n)));
         public static void Reload(Vector3 pos) { Load(); At(reload, pos, 0.6f, 1f, 20f); }
         public static void Impact(Vector3 pos, bool person)
         {
             Load();
-            At(person ? (bodyHit ? bodyHit : impact) : impact, pos, 0.5f, 0.9f + (float)rng.NextDouble() * 0.2f, 40f);
+            float pitch = 0.9f + (float)rng.NextDouble() * 0.2f;
+            if (person) { At(bodyHit ? bodyHit : impact, pos, 0.5f, pitch, 40f); return; }
+            // what the round struck: earth thuds, anything hard cracks (Joan's recordings; the old one if missing)
+            bool earth = false;
+            foreach (var c in Physics.OverlapSphere(pos, 0.15f, ~0, QueryTriggerInteraction.Ignore)) if (c is TerrainCollider) { earth = true; break; }
+            var rec = Recorded(earth ? "impact_ground" : "impact_bullet");
+            At(rec ? rec : impact, pos, earth ? 0.45f : 0.4f, pitch, 45f);
         }
         public static void Hurt(Vector3 pos) { Load(); At(Pick(grunts), pos, 0.7f, 1f, 25f); }
+        /// <summary>A vehicle brewing up: the big blast, close and far.</summary>
+        public static void VehicleExplosion(Vector3 pos)
+        {
+            Load();
+            var big = Recorded("explosion_big");
+            At(big ? big : Pick(explosionsNear), pos, 1f, 0.9f + (float)rng.NextDouble() * 0.1f, 1800f);
+            var far = Pick(explosionsFar);
+            if (far) At(far, pos, 0.5f, 0.85f, 3000f);
+        }
         public static void Crash(Vector3 pos) => At(Synth("crash", MakeCrash), pos, 1f, 1f, 800f);
 
         // ------------------------------------------------------------------ clips for components
@@ -114,6 +144,8 @@ namespace StansGame
             if (w.Contains("lee") || w.Contains("enfield") || w.Contains("kar") || w.Contains("rifle") || w.Contains("garand") || w.Contains("carbine"))
                 return Synth("rifle", () => MakeShot(0.38f, 2400f, 0.9f, 80f));
             if (w.Contains("piat") || w.Contains("bazooka")) return Synth("piat", MakePiat);
+            if (w.Contains("tank") || w.Contains("kwk") || w.Contains("pak") || w.Contains("stuk") || w.Contains("pounder"))
+            { var cannon = Recorded("cannon_shot"); if (cannon) return cannon; }
             if (w.Contains("tank") || w.Contains("kwk") || w.Contains("pak") || w.Contains("stuk")) return Synth("tankgun", () => MakeShot(1.3f, 900f, 1f, 45f));
             return Synth("smg", () => MakeShot(0.11f, 1500f, 0.5f, 110f));   // Sten, MP 40
         }

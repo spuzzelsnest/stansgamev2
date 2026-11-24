@@ -273,13 +273,14 @@ namespace StansGame.EditorTools
                 }
             }
             // café garden: along its south end and the west side of the plot
-            Row(new Vector3(-CanalHalfWidth - 23f, 0f, -22.5f), new Vector3(-CanalHalfWidth - 12f, 0f, -22.5f), 1.1f);
+            // (south of the café's south block, which runs to z -33 - the row at z -22.5 stood inside it: printscreen 50)
+            Row(new Vector3(-CanalHalfWidth - 23f, 0f, -34.6f), new Vector3(-CanalHalfWidth - 12f, 0f, -34.6f), 1.1f);
             Row(new Vector3(-CanalHalfWidth - 24.5f, 0f, -21f), new Vector3(-CanalHalfWidth - 24.5f, 0f, -9f), 1.1f);
             // the two houses: a low hedge along the front garden, facing the road
             Row(new Vector3(-CanalHalfWidth - 44f, 0f, -14.5f), new Vector3(-CanalHalfWidth - 32f, 0f, -14.5f), 1.0f);
             Row(new Vector3(-CanalHalfWidth - 63f, 0f, -18.5f), new Vector3(-CanalHalfWidth - 49f, 0f, -18.5f), 1.0f);
             // a few single bushes by the doors
-            foreach (var p in new[] { new Vector3(-CanalHalfWidth - 36f, 0f, -16.5f), new Vector3(-CanalHalfWidth - 54f, 0f, -20.5f), new Vector3(-CanalHalfWidth - 13f, 0f, -21f) })
+            foreach (var p in new[] { new Vector3(-CanalHalfWidth - 36f, 0f, -16.5f), new Vector3(-CanalHalfWidth - 54f, 0f, -20.5f), new Vector3(-CanalHalfWidth - 11.5f, 0f, -21f) })
                 BuxusBush(g, p, Random.Range(1.0f, 1.25f), Random.Range(0f, 360f));
             Debug.Log("Stan's Game: box bushes planted in the gardens");
         }

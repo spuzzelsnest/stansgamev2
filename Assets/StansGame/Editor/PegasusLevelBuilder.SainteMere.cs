@@ -156,6 +156,13 @@ namespace StansGame.EditorTools
             SpawnGermans(plan, "counter-north", waveNorth);
             SmeStugWreck(waveNorth);   // the StuG III knocked out on the Neuville road (photos 14, 17)
             SmeAmbientLife(root, town, garrison, actors, air);   // colour grade, patrols and a dog, lorries, C-47s, windows (SmeAmbient.cs)
+            // the weather (level template 3a): low cloud on a fresh westerly that night, the moon in and out; ground mist in
+            // the fields and orchards before dawn, lifting as the morning comes (Stan's Game > Debug > Weather: ... to try others)
+            AddWeather(root, WeatherKind.Cloudy, new[]
+            {
+                new Weather.Change { minutes = 150, kind = WeatherKind.Fog },
+                new Weather.Change { minutes = 260, kind = WeatherKind.Cloudy },
+            }, new Vector3(0.75f, 0f, -0.66f), 0.65f);
 
             // markers
             Transform Mark(string n, Vector3 p) { var t = new GameObject(n).transform; t.SetParent(root); p.y = GroundAt(p); t.position = p; return t; }

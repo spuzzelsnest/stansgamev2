@@ -31,7 +31,7 @@ namespace StansGame
         /// <summary>Every live Health in the scene (soldiers, player, vehicles) for AI targeting.</summary>
         public static readonly List<Health> All = new List<Health>();
 
-        void Awake() => Current = maxHealth;
+        void Awake() { Current = maxHealth; FaceVariety.Apply(gameObject); }   // a complexion of his own (FaceVariety)
         void OnEnable() => All.Add(this);
         void OnDisable() => All.Remove(this);
 
@@ -39,6 +39,7 @@ namespace StansGame
         {
             if (IsDead || Sheltered) return;
             float amount = info.amount - armour;
+            if (GetComponent<SoldierController>()) amount *= GameSettings.DamageToPlayer;   // Easy / Normal / Hard (Esc menu)
             if (amount <= 0f) return;
             Current = Mathf.Max(0f, Current - amount);
             lastDamage = Time.time;
@@ -84,6 +85,12 @@ namespace StansGame
             if (IsDead) return;
             Current = 0f; IsDead = true;
             Died?.Invoke(this, info);
+        }
+
+        /// <summary>Back to full health and alive again (a practice target repaired).</summary>
+        public void Revive()
+        {
+            IsDead = false; Current = maxHealth; lastDamage = -999f;
         }
 
         public void Heal(float amount)

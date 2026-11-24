@@ -167,7 +167,7 @@ namespace StansGame.EditorTools
             Physics.SyncTransforms();
             foreach (var t in root.GetComponentsInChildren<Transform>(true))
             {
-                if (t.name != "Walls") continue;
+                if (!IsWallBlock(t)) continue;
                 var mf = t.GetComponent<MeshFilter>(); if (!mf) continue;
                 var bottom = new List<Vector3>();
                 for (int ix = -1; ix <= 1; ix++)
@@ -212,6 +212,10 @@ namespace StansGame.EditorTools
                     t.position += Vector3.down * (b.min.y - g + 0.05f);
                 }
             }
+            // ---- nothing inside a house, and nobody walks into one (level template 3b; printscreen 50: bushes inside a
+            // house at Pegasus Bridge, seen through its walls from inside)
+            var inside = KeepHousesClear(root);
+            report.AppendLine($"\nInside houses: {inside}");
             report.AppendLine($"\nFootings added under walls that stood above the ground: {footings}");
             report.AppendLine($"\nModelled buildings that stood above the ground at a corner ({floating.Count}):");
             foreach (var s in floating) report.AppendLine("  - " + s);
@@ -226,6 +230,80 @@ namespace StansGame.EditorTools
             }
             catch (System.Exception ex) { Debug.LogWarning("Stan's Game: buildings report not written: " + ex.Message); }
             Debug.Log($"Stan's Game: {level} buildings - {dressed} blocks textured, {footings} footings, {floating.Count} modelled buildings above the ground (Logs/buildings-{level}.txt)");
+        }
+
+        /// <summary>
+        /// Template rule 3b: no tree, bush, hedge or brushwood inside a house, and every house solid to walk against.
+        /// A house is its "Walls" block (any rotation) or a modelled building (by its facade materials). Foliage whose
+        /// centre or foot is inside one is removed, terrain trees in one too; walls without a collider get one.
+        /// </summary>
+        /// <summary>A house's walls: "Walls", "Walls (brick)" (the café), or the café's "South block".</summary>
+        static bool IsWallBlock(Transform t) => t.name == "Walls" || t.name.StartsWith("Walls (") || t.name == "South block";
+
+        static string KeepHousesClear(Transform root)
+        {
+            Physics.SyncTransforms();
+            var shells = new List<Transform>(); var models = new List<Bounds>();
+            int colliders = 0;
+            foreach (var t in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (IsWallBlock(t) && t.GetComponent<MeshFilter>())
+                {
+                    shells.Add(t);
+                    if (!t.GetComponent<Collider>()) { t.gameObject.AddComponent<BoxCollider>(); colliders++; }
+                    continue;
+                }
+                var mr = t.GetComponent<MeshRenderer>(); if (!mr) continue;
+                if (mr.sharedMaterials.Any(m => m && (m.name.Contains("Exterior") || m.name.Contains("Cottage") || m.name.Contains("Gondree") || m.name.Contains("Cafe") || m.name.Contains("Chateau_Facade") || m.name.StartsWith("House_Render"))))
+                {
+                    var b = mr.bounds; if (b.size.x < 2.5f || b.size.z < 2.5f || b.size.y < 2f) continue;   // not a shutter or a sill
+                    b.Expand(new Vector3(-0.6f, 0f, -0.6f));
+                    models.Add(b);
+                    if (!t.GetComponentInParent<Collider>() && !t.GetComponent<Collider>()) { var mf = t.GetComponent<MeshFilter>(); if (mf && mf.sharedMesh) { t.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh; colliders++; } }
+                }
+            }
+            bool Inside(Vector3 p)
+            {
+                foreach (var w in shells)
+                {
+                    var l = w.InverseTransformPoint(p);
+                    if (Mathf.Abs(l.x) < 0.47f && Mathf.Abs(l.z) < 0.47f && l.y > -0.5f && l.y < 0.5f) return true;
+                }
+                foreach (var b in models) if (b.Contains(p)) return true;
+                return false;
+            }
+            static bool Foliage(Renderer r) => r.sharedMaterials.Any(m => m && (m.name.Contains("Leaves") || m.name.Contains("Bark") || m.name.Contains("Hedge") || m.name.Contains("Foliage")))
+                                           || r.name.Contains("Bush") || r.name.Contains("Hedge") || r.name.Contains("Shrub") || r.name.Contains("Brush");
+            var gone = new HashSet<GameObject>(); var where = new List<string>();
+            foreach (var r in root.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                if (!r || gone.Contains(r.gameObject) || !Foliage(r)) continue;
+                var b = r.bounds;
+                if (!Inside(b.center) && !Inside(new Vector3(b.center.x, b.min.y + 0.3f, b.center.z))) continue;
+                // the whole bush or tree, not only the leaf ball that is in the house
+                var go = r.gameObject;
+                var up = go.transform.parent;
+                if (up && up != root && up.GetComponentsInChildren<Renderer>(true).All(Foliage) && up.GetComponentsInChildren<Renderer>(true).Length <= 8) go = up.gameObject;
+                if (where.Count < 40) where.Add($"{BldPath(go.transform)} at ({b.center.x:0}, {b.center.z:0})");
+                gone.Add(go);
+            }
+            foreach (var go in gone) if (go) Object.DestroyImmediate(go);
+            int trees = 0;
+            foreach (var terrain in root.GetComponentsInChildren<Terrain>(true))
+            {
+                var td = terrain.terrainData; if (!td || td.treeInstanceCount == 0) continue;
+                var keep = new List<TreeInstance>();
+                foreach (var ti in td.treeInstances)
+                {
+                    var wp = terrain.transform.position + Vector3.Scale(ti.position, td.size);
+                    if (Inside(wp + Vector3.up * 0.5f)) { trees++; continue; }
+                    keep.Add(ti);
+                }
+                if (trees > 0) td.treeInstances = keep.ToArray();
+            }
+            var sb = new StringBuilder($"{shells.Count} houses and {models.Count} modelled building blocks checked; removed {gone.Count} bushes/trees/hedges and {trees} terrain trees from inside; {colliders} walls given a collider");
+            foreach (var w in where) sb.Append("\n  - removed ").Append(w);
+            return sb.ToString();
         }
 
         /// <summary>

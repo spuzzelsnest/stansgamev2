@@ -42,7 +42,14 @@ namespace StansGame.EditorTools
                     var mats = r.sharedMaterials; for (int i = 0; i < mats.Length; i++) mats[i] = mat; r.sharedMaterials = mats;
                     if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = true;
                 }
-                var anim = go.GetComponent<Animator>() ?? go.AddComponent<Animator>();
+                // everyone the height of the British soldier, 1.78 m to the top of the helmet; the women 1.66 m (Joan, 24 Nov)
+                {
+                    var hb = new Bounds(); bool any = false;
+                    foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>(true)) { if (any) hb.Encapsulate(r.bounds); else { hb = r.bounds; any = true; } }
+                    bool woman = file.Contains("Woman") || file.Contains("Nurse");
+                    if (any && hb.size.y > 0.1f) go.transform.localScale *= (woman ? 1.66f : 1.78f) / hb.size.y;
+                }
+                var anim = go.GetComponent<Animator>(); if (!anim) anim = go.AddComponent<Animator>();
                 anim.runtimeAnimatorController = CivilianController();
                 anim.applyRootMotion = false;
                 var h = go.AddComponent<Health>(); h.faction = side;

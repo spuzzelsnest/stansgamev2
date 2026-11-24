@@ -30,7 +30,7 @@ namespace StansGame.EditorTools
             string dir = Root + "/Resources/Menu";
             if (!AssetDatabase.IsValidFolder(Root + "/Resources")) AssetDatabase.CreateFolder(Root, "Resources");
             if (!AssetDatabase.IsValidFolder(dir)) AssetDatabase.CreateFolder(Root + "/Resources", "Menu");
-            const int W = 320, H = 440;
+            const int W = 320, H = 320;   // a head-and-shoulders portrait (printscreen 49: "just put the faces")
             var scene = EditorSceneManager.NewPreviewScene();
             var rt = new RenderTexture(W * 2, H * 2, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
             int made = 0;
@@ -70,11 +70,22 @@ namespace StansGame.EditorTools
                     if (anim && !idle && anim.runtimeAnimatorController)
                         foreach (var c in anim.runtimeAnimatorController.animationClips)
                             if (c && c.name.ToLowerInvariant().Contains("idle")) { idle = c; break; }
-                    if (anim && idle)
+                    // (sampling the idle clip outside Play mode twisted the bodies into knots - printscreen 49 - so he stands in
+                    // his avatar's own T-pose with the arms lowered to his sides)
+                    if (anim && anim.isHuman && anim.avatar)
                     {
-                        Debug.Log($"Stan's Game: portrait of {ProtagonistSides[i]} in '{idle.name}'");
-                        if (!AnimationMode.InAnimationMode()) { AnimationMode.StartAnimationMode(); sampling = true; }
-                        AnimationMode.BeginSampling(); AnimationMode.SampleAnimationClip(anim.gameObject, idle, 0.5f); AnimationMode.EndSampling();
+                        var byName = new System.Collections.Generic.Dictionary<string, Transform>();
+                        foreach (var t in anim.GetComponentsInChildren<Transform>(true)) if (!byName.ContainsKey(t.name)) byName[t.name] = t;
+                        foreach (var sb in anim.avatar.humanDescription.skeleton)
+                            if (byName.TryGetValue(sb.name, out var t) && t != anim.transform && t != man.transform) t.localRotation = sb.rotation;
+                        foreach (var (upperB, lowerB) in new[] { (HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm), (HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm) })
+                        {
+                            var ua = anim.GetBoneTransform(upperB); var la = anim.GetBoneTransform(lowerB); if (!ua || !la) continue;
+                            Vector3 cur = (la.position - ua.position).normalized;
+                            Vector3 want = Vector3.Slerp(cur, Vector3.down, 0.82f);   // hanging by his sides, a little out
+                            ua.rotation = Quaternion.FromToRotation(cur, want) * ua.rotation;
+                        }
+                        Debug.Log($"Stan's Game: portrait of {ProtagonistSides[i]} (T-pose, arms down)");
                     }
                     // frame him from the knees to just over the helmet
                     // the weapons are put in the hands by IK at run time - here they would float: leave them out
@@ -82,9 +93,12 @@ namespace StansGame.EditorTools
                     var rs = man.GetComponentsInChildren<SkinnedMeshRenderer>();
                     if (rs.Length == 0) { Object.DestroyImmediate(man); continue; }
                     Bounds b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds);
-                    float top = b.max.y + 0.06f, bottom = b.min.y + b.size.y * 0.32f, mid = (top + bottom) / 2f, span = top - bottom;
+                    // the face: from the top of the helmet down to the chest, the camera level with his eyes
+                    var headBone = anim && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Head) : null;
+                    Vector3 face = headBone ? headBone.position : new Vector3(b.center.x, b.max.y - 0.2f, b.center.z);
+                    float top = b.max.y + 0.05f, bottom = face.y - 0.42f, mid = (top + bottom) / 2f, span = top - bottom;
                     float dist = span / 2f / Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
-                    cam.transform.SetPositionAndRotation(new Vector3(b.center.x, mid + 0.05f, b.center.z - dist), Quaternion.Euler(-1.5f, 0f, 0f));
+                    cam.transform.SetPositionAndRotation(new Vector3(face.x, mid, face.z - dist), Quaternion.identity);
                     var req = new UniversalRenderPipeline.SingleCameraRequest { destination = rt };
                     if (RenderPipeline.SupportsRenderRequest(cam, req)) RenderPipeline.SubmitRenderRequest(cam, req);
                     else cam.Render();

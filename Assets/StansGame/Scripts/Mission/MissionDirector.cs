@@ -53,6 +53,10 @@ namespace StansGame
         public float parasDelay = 110f;            // 7th Para's first companies reach the bridge
         public float tanksDelay = 205f;            // armour from the Bénouville crossroads
         public GameObject snipers;                 // château / village snipers after the armour is beaten off
+        [Tooltip("No. 1 Special Service Brigade (Lord Lovat, Piper Bill Millin): out of play until the relief, then across the bridge.")]
+        public GameObject commandos;
+        [Tooltip("Where each phase's objective is (marker on screen); empty = no marker for that phase.")]
+        public Transform[] phaseTargets = new Transform[0];
         public float holdOnSeconds = 120f;         // then the commandos arrive
         public int signalsNeeded = 3;              // "Ham and Jam" sent again and again before anyone answers
 
@@ -423,6 +427,8 @@ namespace StansGame
             if (appliedTanks != TanksLive) { appliedTanks = TanksLive; SetGroupLive(tankAttackGroup, TanksLive); }
             if (appliedParas != ParasLive) { appliedParas = ParasLive; SetGroupLive(paraReinforcements, ParasLive); }
             if (appliedSnipers != SnipersLive) { appliedSnipers = SnipersLive; SetGroupLive(snipers, SnipersLive); }
+            bool commandosLive = CurrentPhase >= phases.Length - 1;   // the relief: they come with the last phase (synced with it)
+            if (appliedCommandos != (commandosLive ? 1 : 0)) { appliedCommandos = commandosLive ? 1 : 0; SetGroupLive(commandos, commandosLive); }
             if (appliedWaves != WavesMask && attackWaves != null)
             {
                 for (int w = 0; w < attackWaves.Length; w++)
@@ -434,6 +440,7 @@ namespace StansGame
             }
         }
 
+        int appliedCommandos = -1;
         readonly Dictionary<Collider, bool> colliderState = new Dictionary<Collider, bool>();
 
         /// <summary>
@@ -469,6 +476,7 @@ namespace StansGame
             GUI.Label(new Rect(20, 16, 900, 30), $"<b>{ClockText}</b>  6 June 1944   —   {phase.title}", style);
             style.fontSize = 16;
             GUI.Label(new Rect(20, 44, 900, 26), phase.objective, style);
+            ObjectiveMarker();
             if (!string.IsNullOrEmpty(Message))
             {
                 var big = new GUIStyle(GUI.skin.label) { fontSize = 26, alignment = TextAnchor.MiddleCenter, richText = true };
@@ -496,5 +504,45 @@ namespace StansGame
                 }
             }
         }
-    }
+    
+        static Texture2D dot;
+
+        /// <summary>A small marker over the objective (level template 2: player guidance): a diamond and the distance,
+        /// held at the edge of the screen with an arrow when the objective is behind or off to the side.</summary>
+        void ObjectiveMarker()
+        {
+            var cam = Camera.main;
+            if (!cam || phaseTargets == null || CurrentPhase >= phaseTargets.Length) return;
+            var target = phaseTargets[CurrentPhase];
+            if (!target) return;
+            if (!dot) { dot = new Texture2D(1, 1); dot.SetPixel(0, 0, Color.white); dot.Apply(); }
+            Vector3 wp = target.position + Vector3.up * 2f;
+            Vector3 sp = cam.WorldToScreenPoint(wp);
+            float dist = Vector3.Distance(cam.transform.position, target.position);
+            bool behind = sp.z < 0f;
+            Vector2 p = new Vector2(sp.x, Screen.height - sp.y);
+            if (behind) p = new Vector2(Screen.width - p.x, Screen.height - p.y);
+            const float m = 40f;
+            bool off = behind || p.x < m || p.x > Screen.width - m || p.y < m + 60f || p.y > Screen.height - m;
+            if (off)
+            {
+                Vector2 c = new Vector2(Screen.width / 2f, Screen.height / 2f), d = (p - c);
+                if (behind && d.sqrMagnitude < 1f) d = Vector2.down;
+                d.Normalize();
+                float k = Mathf.Min((Screen.width / 2f - m) / Mathf.Max(0.001f, Mathf.Abs(d.x)), (Screen.height / 2f - m - 30f) / Mathf.Max(0.001f, Mathf.Abs(d.y)));
+                p = c + d * k;
+            }
+            var old = GUI.color; var oldM = GUI.matrix;
+            GUI.color = new Color(1f, 0.85f, 0.35f, 0.9f);
+            GUIUtility.RotateAroundPivot(45f, p);
+            GUI.DrawTexture(new Rect(p.x - 7f, p.y - 7f, 14f, 14f), dot);
+            GUI.matrix = oldM;
+            GUI.color = new Color(0f, 0f, 0f, 0.8f);
+            GUI.DrawTexture(new Rect(p.x - 3f, p.y - 3f, 6f, 6f), dot);
+            var st = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.UpperCenter, richText = true };
+            GUI.color = Color.white;
+            GUI.Label(new Rect(p.x - 60f, p.y + 10f, 120f, 20f), $"<b>{dist:0} m</b>", st);
+            GUI.color = old;
+        }
+}
 }

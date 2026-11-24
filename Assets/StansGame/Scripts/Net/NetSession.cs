@@ -323,7 +323,7 @@ namespace StansGame
             if (scene != SceneManager.GetActiveScene().name)
             {
                 // another chapter, alone: leave the network behind and load it
-                SceneManager.LoadScene(scene);
+                LoadingScreen.Load(scene);   // the title, date and briefing while it loads (level template 6)
                 Destroy(nm.gameObject);
                 return;
             }
@@ -336,7 +336,7 @@ namespace StansGame
         void OpenProvingGround()
         {
             if (!Application.CanStreamedLevelBeLoaded("ProvingGround")) { status = "The Proving Ground isn't built yet (Stan's Game > Build Proving Ground)"; return; }
-            SceneManager.LoadScene("ProvingGround");
+            LoadingScreen.Load("ProvingGround");
             Destroy(nm.gameObject);
         }
 

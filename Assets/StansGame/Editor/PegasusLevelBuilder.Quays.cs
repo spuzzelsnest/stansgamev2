@@ -96,6 +96,13 @@ namespace StansGame.EditorTools
             }
         }
 
+        static void Apron(Transform parent, float side, float face, float z0, float z1)
+        {
+            float len = Mathf.Abs(z1 - z0), zc = (z0 + z1) * 0.5f;
+            if (len < 0.2f) return;
+            ConcreteBox("Quay apron", parent, new Vector3(side * (face + 1.2f + 2f), QuayTop - 0.12f - 1.5f, zc), new Vector3(4f, 3f, len));
+        }
+
         static void QuayEnd(Transform parent, float side, float face, float z)
         {
             float zs = Mathf.Sign(z);
@@ -108,14 +115,25 @@ namespace StansGame.EditorTools
             var g = Group("Quays (1944)", canal);
             float wq = Water.WestQuay, eq = Water.QuayHalf;
 
-            // west quay: straight, the fixed span lands on it
-            QuayRun(g, "Quay wall (west)", -1f, wq, -Water.QuayLength - 0.5f, Water.QuayLength + 0.5f);
-            QuayEnd(g, -1f, wq, -Water.QuayLength); QuayEnd(g, -1f, wq, Water.QuayLength);
+            // west quay: straight, the fixed span lands on it - part of the bridge model now (WestSpan, bridge1934.py),
+            // in one piece with the pier and the fixed span so nothing can gape between them (printscreen 51)
+            bool westInModel = WestSpanInModel();
+            if (!westInModel)
+            {
+                QuayRun(g, "Quay wall (west)", -1f, wq, -Water.QuayLength - 0.5f, Water.QuayLength + 0.5f);
+                QuayEnd(g, -1f, wq, -Water.QuayLength); QuayEnd(g, -1f, wq, Water.QuayLength);
+            }
 
             // east quay: interrupted by the counterweight pit (part of the bridge model), long and ribbed to the south
             QuayRun(g, "Quay wall (east)", 1f, eq, PitHalf, Water.EastQuayNorth + 0.5f, 4.5f);
             QuayRun(g, "Quay wall (east)", 1f, eq, -PitHalf, -Water.EastQuaySouth - 0.5f, 4.5f);
             QuayEnd(g, 1f, eq, Water.EastQuayNorth); QuayEnd(g, 1f, eq, -Water.EastQuaySouth);
+            // the apron behind the quays (printscreen 51: a gap between the bank, the quay and the bridge): a concrete
+            // apron 4 m wide at the height of the coping, so wherever the cut bank dips below the quay top it is filled
+            if (!westInModel) Apron(g, -1f, wq, -Water.QuayLength - 0.5f, Water.QuayLength + 0.5f);
+            // (east: only by the bridge - further south the German fire trench is dug in right behind the quay)
+            Apron(g, 1f, eq, PitHalf, Mathf.Min(Water.EastQuayNorth, Water.QuayLength) + 0.5f);
+            Apron(g, 1f, eq, -PitHalf, -Mathf.Min(Water.EastQuaySouth, Water.QuayLength) - 0.5f);
 
             // timber fender piles along the east quay by the bridge (boats lining up for the opening span), tied by a waling
             var t = Group("Timber fenders", g);
@@ -133,18 +151,40 @@ namespace StansGame.EditorTools
         /// sits in a seat 0.35 m down), and the fixed concrete span with solid parapets from the pier to the west quay.
         /// Timber guard piles off both ends of the pier.
         /// </summary>
+        /// <summary>Does the bridge model carry the west pier, fixed span and quay itself (object "WestSpan")?</summary>
+        static bool WestSpanInModel()
+        {
+            var m = AssetDatabase.LoadAssetAtPath<GameObject>(BridgeModel);
+            return m && FindDeep(m.transform, "WestSpan");
+        }
+
         static void BuildWestSpan(Transform bridgeRoot)
         {
             var g = Group("West pier and fixed span", bridgeRoot);
             float wq = Water.WestQuay;
             float px = (PierX0 + PierX1) * 0.5f, pw = PierX1 - PierX0;
+            var inModel = FindDeep(bridgeRoot, "WestSpan");
+            if (inModel)
+            {
+                // the model's own pier, span and quay: our concrete on it (UVs laid in metres in Blender), solid to walk on
+                var r = inModel.GetComponent<MeshRenderer>();
+                if (r)
+                {
+                    var mats = r.sharedMaterials;
+                    for (int i = 0; i < mats.Length; i++) if (mats[i] && mats[i].name.Contains("Concrete")) mats[i] = Concrete();
+                    r.sharedMaterials = mats;
+                }
+                var mf = inModel.GetComponent<MeshFilter>();
+                if (mf && !inModel.GetComponent<Collider>()) inModel.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+                GameObjectUtility.SetStaticEditorFlags(inModel.gameObject, StaticEditorFlags.BatchingStatic | StaticEditorFlags.ContributeGI | StaticEditorFlags.OccluderStatic);
+            }
 
             // the pier, from the canal bed to the seat, with a cap and rounded-off (chamfered) ends
-            ConcreteBox("Bridge pier (west)", g, new Vector3(px, (CanalDepth - 0.2f + PierSeat - 0.3f) * 0.5f, 0f), new Vector3(pw, PierSeat - 0.3f - CanalDepth + 0.2f, PierHalfZ * 2f));
-            ConcreteBox("Bridge pier cap", g, new Vector3(px, PierSeat - 0.15f, 0f), new Vector3(pw + 0.25f, 0.3f, PierHalfZ * 2f + 0.25f));
+            if (!inModel) ConcreteBox("Bridge pier (west)", g, new Vector3(px, (CanalDepth - 0.2f + PierSeat - 0.3f) * 0.5f, 0f), new Vector3(pw, PierSeat - 0.3f - CanalDepth + 0.2f, PierHalfZ * 2f));
+            if (!inModel) ConcreteBox("Bridge pier cap", g, new Vector3(px, PierSeat - 0.15f, 0f), new Vector3(pw + 0.25f, 0.3f, PierHalfZ * 2f + 0.25f));
             foreach (float zs in new[] { -1f, 1f })
             {
-                ConcreteBox("Bridge pier cutwater", g, new Vector3(px, (CanalDepth + PierSeat - 0.3f) * 0.5f, zs * PierHalfZ), new Vector3(pw * 0.7071f, PierSeat - 0.3f - CanalDepth, pw * 0.7071f), 45f);
+                if (!inModel) ConcreteBox("Bridge pier cutwater", g, new Vector3(px, (CanalDepth + PierSeat - 0.3f) * 0.5f, zs * PierHalfZ), new Vector3(pw * 0.7071f, PierSeat - 0.3f - CanalDepth, pw * 0.7071f), 45f);
                 // timber guard: three piles off each end of the pier, tied with walings
                 var t = Group(zs < 0 ? "Pier guard (south)" : "Pier guard (north)", g);
                 for (int i = -1; i <= 1; i++)
@@ -158,6 +198,7 @@ namespace StansGame.EditorTools
             // the fixed span: a concrete deck from the west quay to the pier, solid parapets, beams under it
             float x0 = -(wq + 0.35f), x1 = -(BridgeWestEnd + 0.05f);   // from over the quay coping to the leaf's end
             float xc = (x0 + x1) * 0.5f, deck = 0.55f, halfW = 4.1f;
+            if (inModel) { Debug.Log("Stan's Game: west pier, fixed span and west quay from the bridge model (WestSpan)"); return; }
             ConcreteBox("Fixed span deck", g, new Vector3(xc, QuayTop - deck * 0.5f, 0f), new Vector3(x1 - x0, deck, halfW * 2f));
             foreach (float zs in new[] { -1f, 1f })
             {

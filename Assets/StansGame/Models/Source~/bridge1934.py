@@ -274,6 +274,48 @@ for xx in (7.3, 8.0, 8.65):
     B.box(xx - 0.1, xx + 0.1, -3.1, -2.9, PZ, ROAD - 0.75, 'dark'); B.box(xx - 0.1, xx + 0.1, 2.9, 3.1, PZ, ROAD - 0.75, 'dark')
 base = B.finish('Base')
 
+# ============================================================ the west end (fixed): pier, fixed span, west quay
+# One solid piece in the bridge's own frame, so nothing can drift apart from the leaf (printscreen 51: gaps between
+# the bank, the pier and the bridge when these were separate boxes placed by the level builder). In the game the
+# leaf's free end (x = -24.4) lands at x -12.2 and the road (z 1.25) at y 0.12: game x = x + 12.2, game y = z - 1.13.
+# From the 1944 photographs (pb04, pb08, the RAF verticals): a concrete pier in the canal under the free end, a short
+# fixed concrete span with solid parapets from the pier to the straight west quay, the quay wall and its coping.
+W = Builder()
+GX = 12.2; GZ = 1.13
+def gx(x): return x - GX             # game x -> model x
+def gz(y): return y + GZ             # game height -> model z
+BED, SEAT, QTOP = gz(-6.0), gz(-0.35), gz(0.08)
+P0, P1 = gx(-13.6), gx(-11.4)                       # the pier, across the canal
+PC = (P0 + P1) / 2; PW = P1 - P0
+W.box(P0, P1, -6.0, 6.0, BED, SEAT - 0.3, 'conc')                                   # pier body
+W.box(P0 - 0.12, P1 + 0.12, -6.12, 6.12, SEAT - 0.3, SEAT, 'conc')                  # pier cap (the leaf's seat)
+def diamond(cx, cy, r, z0, z1, m='conc'):
+    pts = [(cx + r, cy), (cx, cy + r), (cx - r, cy), (cx, cy - r)]
+    v = [(x, y, z0) for x, y in pts] + [(x, y, z1) for x, y in pts]
+    W._faces(v, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)], m)
+for sy in (-1, 1):
+    diamond(PC, sy * 6.0, PW / 2 + 0.05, BED, SEAT - 0.3)                           # cutwaters, pointed up and down the canal
+QF = gx(-19.0)                                      # west quay face (the water side)
+D0, D1 = QF - 0.35, gx(-12.25)                      # fixed span: from over the quay coping to the leaf's end
+W.box(D0, D1, -4.1, 4.1, ROAD - 0.55, ROAD, 'conc')                                 # deck, level with the leaf's road
+W.box(D0, D1, -3.1, 3.1, ROAD - 0.02, ROAD, 'road')                                 # tarred road on it
+for sy in (-1, 1):
+    W.box(D0, D1, sy * 3.8, sy * 4.1, ROAD, ROAD + 0.9, 'conc')                     # solid parapets
+    W.box(D0 - 0.05, D1, sy * 3.75, sy * 4.15, ROAD + 0.9, ROAD + 0.98, 'conc')     # parapet coping
+for yb in (-2.6, 0.0, 2.6):
+    W.box(D0, D1, yb - 0.25, yb + 0.25, ROAD - 1.15, ROAD - 0.55, 'conc')          # beams under the deck
+QL = 17.0                                           # the straight west quay, both sides of the bridge
+W.box(QF - 1.2, QF, -QL, QL, BED, QTOP - 0.3, 'conc')                               # quay wall
+W.box(QF - 1.15, QF + 0.15, -QL, QL, QTOP - 0.3, QTOP, 'conc')                       # coping, a little proud of the face
+for sy in (-1, 1):
+    W.box(QF - 4.6, QF, sy * QL, sy * (QL + 1.0), BED, QTOP, 'conc')                 # return walls into the bank at the ends
+W.box(QF - 4.6, QF - 1.15, -QL, QL, QTOP - 2.6, QTOP - 0.1, 'conc')                 # the fill behind the quay, under the bank
+west = W.finish('WestSpan')
+bpy.context.view_layer.objects.active = west; west.select_set(True)
+bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
+bpy.ops.uv.cube_project(cube_size=2.5)              # concrete laid in metres in the game (one repeat per 2.5 m)
+bpy.ops.object.mode_set(mode='OBJECT'); west.select_set(False)
+
 # ============================================================ swing check
 if 'check' in args:
     me = leaf.data

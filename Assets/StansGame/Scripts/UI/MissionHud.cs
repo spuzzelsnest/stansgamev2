@@ -56,9 +56,11 @@ namespace StansGame
         public static bool Menu(bool open)
         {
             if (!open) return false;
-            GUILayout.BeginArea(new Rect(Screen.width / 2 - 160, Screen.height / 2 - 90, 320, 180), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(Screen.width / 2 - 180, Screen.height / 2 - 130, 360, 260), GUI.skin.box);
             GUILayout.Label("<b>Stan's Game</b>", new GUIStyle(GUI.skin.label) { richText = true });
             if (GUILayout.Button("Back to the fight", GUILayout.Height(32))) { open = false; Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false; }
+            GameSettings.Rows();   // difficulty and volume (level template 6)
+            GUILayout.Space(6);
             if (GUILayout.Button("Choose another mission", GUILayout.Height(32))) SceneManager.LoadScene(0);
             if (GUILayout.Button("Quit the game", GUILayout.Height(32))) Application.Quit();
             GUILayout.EndArea();

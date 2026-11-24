@@ -59,6 +59,8 @@ namespace StansGame
 
         void PickGoal()
         {
+            // someone lying down gets up first (Mixamo "Standing Up": from on his back to his feet, about 6 s)
+            if (doing == AnimActions.LieDown) { Act(AnimActions.StandUp); waitUntil = Time.time + 5.8f; return; }
             for (int tries = 0; tries < 20; tries++)
             {
                 var p = new Vector3(Random.Range(area.min.x, area.max.x), transform.position.y, Random.Range(area.min.z, area.max.z));
@@ -71,6 +73,8 @@ namespace StansGame
         void Update()
         {
             Vector3 want = Vector3.zero;
+            // a one-shot (salute, nod, getting up) has started: let go of the trigger so it plays once, not over and over
+            if (releaseAt > 0f && Time.time >= releaseAt) { releaseAt = 0f; if (anim) anim.SetInteger("Action", 0); }
             if (!walking && Time.time >= waitUntil) PickGoal();
             if (walking)
             {
@@ -81,7 +85,7 @@ namespace StansGame
                     if (actions.Length > 0 && Random.value < actionChance)
                     {
                         Act(actions[Random.Range(0, actions.Length)]);
-                        waitUntil += AnimActions.OneShot(doing) ? 0f : Random.Range(6f, 14f);   // a smoke or a chat takes a while
+                        waitUntil += AnimActions.OneShot(doing) ? 3f : Random.Range(6f, 14f);   // a smoke or a chat takes a while
                     }
                 }
                 else
@@ -121,8 +125,11 @@ namespace StansGame
             if (!anim || a == doing) return;
             doing = a;
             anim.SetInteger("Action", a);
+            releaseAt = AnimActions.OneShot(a) ? Time.time + 0.4f : 0f;
             if (hands) hands.enabled = a == 0 || a == AnimActions.Throw || a == AnimActions.Reload || a == AnimActions.Fire || a == AnimActions.KneelFire || a == AnimActions.Defend || a == AnimActions.Kneel;
         }
+
+        float releaseAt;
 
         void LateUpdate()
         {

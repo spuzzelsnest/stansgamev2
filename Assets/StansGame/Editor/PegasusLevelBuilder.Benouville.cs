@@ -240,6 +240,14 @@ namespace StansGame.EditorTools
             var cam = Camera.main;
             if (cam) { cam.transform.position = new Vector3(60f, 25f, -60f); cam.transform.LookAt(new Vector3(-150f, 5f, -600f)); player.cam = cam; }
 
+            // the weather (level template 3a): broken cloud on the westerly wind of 6 June; mist off the canal and the low
+            // fields towards dawn, clearing in the morning
+            AddWeather(root, WeatherKind.Cloudy, new[]
+            {
+                new Weather.Change { minutes = 160, kind = WeatherKind.Fog },
+                new Weather.Change { minutes = 280, kind = WeatherKind.Cloudy },
+            }, new Vector3(0.7f, 0f, -0.7f), 0.7f);
+
             AdoptBattle("ChateauBenouville", root, Faction.German, BenouvilleCommanders);   // the Germans attack, A Company holds
 
             DressBuildings(root, "ChateauBenouville");

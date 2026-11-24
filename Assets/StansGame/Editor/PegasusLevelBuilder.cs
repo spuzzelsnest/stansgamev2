@@ -246,6 +246,7 @@ namespace StansGame.EditorTools
             var paras = BuildParaReinforcements(actors, britishPrefab, paraOfficer);
             var waves = BuildAttackWaves(actors);
             var snipers = BuildSnipers(actors);
+            var commandos = BuildCommandos(actors);   // Lovat and Piper Bill Millin at the relief (PegasusLevelBuilder.Commandos.cs)
 
             // mission
             var director = new GameObject("MissionDirector").AddComponent<MissionDirector>();
@@ -293,6 +294,8 @@ namespace StansGame.EditorTools
             director.paraReinforcements = paras;
             director.attackWaves = waves;
             director.snipers = snipers;
+            director.commandos = commandos;
+            director.phaseTargets = PegasusPhaseTargets(actors, bridgeEnd, director.panzer);
 
             if (real != null)
             {
@@ -313,6 +316,14 @@ namespace StansGame.EditorTools
 
             if (real != null) RescueFromWater(root);
             PegasusAmbientLife(root, env, defences, actors);   // colour grade, patrols, traffic, windows (PegasusLevelBuilder.Ambient.cs)
+            // the weather of 6 June 1944 (PegasusLevelBuilder.Weather.cs): a windy night under broken cloud, the wind from the
+            // north-west; mist on the canal and the river at first light; overcast through the morning, breaking up by midday
+            AddWeather(root, WeatherKind.Cloudy, new[]
+            {
+                new Weather.Change { minutes = 250f, kind = WeatherKind.Fog },      // ~04:30, dawn mist
+                new Weather.Change { minutes = 410f, kind = WeatherKind.Cloudy },   // ~07:00
+                new Weather.Change { minutes = 640f, kind = WeatherKind.Clear },    // ~11:00
+            }, new Vector3(0.7f, 0f, -0.7f), 0.7f);
             BuildCinematics(root, director, env);
             PegasusHistory(root);   // "The History" film from the main menu (PegasusLevelBuilder.History.cs)
             AdoptBattle("PegasusBridge", root, Faction.British, PegasusCommanders);   // battle sheet + commanders (PegasusLevelBuilder.Battles.cs)
@@ -324,7 +335,7 @@ namespace StansGame.EditorTools
             EditorSceneManager.SaveScene(scene, path);
 #if STANS_NET
             // network ids can only be worked out once prefabs and scene objects exist on disk: do it now and save again
-            foreach (var p in new[] { "BritishSoldier", "BritishBrenGunner", "BritishRifleman", "BritishParaOfficer", "NetPlayer" }) RefreshPrefabNetworkId($"{PrefabDir}/{p}.prefab");
+            foreach (var p in new[] { "BritishSoldier", "BritishBrenGunner", "BritishRifleman", "BritishParaOfficer", "NetPlayer", "CommandoRifleman", "CommandoThompson", "CommandoPiper" }) RefreshPrefabNetworkId($"{PrefabDir}/{p}.prefab");
             int n = 0;
             foreach (var no in Object.FindObjectsByType<NetworkObject>(FindObjectsInactive.Include)) { RefreshNetworkId(no); n++; }
             EditorSceneManager.MarkSceneDirty(scene);

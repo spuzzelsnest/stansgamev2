@@ -98,7 +98,7 @@ namespace StansGame.EditorTools
             }
             // 1.80 m to the top of the M40 helmet (or the officer's cap): a man of about 1.73 m
             Bounds b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds);
-            if (b.size.y > 0.1f) inst.transform.localScale *= 1.80f / b.size.y;
+            if (b.size.y > 0.1f) inst.transform.localScale *= 1.78f / b.size.y;   // the same height as the British soldier (Joan, 24 Nov)
             b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds);
             inst.transform.position += new Vector3(0f, root.transform.position.y - b.min.y, 0f);
 

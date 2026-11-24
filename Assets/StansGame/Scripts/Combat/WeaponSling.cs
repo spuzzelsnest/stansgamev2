@@ -111,9 +111,27 @@ namespace StansGame
             Draw();
         }
 
+        Vector3 lastA, lastB; bool lastShoulder, simulated;
+
+        /// <summary>Lay the strap straight between its fixed points (after a jump, or when it goes over the shoulder).</summary>
+        void Reset(Vector3 a, Vector3 b)
+        {
+            int mid = N / 2;
+            for (int i = 0; i < N; i++)
+            {
+                Vector3 x = !overShoulder ? Vector3.Lerp(a, b, i / (N - 1f))
+                          : i <= mid ? Vector3.Lerp(a, shoulderPoint, i / (float)mid) : Vector3.Lerp(shoulderPoint, b, (i - mid) / (float)(N - 1 - mid));
+                p[i] = q[i] = x;
+            }
+        }
+
         void Simulate(float dt)
         {
             Vector3 a = FrontWorld, b = RearWorld;
+            // a jump (respawn, getting into a vehicle, picking the gun up) or going over / off the shoulder: no
+            // stretching across the gap - the strap starts again from where the gun is now (Joan: it acted elastic)
+            if (!simulated || (a - lastA).sqrMagnitude > 0.36f || (b - lastB).sqrMagnitude > 0.36f || overShoulder != lastShoulder) Reset(a, b);
+            simulated = true; lastA = a; lastB = b; lastShoulder = overShoulder;
             float span = Vector3.Distance(a, b);
             int mid = N / 2;
             float seg = overShoulder
@@ -126,7 +144,7 @@ namespace StansGame
                 q[i] = p[i];
                 p[i] += v + g;
             }
-            for (int it = 0; it < 8; it++)
+            for (int it = 0; it < 16; it++)
             {
                 p[0] = a; p[N - 1] = b;
                 if (overShoulder) p[mid] = shoulderPoint;
@@ -142,6 +160,19 @@ namespace StansGame
                 }
             }
             p[0] = a; p[N - 1] = b; if (overShoulder) p[mid] = shoulderPoint;
+            // a strap does not stretch: whatever the relaxation left too long is pulled in from both fixed ends
+            for (int i = 1; i < N - 1; i++)
+            {
+                if (overShoulder && i == mid) continue;
+                Vector3 d = p[i] - p[i - 1]; float l = d.magnitude;
+                if (l > seg * 1.02f) { p[i] = p[i - 1] + d * (seg * 1.02f / l); q[i] = Vector3.Lerp(q[i], p[i], 0.5f); }
+            }
+            for (int i = N - 2; i > 0; i--)
+            {
+                if (overShoulder && i == mid) continue;
+                Vector3 d = p[i] - p[i + 1]; float l = d.magnitude;
+                if (l > seg * 1.02f) { p[i] = p[i + 1] + d * (seg * 1.02f / l); q[i] = Vector3.Lerp(q[i], p[i], 0.5f); }
+            }
         }
 
         readonly Vector3[] verts = new Vector3[N * 2];
@@ -162,12 +193,13 @@ namespace StansGame
             }
             if (tris == null)
             {
-                tris = new int[(N - 1) * 12];
+                // one side only: the material draws both faces (_Cull off). Two coincident layers of triangles
+                // fought over every pixel, and the strap flickered dark and light (Joan: "textures get weird")
+                tris = new int[(N - 1) * 6];
                 for (int i = 0, k = 0; i < N - 1; i++)
                 {
                     int a = i * 2, b = a + 1, c = a + 2, d = a + 3;
-                    tris[k++] = a; tris[k++] = c; tris[k++] = b; tris[k++] = b; tris[k++] = c; tris[k++] = d;   // front
-                    tris[k++] = a; tris[k++] = b; tris[k++] = c; tris[k++] = b; tris[k++] = d; tris[k++] = c;   // back
+                    tris[k++] = a; tris[k++] = c; tris[k++] = b; tris[k++] = b; tris[k++] = c; tris[k++] = d;
                 }
             }
             mesh.vertices = verts; mesh.normals = norms;

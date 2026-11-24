@@ -127,6 +127,12 @@ namespace StansGame
             if (Quaternion.Angle(moon.transform.rotation, moonRot) > 0.01f) moon.transform.rotation = moonRot;   // (not every frame in the editor: that would mark the scene changed)
             if (!Application.isPlaying) return;
             if (fullIntensity < 0f) fullIntensity = moon.intensity;
+            // the weather sets the cloud cover (on a copy of the sky material, so the asset is not changed)
+            if (Weather.Coverage >= 0f && sky)
+            {
+                if (!skyCopied) { sky = new Material(sky); RenderSettings.skybox = sky; skyCopied = true; }
+                sky.SetFloat("_Coverage", Weather.Coverage);
+            }
             if (!sun) MakeSun();
 
             // is there cloud in front of the moon? (the same sum as the shader)
@@ -143,12 +149,12 @@ namespace StansGame
             shade = Mathf.Lerp(shade, Mathf.Lerp(1f, throughCloud, cover), 1f - Mathf.Exp(-1.5f * Time.deltaTime));
             // the moon gives less light low down, none once set, and is lost in the dawn
             float moonUp = Smooth(-1f, 8f, moonAlt);
-            moon.intensity = fullIntensity * shade * moonUp * (1f - day);
+            moon.intensity = fullIntensity * shade * moonUp * (1f - day) * Weather.LightFactor;
             moon.enabled = moon.intensity > 0.002f;
 
             // the sun: red as it rises, white once it is up
             sun.transform.rotation = Quaternion.LookRotation(-toSun);
-            sun.intensity = 1.25f * Smooth(-1f, 12f, sunAlt);
+            sun.intensity = 1.25f * Smooth(-1f, 12f, sunAlt) * Weather.LightFactor;
             sun.color = Color.Lerp(new Color(1f, 0.55f, 0.32f), new Color(1f, 0.96f, 0.9f), Smooth(2f, 25f, sunAlt));
             sun.enabled = sun.intensity > 0.002f;
             RenderSettings.sun = sun.intensity > moon.intensity ? sun : moon;
@@ -158,7 +164,13 @@ namespace StansGame
             RenderSettings.ambientLight = Color.Lerp(nightAmbient, new Color(0.42f, 0.45f, 0.50f), day) + warm * (twilight * 0.6f);
             RenderSettings.fogColor = Color.Lerp(nightFog, new Color(0.58f, 0.62f, 0.68f), day) + warm * twilight;
             RenderSettings.fogDensity = Mathf.Lerp(nightFogDensity, 0.0035f, day);
+            // the weather: grey light and thicker air under cloud, rain or fog
+            RenderSettings.ambientLight *= Weather.AmbientFactor;
+            RenderSettings.fogDensity *= Weather.FogFactor;
+            if (Weather.Rain > 0.01f || Weather.FogFactor > 1.5f)
+                RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, RenderSettings.ambientLight * 1.4f, 0.35f * Mathf.Clamp01(Weather.Rain + (Weather.FogFactor - 1.5f)));
         }
+        bool skyCopied;
 
         static float Smooth(float a, float b, float x) => Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(a, b, x));
 

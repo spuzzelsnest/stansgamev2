@@ -45,7 +45,7 @@ namespace StansGame.EditorTools
                 if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = true;
             }
             Bounds b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds);
-            if (b.size.y > 0.1f) inst.transform.localScale *= 1.80f / b.size.y;   // to the top of the helmet
+            if (b.size.y > 0.1f) inst.transform.localScale *= 1.78f / b.size.y;   // to the top of the helmet
             b = rs[0].bounds; foreach (var r in rs) b.Encapsulate(r.bounds);
             inst.transform.position += new Vector3(0f, root.transform.position.y - b.min.y, 0f);
             var anim = inst.GetComponent<Animator>() ?? inst.AddComponent<Animator>();
